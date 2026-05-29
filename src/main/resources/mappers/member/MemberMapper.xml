@@ -10,9 +10,11 @@
         INSERT INTO users (
             user_id,
             password,
+            name,
             nickname,
             email,
             biz_number,
+            ownername,
             company_name,
             opening_date,
             store_image,
@@ -24,9 +26,11 @@
         ) VALUES (
             #{userId},
             #{password},
+            #{name},
             #{nickname},
             #{email},
             #{bizNo},
+            #{repName},
             #{corpName},
             #{formattedOpenDate},
             #{storeImage},
