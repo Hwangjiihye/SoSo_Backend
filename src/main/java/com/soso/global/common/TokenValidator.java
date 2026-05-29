@@ -1,0 +1,63 @@
+package com.soso.global.common;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.soso.global.util.JWTUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class TokenValidator implements HandlerInterceptor{
+	
+	@Autowired
+	private JWTUtil jwt;
+	
+	// 컨트롤러 실행 전에 자동으로 실행됨.
+	// 여기서 클라이언트로 돌아갈지, 컨트롤러로 돌아갈지 결정함
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception{
+		
+		// CORS 때문에 브라우저가 보내는 사전 요청은 그냥 통과시킴
+		// 요청메서드가 options이면 통과 시켜주기
+		if(request.getMethod().equalsIgnoreCase("OPTIONS")) {
+			response.setStatus(HttpServletResponse.SC_OK);
+			return true;
+		}
+		
+		// post : interceptor 거치면 안되기 때문에 작성
+		if(request.getRequestURI().equals("/join") && request.getMethod().equals("POST")) {
+			return true;
+		}
+		
+		if(request.getRequestURI().equals("/join/dupleCheck") && request.getMethod().equals("GET")) {
+			return true;
+		}
+		
+		// 프론트에서 보낸 헤더를 꺼냄
+		// 예) Authorization: Bearer eyJhbGciOi...
+		String authHeader = request.getHeader("Authorization");
+		// 토큰이 있는지 확인
+		// authHeader.startsWith("Bearer ") 공백까지 확인하는 게 안전
+		if(authHeader != null && authHeader.startsWith("Bearer")) { // 정상적인 토큰이 들어왔다면
+			String token = authHeader.substring(7); // Bearer 7글자를 잘라내고 실제 토큰만 꺼냄
+			System.out.println(token); // 토큰이 잘 넘어오는지 확인
+			
+			try {
+				String id = jwt.getSubject(token); // 토큰이 정상이라면 로그인 ID를 request에 저장하고 컨트롤러로 보냄
+				request.setAttribute("loginId", id);
+				return true;
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			System.out.println("인터셉터 동작 확인");
+		}
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		return false; // 토큰이 애초에 없거나 Bearer로 시작하지 않는다면 false, 다시 돌려보냄 
+	}
+
+}
