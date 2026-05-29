@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soso.domain.member.dao.MemberDAO">
+
+    <!-- 사업자 회원가입 정보 Insert -->
+    <insert id="insertMember" parameterType="com.soso.domain.member.dto.SignUpDto">
+        INSERT INTO users (
+            user_id,
+            password,
+            name,
+            nickname,
+            email,
+            biz_number,
+            ownername,
+            company_name,
+            opening_date,
+            store_image,
+            zonecode,
+            address1,
+            address2,
+            phone,
+            user_type
+        ) VALUES (
+            #{userId},
+            #{password},
+            #{name},
+            #{nickname},
+            #{email},
+            #{bizNo},
+            #{repName},
+            #{corpName},
+            #{formattedOpenDate},
+            #{storeImage},
+            #{zipCode},
+            #{address},
+            #{detailAddress},
+            #{phone},
+            #{userType}
+        )
+    </insert>
+
+    <!-- 아이디 중복 체크 -->
+    <select id="countByUserId" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM users WHERE user_id = #{userId}
+    </select>
+
+    <!-- 닉네임 중복 체크 -->
+    <select id="countByNickname" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM users WHERE nickname = #{nickname}
+    </select>
+
+    <!-- 이메일 중복 체크 -->
+    <select id="countByEmail" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email}
+    </select>
+
+</mapper>
