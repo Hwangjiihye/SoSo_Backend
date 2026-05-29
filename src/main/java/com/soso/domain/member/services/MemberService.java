@@ -85,6 +85,13 @@ public class MemberService {
     }
 
     /**
+     * 이메일 중복 확인
+     */
+    public boolean isEmailDuplicated(String email) {
+        return memberDAO.countByEmail(email) > 0;
+    }
+
+    /**
      * 파일을 물리적으로 저장하고 저장된 파일명을 반환합니다.
      */
     private String saveFile(MultipartFile file) throws IOException {

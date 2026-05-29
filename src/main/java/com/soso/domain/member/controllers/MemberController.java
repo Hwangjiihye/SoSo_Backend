@@ -60,6 +60,21 @@ public class MemberController {
     }
 
     /**
+     * 이메일 중복 체크 API
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, Object>> checkEmail(@RequestParam("email") String email) {
+        logger.info("이메일 중복 체크 요청: {}", email);
+        boolean isDuplicated = memberService.isEmailDuplicated(email);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("isDuplicated", isDuplicated);
+        response.put("message", isDuplicated ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 사업자 회원가입 API
      */
     @PostMapping("/signup")
