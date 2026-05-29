@@ -14,6 +14,7 @@ public class LoginService {
 	
 	
 	public int toLogin(LoginDTO dto) {
+		
 		return LoginDAO.toLogin(dto);
 	}
 	
