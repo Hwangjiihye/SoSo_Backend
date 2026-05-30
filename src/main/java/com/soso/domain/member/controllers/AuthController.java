@@ -26,18 +26,32 @@ public class AuthController {
 	private LoginService LoginServ;
 	
 	@PostMapping("/login")
-	public ResponseEntity<Map<String, String>> toLogin(@RequestBody LoginDTO dto) {
+	public ResponseEntity<Map<String, Object>> toLogin(@RequestBody LoginDTO dto) {
 		
 		System.out.println("로그인 아이디 : " + dto.getId() + "로그인 비밀번호 : " + dto.getPw());
 		
-		int member = LoginServ.toLogin(dto);
+		// 로그인 시도
+	    // 아이디, 비밀번호가 맞으면 회원 정보(Map)를 반환
+	    // 틀리면 null 반환
+	    Map<String, Object> member = LoginServ.toLogin(dto);
+	    
+	    System.out.println("조회 결과 : " + member);
 		
-		if(member > 0) { // 0이면 성공, 1은 실패
-			Map<String, String> result = new HashMap<>();
+		if(member != null) { 
+			// 프론트로 보낼 응답 데이터
+			Map<String, Object> result = new HashMap<>();
 			
+			// JWT 토큰 생성
 			String token = jwt.createToken(dto.getId());
-			result.put("token", token);
-			result.put("id", dto.getId());
+			
+			// 응답 데이터 추가
+			result.put("token", token); // JWT 토큰
+			result.put("id", dto.getId()); // 회원 id
+			result.put("user_type", member.get("user_type")); // 회원 유형
+			
+			System.out.println("dto id = " + dto.getId());
+			System.out.println("dto pw = " + dto.getPw());
+			System.out.println("조회 결과 = " + member);
 			
 			System.out.println(token);
 			return ResponseEntity.ok(result);

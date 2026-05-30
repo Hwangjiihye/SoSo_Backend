@@ -5,8 +5,8 @@
   
 <mapper namespace="Login">
 	
-	<select id="toLogin" resultType="int">
-		select count(*) from users where user_id = #{id} and password = #{pw}
+	<select id="toLogin" resultType="map">
+		select user_id, user_type from users where user_id = #{id} and password = #{pw}
 	</select>
 	
 	 

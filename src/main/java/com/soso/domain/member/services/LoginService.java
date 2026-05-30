@@ -1,5 +1,7 @@
 package com.soso.domain.member.services;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,7 @@ public class LoginService {
 	private LoginDAO LoginDAO;
 	
 	
-	public int toLogin(LoginDTO dto) {
+	public Map<String, Object> toLogin(LoginDTO dto) {
 		
 		return LoginDAO.toLogin(dto);
 	}
