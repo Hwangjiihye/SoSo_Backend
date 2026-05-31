@@ -51,6 +51,7 @@ public class AuthController {
 			
 			System.out.println("dto id = " + dto.getId());
 			System.out.println("dto pw = " + dto.getPw());
+			System.out.println("userType : " + dto.getUser_type());
 			System.out.println("조회 결과 = " + member);
 			
 			System.out.println(token);
