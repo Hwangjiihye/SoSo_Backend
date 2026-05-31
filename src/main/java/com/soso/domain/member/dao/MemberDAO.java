@@ -22,6 +22,13 @@ public class MemberDAO {
     }
 
     /**
+     * 회원가입 후 생성된 스토어 이미지 URL을 업데이트합니다.
+     */
+    public int updateStoreImage(SignUpDto signUpDto) {
+        return mybatis.update(NAMESPACE + ".updateStoreImage", signUpDto);
+    }
+
+    /**
      * 아이디 중복 여부를 확인합니다.
      */
     public int countByUserId(String userId) {

@@ -3,6 +3,8 @@ package com.soso.domain.member.dto;
 import java.time.LocalDate;
 
 public class SignUpDto {
+    private Integer userSeq; // DB에서 자동 생성된 PK를 담을 필드
+
     // 1. 계정 및 인적 사항 (프론트 formData와 Key 이름 1:1 매칭)
     private String userType;    // BUSINESS, PARTNER, ADMIN
     private String userId;
@@ -36,7 +38,15 @@ public class SignUpDto {
     // 기본 생성자
     public SignUpDto() {}
 
-    // Getter / Setter (수동 생성)
+    public Integer getUserSeq() {
+		return userSeq;
+	}
+
+	public void setUserSeq(Integer userSeq) {
+		this.userSeq = userSeq;
+	}
+
+	// Getter / Setter (수동 생성)
     public String getUserType() { return userType; }
     public void setUserType(String userType) { this.userType = userType; }
 
