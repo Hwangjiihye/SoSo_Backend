@@ -48,4 +48,9 @@ public class MemberDAO {
     public int countByEmail(String email) {
         return mybatis.selectOne(NAMESPACE + ".countByEmail", email);
     }
+    
+    //사업자 번호 table에 존재하는지 확인
+    public int countByBizNo(String bizNo) {
+        return mybatis.selectOne(NAMESPACE+".countByBizNo", bizNo);
+    }
     }

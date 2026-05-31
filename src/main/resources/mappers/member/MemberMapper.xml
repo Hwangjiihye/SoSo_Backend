@@ -64,4 +64,7 @@
         SELECT COUNT(*) FROM users WHERE email = #{email}
     </select>
 
+<select id="countByBizNo" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM users WHERE biz_number = #{bizNo}
+    </select>
 </mapper>
