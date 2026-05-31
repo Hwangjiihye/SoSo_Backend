@@ -13,5 +13,14 @@
 		select user_id from users where email = #{email}
 	</select>
 	
+	<!-- 비밀번호 재설정 -->
+	<update id="updatePassword" parameterType="com.soso.domain.member.dto.FindDTO">
+		update users set password = #{newPassword} where user_id = #{id} and email = #{email}
+	</update>
+	
+	<!-- 비밀번호 찾기용: 아이디 + 이메일 확인 -->
+	<select id="findPw" parameterType="com.soso.domain.member.dto.FindDTO" resultType="int">
+	    select count(*) from users where user_id = #{id} and email = #{email}
+	</select>
 	 
 </mapper>

@@ -22,5 +22,13 @@ public class FindDAO {
 	public String getIdByEmail(String email) {
 	    return mybatis.selectOne("Find.getIdByEmail", email);
 	}
+	
+	public int findPw(FindDTO dto) {
+	    return mybatis.selectOne("Find.findPw", dto);
+	}
+	
+	public int updatePassword(FindDTO dto) {
+		return mybatis.update("Find.updatePassword", dto);
+	}
 
 }
