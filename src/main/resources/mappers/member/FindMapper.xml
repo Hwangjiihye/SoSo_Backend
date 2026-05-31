@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="Find">
+	
+	<select id="findId" parameterType="com.soso.domain.member.dto.FindDTO" resultType="int">
+		select count(*) from users where name = #{name} and email = #{email}
+	</select>
+	
+	<select id="getIdByEmail" parameterType="string" resultType="string">
+		select user_id from users where email = #{email}
+	</select>
+	
+	 
+</mapper>

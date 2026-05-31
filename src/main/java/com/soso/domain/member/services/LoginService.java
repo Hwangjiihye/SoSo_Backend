@@ -41,7 +41,5 @@ public class LoginService {
 		
 		// 6. 전부 맞으면 회원 정보 반환
 		return member;
-		
-//		return LoginDAO.toLogin(dto);
 	}
 }
