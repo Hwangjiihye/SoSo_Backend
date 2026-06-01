@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soso.domain.file.repository.FileRepository">
+
+    <insert id="insertFile" parameterType="com.soso.domain.file.dto.FileSaveDto">
+        INSERT INTO files (
+            user_seq,
+            board_seq,
+            file_category,
+            oriname,
+            sysname,
+            file_size,
+            file_type
+        ) VALUES (
+            #{userSeq},
+            #{boardSeq},
+            #{fileCategory},
+            #{oriname},
+            #{sysname},
+            #{fileSize},
+            #{fileType}
+        )
+    </insert>
+
+</mapper>

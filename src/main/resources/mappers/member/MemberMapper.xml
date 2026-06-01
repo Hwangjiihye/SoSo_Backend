@@ -6,7 +6,7 @@
 <mapper namespace="com.soso.domain.member.dao.MemberDAO">
 
     <!-- 사업자 회원가입 정보 Insert -->
-    <insert id="insertMember" parameterType="com.soso.domain.member.dto.SignUpDto">
+    <insert id="insertMember" parameterType="com.soso.domain.member.dto.SignUpDto" useGeneratedKeys="true" keyProperty="userSeq">
         INSERT INTO users (
             user_id,
             password,
@@ -42,6 +42,13 @@
         )
     </insert>
 
+    <!-- 스토어 이미지 URL 업데이트 -->
+    <update id="updateStoreImage" parameterType="com.soso.domain.member.dto.SignUpDto">
+        UPDATE users
+        SET store_image = #{storeImage}
+        WHERE user_seq = #{userSeq}
+    </update>
+
     <!-- 아이디 중복 체크 -->
     <select id="countByUserId" parameterType="string" resultType="int">
         SELECT COUNT(*) FROM users WHERE user_id = #{userId}
@@ -57,4 +64,7 @@
         SELECT COUNT(*) FROM users WHERE email = #{email}
     </select>
 
+<select id="countByBizNo" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM users WHERE biz_number = #{bizNo}
+    </select>
 </mapper>

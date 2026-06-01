@@ -22,6 +22,13 @@ public class MemberDAO {
     }
 
     /**
+     * 회원가입 후 생성된 스토어 이미지 URL을 업데이트합니다.
+     */
+    public int updateStoreImage(SignUpDto signUpDto) {
+        return mybatis.update(NAMESPACE + ".updateStoreImage", signUpDto);
+    }
+
+    /**
      * 아이디 중복 여부를 확인합니다.
      */
     public int countByUserId(String userId) {
@@ -40,5 +47,10 @@ public class MemberDAO {
      */
     public int countByEmail(String email) {
         return mybatis.selectOne(NAMESPACE + ".countByEmail", email);
+    }
+    
+    //사업자 번호 table에 존재하는지 확인
+    public int countByBizNo(String bizNo) {
+        return mybatis.selectOne(NAMESPACE+".countByBizNo", bizNo);
     }
     }
