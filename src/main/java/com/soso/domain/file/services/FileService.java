@@ -1,21 +1,22 @@
 package com.soso.domain.file.services;
 
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.soso.domain.file.dto.FileSaveDto;
-import com.soso.domain.file.repository.FileRepository;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.UUID;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.soso.domain.file.dao.FileDAO;
+import com.soso.domain.file.dto.FileSaveDto;
 
 @Service
 public class FileService {
 
     @Autowired
-    private FileRepository fileRepository;
+    private FileDAO fileDao;
 
     @Autowired
     private Storage storage;
@@ -52,7 +53,7 @@ public class FileService {
         fileSaveDto.setFileSize(file.getSize());
         fileSaveDto.setFileType(file.getContentType());
 
-        fileRepository.insertFile(fileSaveDto);
+        fileDao.insertFile(fileSaveDto);
 
         // d. 최종적으로 외부 브라우저에서 접근 가능한 공공 URL 주소 문자열 리턴
         return "https://storage.googleapis.com/" + bucketName + "/" + sysName;

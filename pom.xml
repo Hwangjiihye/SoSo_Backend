@@ -87,14 +87,11 @@
 		    <version>4.4.0</version>
 		    <scope>compile</scope>
 		</dependency>
-		<!--<dependency>
-	        <groupId>com.google.cloud</groupId>
-	        <artifactId>spring-cloud-gcp-starter-storage</artifactId>
-    	</dependency>-->
 		<dependency>
 	        <groupId>com.google.cloud</groupId>
 	        <artifactId>spring-cloud-gcp-starter-storage</artifactId>
     	</dependency>
+		
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
