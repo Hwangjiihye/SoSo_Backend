@@ -1,56 +1,66 @@
 package com.soso.domain.member.dao;
 
 import com.soso.domain.member.dto.SignUpDto;
+import com.soso.domain.file.dto.FileSaveDto;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 필드 주입 방식을 사용한 순수 자바 스타일의 MemberDAO
+ * 공통 파일 테이블(files) 연동 로직 포함
+ */
 @Repository
 public class MemberDAO {
 
     @Autowired
     private SqlSessionTemplate mybatis;
 
-    // XML Mapper의 namespace와 일치해야 함
     private static final String NAMESPACE = "com.soso.domain.member.dao.MemberDAO";
 
     /**
-     * 사업자 회원가입 정보를 DB에 저장합니다.
+     * users 테이블에 계정 정보를 인서트합니다. (useGeneratedKeys 적용)
      */
-    public int insertMember(SignUpDto signUpDto) {
-        return mybatis.insert(NAMESPACE + ".insertMember", signUpDto);
+    public int insertUser(SignUpDto signUpDto) {
+        return mybatis.insert(NAMESPACE + ".insertUser", signUpDto);
     }
 
     /**
-     * 회원가입 후 생성된 스토어 이미지 URL을 업데이트합니다.
+     * stores 테이블에 매장 상세 정보를 인서트합니다. (store_image 컬럼 제외)
      */
-    public int updateStoreImage(SignUpDto signUpDto) {
-        return mybatis.update(NAMESPACE + ".updateStoreImage", signUpDto);
+    public int insertStore(SignUpDto signUpDto) {
+        return mybatis.insert(NAMESPACE + ".insertStore", signUpDto);
+    }
+
+  
+    /**
+     * 회원 탈퇴 시 매장 정보들을 먼저 삭제합니다.
+     */
+    public int deleteStoresByKey(int userSeq) {
+        return mybatis.delete(NAMESPACE + ".deleteStoresByKey", userSeq);
     }
 
     /**
-     * 아이디 중복 여부를 확인합니다.
+     * 회원 탈퇴 시 계정 정보를 삭제합니다.
      */
+    public int deleteUser(int userSeq) {
+        return mybatis.delete(NAMESPACE + ".deleteUser", userSeq);
+    }
+
+    // 중복 체크 쿼리
     public int countByUserId(String userId) {
         return mybatis.selectOne(NAMESPACE + ".countByUserId", userId);
     }
 
-    /**
-     * 닉네임 중복 여부를 확인합니다.
-     */
     public int countByNickname(String nickname) {
         return mybatis.selectOne(NAMESPACE + ".countByNickname", nickname);
     }
 
-    /**
-     * 이메일 중복 여부를 확인합니다.
-     */
     public int countByEmail(String email) {
         return mybatis.selectOne(NAMESPACE + ".countByEmail", email);
     }
-    
-    //사업자 번호 table에 존재하는지 확인
+
     public int countByBizNo(String bizNo) {
-        return mybatis.selectOne(NAMESPACE+".countByBizNo", bizNo);
+        return mybatis.selectOne(NAMESPACE + ".countByBizNo", bizNo);
     }
-    }
+}
