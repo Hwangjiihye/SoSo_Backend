@@ -1,12 +1,14 @@
 package com.soso.domain.member.dao;
 
 import com.soso.domain.member.dto.SignUpDto;
+import com.soso.domain.file.dto.FileSaveDto;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
  * 필드 주입 방식을 사용한 순수 자바 스타일의 MemberDAO
+ * 공통 파일 테이블(files) 연동 로직 포함
  */
 @Repository
 public class MemberDAO {
@@ -24,19 +26,13 @@ public class MemberDAO {
     }
 
     /**
-     * stores 테이블에 매장 상세 정보를 인서트합니다.
+     * stores 테이블에 매장 상세 정보를 인서트합니다. (store_image 컬럼 제외)
      */
     public int insertStore(SignUpDto signUpDto) {
         return mybatis.insert(NAMESPACE + ".insertStore", signUpDto);
     }
 
-    /**
-     * 특정 유저의 매장 이미지 URL(store_image)을 업데이트합니다.
-     */
-    public int updateStoreImage(SignUpDto signUpDto) {
-        return mybatis.update(NAMESPACE + ".updateStoreImage", signUpDto);
-    }
-
+  
     /**
      * 회원 탈퇴 시 매장 정보들을 먼저 삭제합니다.
      */

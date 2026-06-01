@@ -24,7 +24,7 @@
         )
     </insert>
 
-    <!-- 2. stores 테이블 인서트 -->
+    <!-- 2. stores 테이블 인서트 (store_image 컬럼 및 파라미터 제거) -->
     <insert id="insertStore" parameterType="com.soso.domain.member.dto.SignUpDto">
         INSERT INTO stores (
             user_seq,
@@ -33,8 +33,7 @@
             opening_date,
             zonecode,
             address1,
-            address2,
-            store_image
+            address2
         ) VALUES (
             #{userSeq},
             #{bizNo},
@@ -42,17 +41,9 @@
             #{formattedOpenDate},
             #{zipCode},
             #{address},
-            #{detailAddress},
-            #{storeImage}
+            #{detailAddress}
         )
     </insert>
-
-    <!-- 3. store_image 컬럼 최종 업데이트 -->
-    <update id="updateStoreImage" parameterType="com.soso.domain.member.dto.SignUpDto">
-        UPDATE stores
-        SET store_image = #{storeImage}
-        WHERE user_seq = #{userSeq}
-    </update>
 
     <!-- 4. 매장 정보 선삭제 -->
     <delete id="deleteStoresByKey" parameterType="int">

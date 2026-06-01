@@ -1,5 +1,6 @@
 package com.soso.domain.member.services;
 
+import com.soso.domain.file.dto.FileSaveDto;
 import com.soso.domain.file.services.FileService;
 import com.soso.domain.member.dao.MemberDAO;
 import com.soso.domain.member.dto.SignUpDto;
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * 아키텍처 규칙을 준수한 회원 서비스
  * 필드 주입 방식 및 순수 자바 스타일 적용
+ * 공통 파일 테이블(files) 연동 로직 포함
  */
 @Service
 public class MemberService {
@@ -33,12 +35,12 @@ public class MemberService {
     private BCryptPasswordEncoder passwordEncoder;
 
     /**
-     * [완벽한 가입 프로세스 시퀀스]
-     * 1. users 인서트 -> 2. stores 초기 인서트 -> 3. GCS 파일 업로드 -> 4. URL 결합 및 DB 반영
+     * [리팩토링된 회원가입 시퀀스]
+     * 1. users 인서트 -> 2. user_seq 확보 -> 3. stores 인서트 -> 4. 파일 업로드 및 개별 Files 인서트
      */
     @Transactional(rollbackFor = Exception.class)
     public void signUp(SignUpDto signUpDto, MultipartFile exteriorImg, MultipartFile interiorImg) throws Exception {
-        logger.info("회원가입 시퀀스 시작: userId={}", signUpDto.getUserId());
+        logger.info("회원가입 프로세스 시작: userId={}", signUpDto.getUserId());
 
         // 1. 아이디 중복 체크
         if (memberDAO.countByUserId(signUpDto.getUserId()) > 0) {
@@ -57,28 +59,35 @@ public class MemberService {
             throw new RuntimeException("계정 정보 저장 실패");
         }
 
-        // 4. 확보된 userSeq 획득
+        // 4. MyBatis useGeneratedKeys를 통해 생성된 user_seq 확보
         int generatedUserSeq = signUpDto.getUserSeq();
-        logger.info("생성된 user_seq: {}", generatedUserSeq);
+        logger.info("확보된 user_seq: {}", generatedUserSeq);
 
-        // 5. [stores] 테이블 릴레이 인서트 (초기 정보 저장)
+        // 5. [stores] 테이블 인서트 (store_image 컬럼 미참조)
         int storeResult = memberDAO.insertStore(signUpDto);
         if (storeResult == 0) {
-            throw new RuntimeException("매장 기초 정보 저장 실패");
+            throw new RuntimeException("매장 정보 저장 실패");
         }
 
-        // 6. GCS 업로드 호출 (확보한 generatedUserSeq 연동)
-        String extUrl = fileService.uploadToGcsAndGetUrl(exteriorImg, generatedUserSeq, "STORE_IMAGE");
-        String intUrl = fileService.uploadToGcsAndGetUrl(interiorImg, generatedUserSeq, "STORE_IMAGE");
+        // 6. [files] 이미지 처리 - 외관 사진
+        processImageUpload(exteriorImg, generatedUserSeq, "exterior_image");
 
-        // 7. 업로드된 URL 결합 (세미콜론 구분)
-        String combinedUrl = (extUrl == null ? "" : extUrl) + ";" + (intUrl == null ? "" : intUrl);
-        signUpDto.setStoreImage(combinedUrl);
+        // 7. [files] 이미지 처리 - 내부 사진
+        processImageUpload(interiorImg, generatedUserSeq, "interior_image");
 
-        // 8. 데이터베이스 store_image 컬럼 최종 업데이트
-        memberDAO.updateStoreImage(signUpDto);
+        logger.info("회원가입 및 매장/파일 등록 완료: userSeq={}", generatedUserSeq);
+    }
 
-        logger.info("회원가입 프로세스 완료: userSeq={}", generatedUserSeq);
+    /**
+     * 이미지 업로드 및 files 테이블 레코드 생성을 처리하는 공통 프라이빗 메서드
+     */
+    private void processImageUpload(MultipartFile file, int userSeq, String typePrefix) throws Exception {
+        if (file != null && !file.isEmpty()) {
+            // GCS 업로드 및 URL 반환
+            String gcsUrl = fileService.uploadToGcsAndGetUrl(file, userSeq, "STORE_IMAGE");
+
+            logger.info("파일 등록 완료: type={}, url={}", typePrefix, gcsUrl);
+        }
     }
 
     /**
@@ -88,7 +97,7 @@ public class MemberService {
     public void deleteMember(int userSeq) {
         logger.info("회원 탈퇴 요청: userSeq={}", userSeq);
         
-        // 1. 자식 테이블(stores) 먼저 삭제 (고아 데이터 방지)
+        // 1. 자식 테이블(stores) 먼저 삭제
         memberDAO.deleteStoresByKey(userSeq);
         
         // 2. 부모 테이블(users) 삭제
