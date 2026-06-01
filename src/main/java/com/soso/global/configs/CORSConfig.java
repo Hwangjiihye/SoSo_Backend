@@ -10,9 +10,10 @@ public class CORSConfig implements WebMvcConfigurer{
 	public void addCorsMappings(CorsRegistry registry) {
 		// TODO Auto-generated method stub
 		WebMvcConfigurer.super.addCorsMappings(registry);
-		registry.addMapping("/**")
-		.allowedMethods("*")
-		.allowedHeaders("*")
-		.allowedOrigins("*"); // 이 주소로부터 들어오는 것은 허용해주겠다.
+		registry.addMapping("/**") // 모든 API 경로에 대해
+        .allowedOrigins("http://localhost:5173") // 리액트 주소 허용
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .allowedHeaders("*")
+        .allowCredentials(true);// 이 주소로부터 들어오는 것은 허용해주겠다.
 	}
 }
