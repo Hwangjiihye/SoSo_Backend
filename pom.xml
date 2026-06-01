@@ -87,17 +87,12 @@
 		    <version>4.4.0</version>
 		    <scope>compile</scope>
 		</dependency>
-<<<<<<< HEAD
-		<!--<dependency>
-	        <groupId>com.google.cloud</groupId>
-	        <artifactId>spring-cloud-gcp-starter-storage</artifactId>
-    	</dependency>-->
+
     	<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
-=======
->>>>>>> 476f7c2c5808102f6505bb7fa246b3c76b664ac1
+
 		<dependency>
 	        <groupId>com.google.cloud</groupId>
 	        <artifactId>spring-cloud-gcp-starter-storage</artifactId>
