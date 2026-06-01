@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.soso.domain.member.dao.MemberDAO;
 import com.soso.domain.member.dto.BizValidateDto;
 
 @Service
@@ -20,11 +22,24 @@ public class BizValidationService {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
+	@Autowired
+	private MemberDAO memberDao;
+	
     @Value("${api.public-data.service-key}")
     private String serviceKey;
 
     public boolean validateBusiness(String bNo, String startDt, String pNm, String bNm) {
         
+    	String cleanBNo = bNo.replaceAll("-", "");
+        
+        // 2. 🔥 [실무 치트키] 외부 API 쏘기 전에 우리 DB 먼저 검사!
+        int count = memberDao.countByBizNo(cleanBNo);
+        if (count > 0) {
+            // 우리 DB에 이미 존재한다면 국세청 찌르지도 않고 바로 탈락!
+            // 여기서 예외를 던지거나, 프론트가 알아먹을 특수한 문자열을 리턴하네.
+            throw new IllegalArgumentException("DUPLICATED_BIZ_NO"); 
+        }
+    	
         // 1. URL 빌드 (공공데이터포털 특유의 서비스키 중복 인코딩 방지 로직)
         URI uri = UriComponentsBuilder
                 .fromUriString("https://api.odcloud.kr/api/nts-businessman/v1/validate")
@@ -36,7 +51,7 @@ public class BizValidationService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String cleanBNo = bNo.replaceAll("-", "");
+      
         String cleanStartDt = startDt.replaceAll("-", "");
 
         // 3. 통합 DTO의 Request 이너 클래스 사용
