@@ -22,7 +22,10 @@ public class SignUpDto {
     private String bizNo;       // biz_number
     private String corpName;    // company_name
     private String openDate;    // opening_date (String 형태)
-    private Integer zipCode;    // zonecode
+    private String repName;		// 대표자명
+    
+
+	private Integer zipCode;    // zonecode
     private String address;     // address1
     private String detailAddress; // address2
     private String storeImage;  // store_image (결합된 URL 문자열)
@@ -33,6 +36,13 @@ public class SignUpDto {
     public SignUpDto() {}
 
     // Getter / Setter (순차적 수동 작성)
+    public String getRepName() {
+		return repName;
+	}
+
+	public void setRepName(String repName) {
+		this.repName = repName;
+	}
     public Integer getUserSeq() {
         return userSeq;
     }

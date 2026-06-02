@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soso.domain.mypage.dao.MyPageDAO">
+
+    <select id="getPartnerProfile" parameterType="string" resultType="com.soso.domain.mypage.dto.PartnerProfileDTO">
+        SELECT 
+            u.user_id AS userId,
+            u.name,
+            u.nickname,
+            u.email,
+            u.phone,
+            s.biz_number AS bizNumber,
+            s.company_name AS companyName,
+            s.opening_date AS openingDate,
+            s.zonecode,
+            s.address1,
+            s.address2
+        FROM users u
+        LEFT JOIN stores s ON u.user_seq = s.user_seq
+        WHERE u.user_id = #{userId}
+          AND u.user_type = 'PARTNER'
+    </select>
+
+</mapper>
