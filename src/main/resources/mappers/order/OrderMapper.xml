@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="order">
+
+	<select id="check" resultType="com.soso.domain.order.dto.OrderRecommendDTO">
+		select s.stock_seq, s.user_seq, s.stock, s.quantity, s.safety_stock from stocks s 
+		join users u on s.user_seq = u.user_seq
+		where u.user_id = #{loginId}
+			and (s.stock like concat('%', #{itemName}, '%')
+			or #{itemName} like concat('%', s.stock, '%'))
+	</select>
+   
+</mapper>
