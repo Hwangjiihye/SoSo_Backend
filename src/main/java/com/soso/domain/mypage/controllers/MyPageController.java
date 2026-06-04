@@ -17,9 +17,9 @@ public class MyPageController {
     private MyPageService myPageService;
 
     @GetMapping("/profile")
-    public ResponseEntity<PartnerProfileDTO> getPartnerProfile(@RequestAttribute("loginId") String userId) {
+    public ResponseEntity<PartnerProfileDTO> getPartnerProfile(@RequestAttribute("user_seq") Long user_seq) {
         
-        PartnerProfileDTO profile = myPageService.getPartnerProfile(userId);
+        PartnerProfileDTO profile = myPageService.getPartnerProfile(user_seq);
         
         if (profile != null) {
             return ResponseEntity.ok(profile);

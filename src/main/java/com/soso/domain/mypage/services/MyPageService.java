@@ -11,7 +11,7 @@ public class MyPageService {
     @Autowired
     private MyPageDAO myPageDAO;
 
-    public PartnerProfileDTO getPartnerProfile(String userId) {
-        return myPageDAO.getPartnerProfile(userId);
+    public PartnerProfileDTO getPartnerProfile(Long user_seq) {
+        return myPageDAO.getPartnerProfile(user_seq);
     }
 }

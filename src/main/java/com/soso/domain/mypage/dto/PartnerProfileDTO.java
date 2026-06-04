@@ -9,10 +9,12 @@ public class PartnerProfileDTO {
     private String nickname;
     private String email;
     private String phone;
+    private String created_at;
     
     // Store 정보
     private String bizNumber;
-    private String companyName;
+    private String repName;
+	private String companyName;
     private Date openingDate;
     private Integer zonecode;
     private String address1;
@@ -21,6 +23,18 @@ public class PartnerProfileDTO {
     public PartnerProfileDTO() {}
 
     // Getters and Setters
+    public String getCreated_at() {
+		return created_at;
+	}
+	public void setCreated_at(String created_at) {
+		this.created_at = created_at;
+	}
+	public String getRepName() {
+		return repName;
+	}
+	public void setRepName(String repName) {
+		this.repName = repName;
+	}
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 

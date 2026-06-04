@@ -13,7 +13,7 @@ public class MyPageDAO {
 
     private static final String NAMESPACE = "com.soso.domain.mypage.dao.MyPageDAO";
 
-    public PartnerProfileDTO getPartnerProfile(String userId) {
-        return mybatis.selectOne(NAMESPACE + ".getPartnerProfile", userId);
+    public PartnerProfileDTO getPartnerProfile(Long user_seq) {
+        return mybatis.selectOne(NAMESPACE + ".getPartnerProfile", user_seq);
     }
 }

@@ -22,7 +22,7 @@ public class InterceptorConfig implements WebMvcConfigurer{
 		// 그래서 로그인은 토큰 없이 가능하고, 나머지는 토큰 필요.
 		registry.addInterceptor(Interceptor)
 		.addPathPatterns("/**") 
-		.excludePathPatterns("/auth/**", "/api/member/check-*", "/api/member/signup", "/api/biz/**","/api/member/partner", "/find/**");
+		.excludePathPatterns("/auth/**", "/api/member/check-*", "/api/member/signup", "/api/biz/**", "/find/**");
 	}
 
 }

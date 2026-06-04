@@ -42,17 +42,19 @@ public class AuthController {
 			Map<String, Object> result = new HashMap<>();
 			
 			// JWT 토큰 생성
-			String token = jwt.createToken(dto.getId());
+			// ⭕ member.get()이 Integer든 Long이든 상관없이 문자열로 바꾼 뒤 깔끔하게 Long으로 추출!
+			Long userSeq = Long.parseLong(String.valueOf(member.get("user_seq")));
+			String token = jwt.createToken(userSeq);
 			
 			// 응답 데이터 추가
 			result.put("token", token); // JWT 토큰
-			result.put("id", dto.getId()); // 회원 id
+			result.put("user_seq", userSeq); // 회원 id
 			result.put("user_type", member.get("user_type")); // 회원 유형
 			
 			System.out.println("dto id = " + dto.getId());
 			System.out.println("dto pw = " + dto.getPw());
 			System.out.println("userType : " + dto.getUser_type());
-			System.out.println("조회 결과 = " + member);
+			System.out.println("조회 결과 = " + member.get("user_seq"));
 			
 			System.out.println(token);
 			return ResponseEntity.ok(result);
