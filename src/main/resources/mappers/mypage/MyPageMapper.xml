@@ -12,7 +12,7 @@
             u.nickname,
             u.email,
             u.phone,
-            u.created_at,
+            u.created_at AS createdAt,
             s.biz_number AS bizNumber,
             s.company_name AS companyName,
             s.opening_date AS openingDate,

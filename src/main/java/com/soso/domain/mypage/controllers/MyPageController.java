@@ -20,7 +20,7 @@ public class MyPageController {
     public ResponseEntity<PartnerProfileDTO> getPartnerProfile(@RequestAttribute("user_seq") Long user_seq) {
         
         PartnerProfileDTO profile = myPageService.getPartnerProfile(user_seq);
-        
+        System.out.println(profile.getCreatedAt());
         if (profile != null) {
             return ResponseEntity.ok(profile);
         } else {
