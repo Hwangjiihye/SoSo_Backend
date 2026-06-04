@@ -2,33 +2,33 @@ package com.soso.domain.order.dto;
 
 public class OrderRecommendDTO {
 	
-	private int stock_seq;
-	private int user_seq;
+	private int stockSeq;
+	private int userSeq;
 	private String stock;
 	private int quantity;
-	private int safety_stock;
+	private int safetyStock;
 	
 	public OrderRecommendDTO() {}
-	public OrderRecommendDTO(int stock_seq, int user_seq, String stock, int quantity, int safety_stock) {
+	public OrderRecommendDTO(int stockSeq, int userSeq, String stock, int quantity, int safetyStock) {
 		super();
-		this.stock_seq = stock_seq;
-		this.user_seq = user_seq;
+		this.stockSeq = stockSeq;
+		this.userSeq = userSeq;
 		this.stock = stock;
 		this.quantity = quantity;
-		this.safety_stock = safety_stock;
+		this.safetyStock = safetyStock;
 	}
 	
-	public int getStock_seq() {
-		return stock_seq;
+	public int getStockSeq() {
+		return stockSeq;
 	}
-	public void setStock_seq(int stock_seq) {
-		this.stock_seq = stock_seq;
+	public void setStockSeq(int stockSeq) {
+		this.stockSeq = stockSeq;
 	}
-	public int getUser_seq() {
-		return user_seq;
+	public int getUserSeq() {
+		return userSeq;
 	}
-	public void setUser_seq(int user_seq) {
-		this.user_seq = user_seq;
+	public void setUserSeq(int userSeq) {
+		this.userSeq = userSeq;
 	}
 	public String getStock() {
 		return stock;
@@ -42,10 +42,10 @@ public class OrderRecommendDTO {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
-	public int getSafety_stock() {
-		return safety_stock;
+	public int getSafetyStock() {
+		return safetyStock;
 	}
-	public void setSafety_stock(int safety_stock) {
-		this.safety_stock = safety_stock;
-	}
+	public void setSafetyStock(int safetyStock) {
+		this.safetyStock = safetyStock;
+	}	
 }

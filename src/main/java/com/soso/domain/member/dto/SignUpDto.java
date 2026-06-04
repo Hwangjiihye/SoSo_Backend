@@ -21,6 +21,7 @@ public class SignUpDto {
     private Integer storeSeq;   // store_seq (PK)
     private String bizNo;       // biz_number
     private String corpName;    // company_name
+    private String ceoName;
     private String openDate;    // opening_date (String 형태)
     private Integer zipCode;    // zonecode
     private String address;     // address1
@@ -119,6 +120,14 @@ public class SignUpDto {
 
     public void setCorpName(String corpName) {
         this.corpName = corpName;
+    }
+    
+    public String getCeoName() {
+    	return ceoName;
+    }
+    
+    public void setCeoName(String ceoName) {
+    	this.ceoName = ceoName;
     }
 
     public String getOpenDate() {
