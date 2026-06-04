@@ -63,4 +63,18 @@ public class MemberDAO {
     public int countByBizNo(String bizNo) {
         return mybatis.selectOne(NAMESPACE + ".countByBizNo", bizNo);
     }
+
+    public int countByNicknameExcludingSelf(String nickname, int userSeq) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("nickname", nickname);
+        params.put("userSeq", userSeq);
+        return mybatis.selectOne(NAMESPACE + ".countByNicknameExcludingSelf", params);
+    }
+
+    public int countByEmailExcludingSelf(String email, int userSeq) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("email", email);
+        params.put("userSeq", userSeq);
+        return mybatis.selectOne(NAMESPACE + ".countByEmailExcludingSelf", params);
+    }
 }

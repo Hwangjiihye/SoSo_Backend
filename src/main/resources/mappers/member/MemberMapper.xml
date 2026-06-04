@@ -74,4 +74,12 @@
         SELECT COUNT(*) FROM stores WHERE biz_number = #{bizNo}
     </select>
 
+    <select id="countByNicknameExcludingSelf" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM users WHERE nickname = #{nickname} AND user_seq != #{userSeq}
+    </select>
+
+    <select id="countByEmailExcludingSelf" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email} AND user_seq != #{userSeq}
+    </select>
+
 </mapper>

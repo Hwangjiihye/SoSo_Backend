@@ -3,6 +3,7 @@ package com.soso.domain.mypage.services;
 import com.soso.domain.file.dao.FileDAO;
 import com.soso.domain.file.dto.FileSaveDto;
 import com.soso.domain.file.services.FileService;
+import com.soso.domain.member.dao.MemberDAO;
 import com.soso.domain.mypage.dao.MyPageDAO;
 import com.soso.domain.mypage.dto.PartnerProfileDTO;
 import com.soso.domain.mypage.dto.PartnerUpdateDTO;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -25,15 +28,28 @@ public class MyPageService {
     @Autowired
     private FileDAO fileDAO;
 
+    @Autowired
+    private MemberDAO memberDAO;
+
     public PartnerProfileDTO getPartnerProfile(Long user_seq) {
         return myPageDAO.getPartnerProfile(user_seq);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updatePartnerProfile(PartnerUpdateDTO updateDto, MultipartFile exteriorImg, MultipartFile interiorImg) throws Exception {
+    public String updatePartnerProfile(PartnerUpdateDTO updateDto, MultipartFile exteriorImg, MultipartFile interiorImg) throws Exception {
         Integer userSeq = updateDto.getUserSeq();
 
-        // 1. 사용자 및 상점 정보 업데이트
+        // 1. 닉네임 중복 체크 (본인 제외)
+        if (memberDAO.countByNicknameExcludingSelf(updateDto.getNickname(), userSeq) > 0) {
+            return "duplNickname";
+        }
+
+        // 2. 이메일 중복 체크 (본인 제외)
+        if (memberDAO.countByEmailExcludingSelf(updateDto.getEmail(), userSeq) > 0) {
+        	return "duplEmail";
+        }
+
+        // 3. 사용자 및 상점 정보 업데이트
         myPageDAO.updateUser(updateDto);
         myPageDAO.updateStore(updateDto);
 
@@ -51,5 +67,6 @@ public class MyPageService {
             String oldSysName = (existingFiles.size() > 1) ? existingFiles.get(1).getSysname() : null;
             fileService.updateFile(interiorImg, userSeq, "STORE_IMAGE", oldSysName);
         }
+        return "success";
     }
 }

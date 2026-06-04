@@ -42,10 +42,20 @@ public class MyPageController {
             PartnerUpdateDTO updateDto = objectMapper.readValue(updateData, PartnerUpdateDTO.class);
             updateDto.setUserSeq(userSeq.intValue());
 
-            myPageService.updatePartnerProfile(updateDto, exteriorImg, interiorImg);
+            String result = myPageService.updatePartnerProfile(updateDto, exteriorImg, interiorImg);
 
-            response.put("status", "success");
-            response.put("message", "업체 정보 수정이 완료되었습니다.");
+            if(result.equals("duplNickname")) {
+            	response.put("status", "duplNickname");
+            	 response.put("message", "이미 사용 중인 닉네임입니다. 다시 입력해주세요");
+            }
+            if(result.equals("duplEmail")) {
+            	response.put("status", "duplEmail");
+            	 response.put("message", "이미 사용 중인 이메일입니다. 다시 입력해주세요");
+            }
+            if(result.equals("success")) {
+            	response.put("status", "success");
+            	 response.put("message", "업체 정보 수정이 완료되었습니다.");
+            }
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
