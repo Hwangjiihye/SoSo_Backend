@@ -19,8 +19,19 @@ public class PartnerProfileDTO {
     private Integer zonecode;
     private String address1;
     private String address2;
+    
+    //file 정보
+    private String storeSysNames;
 
-    public PartnerProfileDTO() {}
+    public String getStoreSysNames() {
+		return storeSysNames;
+	}
+
+	public void setStoreSysNames(String storeSysNames) {
+		this.storeSysNames = storeSysNames;
+	}
+
+	public PartnerProfileDTO() {}
 
     // Getters and Setters
    
