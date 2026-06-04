@@ -16,4 +16,12 @@ public class MyPageDAO {
     public PartnerProfileDTO getPartnerProfile(Long user_seq) {
         return mybatis.selectOne(NAMESPACE + ".getPartnerProfile", user_seq);
     }
+
+    public int updateUser(com.soso.domain.mypage.dto.PartnerUpdateDTO updateDto) {
+        return mybatis.update(NAMESPACE + ".updateUser", updateDto);
+    }
+
+    public int updateStore(com.soso.domain.mypage.dto.PartnerUpdateDTO updateDto) {
+        return mybatis.update(NAMESPACE + ".updateStore", updateDto);
+    }
 }

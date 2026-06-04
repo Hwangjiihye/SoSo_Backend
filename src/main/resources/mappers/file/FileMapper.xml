@@ -25,4 +25,22 @@
         )
     </insert>
 
+    <select id="getFilesByUserAndCategory" parameterType="map" resultType="com.soso.domain.file.dto.FileSaveDto">
+        SELECT 
+            user_seq AS userSeq,
+            board_seq AS boardSeq,
+            file_category AS fileCategory,
+            oriname,
+            sysname,
+            file_size AS fileSize,
+            file_type AS fileType
+        FROM files
+        WHERE user_seq = #{userSeq} AND file_category = #{category}
+        ORDER BY files_seq ASC
+    </select>
+
+    <delete id="deleteFile" parameterType="string">
+        DELETE FROM files WHERE sysname = #{sysname}
+    </delete>
+
 </mapper>

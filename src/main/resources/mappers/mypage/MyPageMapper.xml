@@ -33,4 +33,22 @@
     GROUP BY u.user_seq, s.biz_number
     </select>
 
+    <!-- 사용자 정보 수정 -->
+    <update id="updateUser" parameterType="com.soso.domain.mypage.dto.PartnerUpdateDTO">
+        UPDATE users
+        SET nickname = #{nickname},
+            email = #{email},
+            phone = #{phone}
+        WHERE user_seq = #{userSeq}
+    </update>
+
+    <!-- 상점 정보 수정 -->
+    <update id="updateStore" parameterType="com.soso.domain.mypage.dto.PartnerUpdateDTO">
+        UPDATE stores
+        SET zonecode = #{zonecode},
+            address1 = #{address1},
+            address2 = #{address2}
+        WHERE user_seq = #{userSeq}
+    </update>
+
 </mapper>
