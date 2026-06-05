@@ -24,4 +24,8 @@ public class PartnerMyPageDAO {
     public int updateStore(com.soso.domain.mypage.dto.PartnerUpdateDTO updateDto) {
         return mybatis.update(NAMESPACE + ".updateStore", updateDto);
     }
+
+    public int withdrawMember(com.soso.domain.mypage.dto.PartnerWithdrawalDTO withdrawalData) {
+        return mybatis.update(NAMESPACE + ".withdrawMember", withdrawalData);
+    }
 }

@@ -7,6 +7,7 @@ import com.soso.domain.member.dao.MemberDAO;
 import com.soso.domain.mypage.dao.PartnerMyPageDAO;
 import com.soso.domain.mypage.dto.PartnerProfileDTO;
 import com.soso.domain.mypage.dto.PartnerUpdateDTO;
+import com.soso.domain.mypage.dto.PartnerWithdrawalDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,5 +69,16 @@ public class PartnerMyPageService {
             fileService.updateFile(interiorImg, userSeq, "STORE_IMAGE", oldSysName);
         }
         return "success";
+    }
+
+    /**
+     * 회원 탈퇴 처리 (상태 변경 및 탈퇴 사유 저장)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void withdrawMember(PartnerWithdrawalDTO withdrawalData) throws Exception {
+        int result = myPageDAO.withdrawMember(withdrawalData);
+        if (result == 0) {
+            throw new RuntimeException("회원 탈퇴 처리 중 오류가 발생했습니다. (대상 없음)");
+        }
     }
 }

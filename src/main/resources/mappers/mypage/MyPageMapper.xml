@@ -51,4 +51,12 @@
         WHERE user_seq = #{userSeq}
     </update>
 
+    <!-- 회원 탈퇴 (상태 업데이트 및 사유 저장) -->
+    <update id="withdrawMember" parameterType="com.soso.domain.mypage.dto.PartnerWithdrawalDTO">
+        UPDATE users
+        SET status = 'WITHDRAWN',
+            withdraw_reason = #{withdrawReason}
+        WHERE user_seq = #{userSeq}
+    </update>
+
 </mapper>

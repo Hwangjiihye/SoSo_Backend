@@ -1,7 +1,7 @@
 package com.soso.domain.mypage.dto;
 
 public class PartnerWithdrawalDTO {
-	private int userSeq;          // 🎯 세션/토큰에서 뽑아낸 회원 고유 번호
+	private Integer userSeq;          // 🎯 세션/토큰에서 뽑아낸 회원 고유 번호
     private String withdrawReason; // 🎯 리액트에서 사장님이 입력한 생생한 탈퇴 사유
 
     // 기본 생성자 (Jackson ObjectMapper가 역직렬화할 때 필수라네!)
@@ -9,13 +9,13 @@ public class PartnerWithdrawalDTO {
     }
 
     // 편의를 위한 생성자
-    public PartnerWithdrawalDTO(int userSeq, String withdrawReason) {
+    public PartnerWithdrawalDTO(Integer userSeq, String withdrawReason) {
         this.userSeq = userSeq;
         this.withdrawReason = withdrawReason;
     }
 
     // 💡 Getter / Setter 장부
-    public int getUserSeq() {
+    public Integer getUserSeq() {
         return userSeq;
     }
 
