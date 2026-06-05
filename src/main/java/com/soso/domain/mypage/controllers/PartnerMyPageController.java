@@ -1,23 +1,33 @@
 package com.soso.domain.mypage.controllers;
 
-import tools.jackson.databind.ObjectMapper;
-import com.soso.domain.mypage.dto.PartnerProfileDTO;
-import com.soso.domain.mypage.dto.PartnerUpdateDTO;
-import com.soso.domain.mypage.services.MyPageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.soso.domain.mypage.dto.PartnerProfileDTO;
+import com.soso.domain.mypage.dto.PartnerUpdateDTO;
+import com.soso.domain.mypage.dto.PartnerWithdrawalDTO;
+import com.soso.domain.mypage.services.PartnerMyPageService;
+
+import tools.jackson.databind.ObjectMapper;
+
 @RestController
 @RequestMapping("/api/member/partner")
-public class MyPageController {
+public class PartnerMyPageController {
 
     @Autowired
-    private MyPageService myPageService;
+    private PartnerMyPageService myPageService;
 
     @GetMapping("/profile")
     public ResponseEntity<PartnerProfileDTO> getPartnerProfile(@RequestAttribute("user_seq") Long user_seq) {
@@ -61,6 +71,29 @@ public class MyPageController {
             e.printStackTrace();
             response.put("status", "error");
             response.put("message", "수정 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    @PatchMapping("/withdraw")
+    public ResponseEntity<Map<String, String>> withdrawMember(
+            @RequestAttribute("user_seq") Long userSeq,
+            @RequestBody PartnerWithdrawalDTO withdrawalData) { // ⭕ 탈퇴사유 DTO로 안전하게 수신!
+            
+        Map<String, String> response = new HashMap<>();
+        try {
+            withdrawalData.setUserSeq(userSeq.intValue());
+            
+            // 🎯 서비스단에서 status = 'WITHDRAWN', 사유 = 데이터 저장하는 UPDATE 로직 수행!
+            myPageService.withdrawMember(withdrawalData);
+            
+            response.put("status", "success");
+            response.put("message", "회원 탈퇴가 정상적으로 처리되었습니다.");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "탈퇴 처리 중 오류 발생: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }

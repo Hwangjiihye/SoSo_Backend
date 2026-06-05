@@ -4,7 +4,7 @@ import com.soso.domain.file.dao.FileDAO;
 import com.soso.domain.file.dto.FileSaveDto;
 import com.soso.domain.file.services.FileService;
 import com.soso.domain.member.dao.MemberDAO;
-import com.soso.domain.mypage.dao.MyPageDAO;
+import com.soso.domain.mypage.dao.PartnerMyPageDAO;
 import com.soso.domain.mypage.dto.PartnerProfileDTO;
 import com.soso.domain.mypage.dto.PartnerUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class MyPageService {
+public class PartnerMyPageService {
 
     @Autowired
-    private MyPageDAO myPageDAO;
+    private PartnerMyPageDAO myPageDAO;
 
     @Autowired
     private FileService fileService;
