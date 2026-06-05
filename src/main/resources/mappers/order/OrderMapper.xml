@@ -7,12 +7,14 @@
 	<select id="itemCheck" resultType="com.soso.domain.order.dto.OrderItemDTO">
 		select i.item_seq AS itemSeq, i.user_seq AS userSeq, u.user_id AS partnerId, st.company_name AS partnerName,
 			   i.category_seq AS categorySeq, i.item_code AS itemCode, i.item_name AS itemName, i.spec AS spec,
-			   i.unit_price AS unitPrice, i.item_image AS itemImage
+			   i.unit_price AS unitPrice, i.item_image AS itemImage, ca.category_name AS categoryName
 		from items i
 		join users u
 			on i.user_seq = u.user_seq
 		join stores st
 			on u.user_seq = st.user_seq
+		left join categories ca
+			on i.category_seq = ca.category_seq
 		where u.user_type = 'PARTNER'
 		order by st.company_name, i.item_seq
 	</select>

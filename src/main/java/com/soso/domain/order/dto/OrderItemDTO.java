@@ -7,6 +7,7 @@ public class OrderItemDTO {
 	private String partnerId;
 	private String partnerName;
 	private int categorySeq;
+	private String categoryName;
 	private String itemCode;
 	private String itemName;
 	private String spec;
@@ -15,13 +16,14 @@ public class OrderItemDTO {
 	
 	public OrderItemDTO() {}
 	public OrderItemDTO(int itemSeq, int userSeq, String partnerId, String partnerName, int categorySeq,
-			String itemCode, String itemName, String spec, int unitPrice, String itemImage) {
+			String categoryName, String itemCode, String itemName, String spec, int unitPrice, String itemImage) {
 		super();
 		this.itemSeq = itemSeq;
 		this.userSeq = userSeq;
 		this.partnerId = partnerId;
 		this.partnerName = partnerName;
 		this.categorySeq = categorySeq;
+		this.categoryName = categoryName;
 		this.itemCode = itemCode;
 		this.itemName = itemName;
 		this.spec = spec;
@@ -58,6 +60,12 @@ public class OrderItemDTO {
 	}
 	public void setCategorySeq(int categorySeq) {
 		this.categorySeq = categorySeq;
+	}
+	public String getCategoryName() {
+		return categoryName;
+	}
+	public void setCategoryName(String categoryName) {
+		this.categoryName = categoryName;
 	}
 	public String getItemCode() {
 		return itemCode;
