@@ -38,6 +38,11 @@ public class AuthController {
 	    System.out.println("조회 결과 : " + member);
 		
 		if(member != null) { 
+			// [추가] 탈퇴 회원 응답 처리 (isWithDraw 상태면 바로 반환)
+			if ("isWithDraw".equals(member.get("status"))) {
+				return ResponseEntity.ok(member);
+			}
+
 			// 프론트로 보낼 응답 데이터
 			Map<String, Object> result = new HashMap<>();
 			
