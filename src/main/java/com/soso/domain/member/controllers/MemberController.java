@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.soso.domain.member.dto.PasswordChangeDTO;
 import com.soso.domain.member.dto.SignUpDto;
 import com.soso.domain.member.services.MemberService;
 
@@ -100,6 +103,51 @@ public class MemberController {
             logger.error("회원가입 처리 중 오류 발생: {}", e.getMessage());
             // 상세한 에러 처리는 GlobalExceptionHandler에서 수행하겠지만, 
             // 여기서는 간단히 에러 메시지만 담아 반환 (필요 시 throw e 하여 Handler가 처리하게 할 수 있음)
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * 비밀번호 변경 API
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @RequestAttribute("user_seq") Long userSeq,
+            @RequestBody PasswordChangeDTO passwordData) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            String result =  memberService.changePassword(userSeq, passwordData);
+            
+            switch (result) {
+            case "isNotPw":
+                response.put("status", "isNotPw");
+                response.put("message", "비밀번호가 존재하지 않습니다.");
+                break;
+            case "difPw":
+                response.put("status", "difPw");
+                response.put("message", "현재 비밀번호가 맞지않습니다. 다시 입력해주세요");
+                break;
+            case "fail":
+                response.put("status", "fail");
+                response.put("message", "비밀번호가 변경이 실패되었습니다.");
+                break;
+            case "success":
+                response.put("status", "success");
+                response.put("message", "비밀번호가 성공적으로 변경되었습니다.");
+                break;
+            default:
+                response.put("status", "error");
+                response.put("message", "알 수 없는 결과 반환: " + result);
+        }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            logger.error("비밀번호 변경 중 오류 발생: {}", e.getMessage());
             response.put("status", "error");
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);

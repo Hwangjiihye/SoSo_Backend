@@ -77,4 +77,22 @@ public class MemberDAO {
         params.put("userSeq", userSeq);
         return mybatis.selectOne(NAMESPACE + ".countByEmailExcludingSelf", params);
     }
+
+    /**
+     * userSeq를 통해 암호화된 기존 비밀번호를 조회합니다.
+     */
+    public String getPasswordByUserSeq(Long userSeq) {
+        return mybatis.selectOne(NAMESPACE + ".getPasswordByUserSeq", userSeq);
+    }
+
+    /**
+     * 비밀번호를 업데이트합니다.
+     */
+    public int updatePassword(Long userSeq, String encodedPassword) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        System.out.println(encodedPassword);
+        params.put("userSeq", userSeq);
+        params.put("encodedPassword", encodedPassword);
+        return mybatis.update(NAMESPACE + ".updatePassword", params);
+    }
 }
