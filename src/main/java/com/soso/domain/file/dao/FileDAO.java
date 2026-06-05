@@ -16,4 +16,15 @@ public class FileDAO {
     public int insertFile(FileSaveDto fileSaveDto) {
         return sqlSession.insert(NAMESPACE + ".insertFile", fileSaveDto);
     }
+
+    public java.util.List<com.soso.domain.file.dto.FileSaveDto> getFilesByUserAndCategory(Integer userSeq, String category) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("userSeq", userSeq);
+        params.put("category", category);
+        return sqlSession.selectList(NAMESPACE + ".getFilesByUserAndCategory", params);
+    }
+
+    public int deleteFile(String sysname) {
+        return sqlSession.delete(NAMESPACE + ".deleteFile", sysname);
+    }
 }

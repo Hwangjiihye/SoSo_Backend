@@ -3,6 +3,7 @@ package com.soso.domain.member.services;
 import com.soso.domain.file.dto.FileSaveDto;
 import com.soso.domain.file.services.FileService;
 import com.soso.domain.member.dao.MemberDAO;
+import com.soso.domain.member.dto.PasswordChangeDTO;
 import com.soso.domain.member.dto.SignUpDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,41 @@ public class MemberService {
     private BCryptPasswordEncoder passwordEncoder;
 
     /**
+     * 비밀번호 변경 로직
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public String changePassword(Long userSeq, PasswordChangeDTO passwordData) throws Exception {
+        logger.info("비밀번호 변경 요청: userSeq={}", userSeq);
+
+        // 1. 현재 비밀번호 조회
+        String encodedPassword = memberDAO.getPasswordByUserSeq(userSeq);
+        
+        if (encodedPassword == null) {
+            return "isNotPw";
+        }
+
+        // 2. 현재 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(passwordData.getCurrentPassword(), encodedPassword)) {
+           return "difPw";
+        }
+
+        // 3. 새 비밀번호 암호화 및 업데이트
+        String newEncodedPassword = passwordEncoder.encode(passwordData.getNewPassword());
+        int result = memberDAO.updatePassword(userSeq, newEncodedPassword);
+
+        if (result == 0) {
+            return "fail";
+        }
+        return "success";
+        
+    }
+
+    /**
      * [리팩토링된 회원가입 시퀀스]
      * 1. users 인서트 -> 2. user_seq 확보 -> 3. stores 인서트 -> 4. 파일 업로드 및 개별 Files 인서트
      */
     @Transactional(rollbackFor = Exception.class)
     public void signUp(SignUpDto signUpDto, MultipartFile exteriorImg, MultipartFile interiorImg) throws Exception {
-        logger.info("회원가입 프로세스 시작: userId={}", signUpDto.getUserId());
 
         // 1. 아이디 중복 체크
         if (memberDAO.countByUserId(signUpDto.getUserId()) > 0) {

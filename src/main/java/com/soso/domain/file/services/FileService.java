@@ -23,6 +23,27 @@ public class FileService {
 
     private final String bucketName = "study_jcr";
 
+    public boolean deleteFromGcs(String sysName) {
+        if (sysName == null || sysName.isEmpty()) return false;
+        try {
+            return storage.delete(bucketName, sysName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String updateFile(MultipartFile file, Integer userSeq, String category, String oldSysName) throws IOException {
+        // 1. 기존 파일이 있으면 삭제
+        if (oldSysName != null && !oldSysName.isEmpty()) {
+            deleteFromGcs(oldSysName);
+            fileDao.deleteFile(oldSysName);
+        }
+
+        // 2. 새 파일 업로드
+        return uploadToGcsAndGetUrl(file, userSeq, category);
+    }
+
     public String uploadToGcsAndGetUrl(MultipartFile file, Integer userSeq, String category) throws IOException {
         if (file == null || file.isEmpty()) {
             return "";

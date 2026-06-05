@@ -21,8 +21,8 @@ public class InterceptorConfig implements WebMvcConfigurer{
 		// 의미 : 모든 요청에 TokenValidator 적용  단, /auth/login은 제외
 		// 그래서 로그인은 토큰 없이 가능하고, 나머지는 토큰 필요.
 		registry.addInterceptor(Interceptor)
-		.addPathPatterns("/**") // 여기서는 post : interceptor 일단 들어오게하고 tokenValidator에서 따로 설정
-		.excludePathPatterns("/auth/**", "/api/member/**","/api/biz/**", "/find/**"); // 이 경로로 들어오는건 interceptor를 배제해라(로그인)
+		.addPathPatterns("/**") 
+		.excludePathPatterns("/auth/**", "/api/member/check-*", "/api/member/signup", "/api/biz/**", "/find/**");
 	}
 
 }

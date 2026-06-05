@@ -28,15 +28,6 @@ public class TokenValidator implements HandlerInterceptor{
 			return true;
 		}
 		
-		// post : interceptor 거치면 안되기 때문에 작성
-		if(request.getRequestURI().equals("/join") && request.getMethod().equals("POST")) {
-			return true;
-		}
-		
-		if(request.getRequestURI().equals("/join/dupleCheck") && request.getMethod().equals("GET")) {
-			return true;
-		}
-		
 		// 프론트에서 보낸 헤더를 꺼냄
 		// 예) Authorization: Bearer eyJhbGciOi...
 		String authHeader = request.getHeader("Authorization");
@@ -47,8 +38,8 @@ public class TokenValidator implements HandlerInterceptor{
 			System.out.println(token); // 토큰이 잘 넘어오는지 확인
 			
 			try {
-				String id = jwt.getSubject(token); // 토큰이 정상이라면 로그인 ID를 request에 저장하고 컨트롤러로 보냄
-				request.setAttribute("loginId", id);
+				Long user_seq = jwt.getUserSeq(token); // 토큰이 정상이라면 로그인 ID를 request에 저장하고 컨트롤러로 보냄
+				request.setAttribute("user_seq", user_seq);
 				return true;
 				
 			}catch(Exception e) {

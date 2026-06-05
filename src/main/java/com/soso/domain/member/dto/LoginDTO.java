@@ -4,16 +4,25 @@ public class LoginDTO {
 	
 	private String id;
 	private String pw;
+	private Long user_seq;
+	public Long getUser_seq() {
+		return user_seq;
+	}
+	public void setUser_seq(Long user_seq) {
+		this.user_seq = user_seq;
+	}
 	private String user_type;    // BUSINESS, PARTNER, ADMIN
 	
 	public LoginDTO() {}
-	public LoginDTO(String id, String pw, String user_type) {
+	
+	
+	public LoginDTO(String id, String pw, Long user_seq, String user_type) {
 		super();
 		this.id = id;
 		this.pw = pw;
+		this.user_seq = user_seq;
 		this.user_type = user_type;
 	}
-	
 	public String getId() {
 		return id;
 	}
