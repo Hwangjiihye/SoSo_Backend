@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soso.domain.mypage.repository.BusinessMypageRepository">
+
+    <select id="getBusinessInfo" parameterType="long" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
+        SELECT 
+        u.user_id AS userId,
+        u.name,
+        u.nickname,
+        u.email,
+        u.phone,
+        u.created_at AS createdAt,
+        s.biz_number AS bizNumber,
+        s.company_name AS companyName,
+        s.opening_date AS openingDate,
+        s.zonecode,
+        s.address1,
+        s.address2,
+        
+        -- 🎯 [우주 치트키] 가게 사진 파일명들을 콤마(,)로 묶어서 하나의 문자열로 뽑아내네!
+        -- 결과 예시: "uuid1.png,uuid2.png"
+        GROUP_CONCAT(f.sysname ORDER BY f.files_seq ASC) AS profileImageUrl
+        
+    FROM users u
+    LEFT JOIN stores s ON u.user_seq = s.user_seq
+    LEFT JOIN files f ON u.user_seq = f.user_seq AND f.file_category = 'STORE_IMAGE'
+    WHERE u.user_seq = #{user_seq}
+      AND u.user_type = 'BUSINESS'
+    -- 💡 GROUP_CONCAT을 쓰려면 유저 기준으로 묶어줘야 하네!
+    GROUP BY u.user_seq, s.biz_number
+    </select>
+
+</mapper>

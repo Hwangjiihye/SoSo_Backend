@@ -38,25 +38,34 @@ public class AuthController {
 	    System.out.println("조회 결과 : " + member);
 		
 		if(member != null) { 
+			// [추가] 탈퇴 회원 응답 처리 (isWithDraw 상태면 바로 반환)
+			if ("isWithDraw".equals(member.get("status"))) {
+				return ResponseEntity.ok(member);
+			}
+
 			// 프론트로 보낼 응답 데이터
 			Map<String, Object> result = new HashMap<>();
 			
 			// JWT 토큰 생성
-			String token = jwt.createToken(dto.getId());
+			// ⭕ member.get()이 Integer든 Long이든 상관없이 문자열로 바꾼 뒤 깔끔하게 Long으로 추출!
+			Long userSeq = Long.parseLong(String.valueOf(member.get("user_seq")));
+			String token = jwt.createToken(userSeq);
 			
 			// 보안을 위해 프론트로 보내기 전 비밀번호 제거
 			member.remove("password");
 			
 			// 응답 데이터 추가
 			result.put("token", token); // JWT 토큰
-			result.put("id", dto.getId()); // 회원 id
+			result.put("user_seq", userSeq); // 회원 id
 			result.put("user_type", member.get("user_type")); // 회원 유형
-			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
+			result.put("user_nickname", member.get("nickname"));
+			result.put("company_name", member.get("company_name"));
+//			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
 			
 			System.out.println("dto id = " + dto.getId());
 			System.out.println("dto pw = " + dto.getPw());
 			System.out.println("userType : " + dto.getUser_type());
-			System.out.println("조회 결과 = " + member);
+			System.out.println("조회 결과 = " + member.get("user_seq"));
 			
 			System.out.println(token);
 			return ResponseEntity.ok(result);

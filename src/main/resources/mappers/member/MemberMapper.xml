@@ -30,6 +30,7 @@
             user_seq,
             biz_number,
             company_name,
+            ceo_name,
             opening_date,
             zonecode,
             address1,
@@ -38,6 +39,7 @@
             #{userSeq},
             #{bizNo},
             #{corpName},
+            #{repName},
             #{formattedOpenDate},
             #{zipCode},
             #{address},
@@ -71,5 +73,25 @@
     <select id="countByBizNo" parameterType="string" resultType="int">
         SELECT COUNT(*) FROM stores WHERE biz_number = #{bizNo}
     </select>
+
+    <select id="countByNicknameExcludingSelf" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM users WHERE nickname = #{nickname} AND user_seq != #{userSeq}
+    </select>
+
+    <select id="countByEmailExcludingSelf" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email} AND user_seq != #{userSeq}
+    </select>
+
+    <!-- 비밀번호 조회를 위한 쿼리 -->
+    <select id="getPasswordByUserSeq" parameterType="Long" resultType="string">
+        SELECT password FROM users WHERE user_seq = #{userSeq}
+    </select>
+
+    <!-- 비밀번호 업데이트를 위한 쿼리 -->
+    <update id="updatePassword" parameterType="map">
+        UPDATE users 
+        SET password = #{encodedPassword} 
+        WHERE user_seq = #{userSeq}
+    </update>
 
 </mapper>

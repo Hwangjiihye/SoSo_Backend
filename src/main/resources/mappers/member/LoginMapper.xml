@@ -6,13 +6,16 @@
 <mapper namespace="Login">
 	
 	<select id="toLogin" resultType="map">
-		SELECT 
-			u.user_seq, u.user_id, u.password, u.name, u.nickname, u.email, u.phone, u.user_type, u.created_at,
-			s.store_seq, s.user_seq AS store_user_seq, s.biz_number, s.company_name, s.opening_date, s.zonecode, s.address1, s.address2
-		FROM users u 
-		LEFT JOIN stores s ON u.user_seq = s.user_seq 
-		WHERE u.user_id = #{id} AND u.user_type = #{user_type}
-	</select>
+    SELECT 
+        u.user_seq,
+        u.password,
+        u.user_type,
+        u.status,
+        u.nickname,
+        s.company_name  FROM users u
+    LEFT JOIN stores s ON u.user_seq = s.user_seq  WHERE u.user_id = #{id} 
+      AND u.user_type = #{user_type}
+</select>
 	
 	 
 </mapper>
