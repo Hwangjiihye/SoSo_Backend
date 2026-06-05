@@ -15,9 +15,9 @@ public class OrderService {
 	@Autowired OrderDAO dao;
 	
 	// 사업자 재고 비교
-	public List<OrderRecommendDTO> recommendStock(String itemName, String loginId) {
+	public List<OrderRecommendDTO> recommendStock(String itemName, Long userSeq) {
 		
-		return dao.recommendStock(itemName, loginId);
+		return dao.recommendStock(itemName, userSeq);
 	}
 	
 	// 거래처 품목 목록

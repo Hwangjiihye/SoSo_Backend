@@ -30,7 +30,7 @@
         from stocks s
         join users u 
             ON s.user_seq = u.user_seq
-        where u.user_id = #{loginId}
+        where u.user_seq = #{userSeq}
           and u.user_type = 'BUSINESS'
           and (
               s.stock like concat('%', #{itemName}, '%')

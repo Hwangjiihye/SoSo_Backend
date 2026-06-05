@@ -27,11 +27,13 @@ public class OrderController {
 	@GetMapping("/check")
 	public ResponseEntity <List<OrderRecommendDTO>> recommendStock(@RequestParam("itemName") String itemName, HttpServletRequest request) {
 		
-		String loginId = (String)request.getAttribute("loginId");
+//		String loginId = (String)request.getAttribute("loginId");
 		
-		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, loginId);
+		Long userSeq = (Long)request.getAttribute("userSeq");
 		
-		System.out.println("loginId = " + loginId);
+		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, userSeq);
+		
+		System.out.println("userSeq = " + userSeq);
 	    System.out.println("itemName = " + itemName);
 		
 		return ResponseEntity.ok(recommendList);

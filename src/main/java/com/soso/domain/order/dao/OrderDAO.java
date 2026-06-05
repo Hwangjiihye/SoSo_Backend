@@ -18,11 +18,11 @@ public class OrderDAO {
 	private SqlSessionTemplate mybatis;
 
 	// 사업자 재고 비교
-	public List<OrderRecommendDTO> recommendStock(String itemName, String loginId) {
+	public List<OrderRecommendDTO> recommendStock(String itemName, Object userSeq) {
 		
-		Map<String, String> params = new HashMap<>();
+		Map<String, Object> params = new HashMap<>();
 		params.put("itemName", itemName);
-		params.put("loginId", loginId);
+		params.put("userSeq", userSeq);
 		
 		return mybatis.selectList("order.stockCheck", params);
 	}

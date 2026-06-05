@@ -39,7 +39,7 @@
             #{userSeq},
             #{bizNo},
             #{corpName},
-            #{repName},
+            #{ceoName},
             #{formattedOpenDate},
             #{zipCode},
             #{address},
