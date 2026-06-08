@@ -1,6 +1,6 @@
 package com.soso.domain.order.dto;
 
-public class OrderRecommendDTO {
+public class OrderRecommendDTO { // 거래처 품목명과 내 재고를 비교해서 추천 결과 보여줄 때 사용
 	
 	private int stockSeq;
 	private int userSeq;

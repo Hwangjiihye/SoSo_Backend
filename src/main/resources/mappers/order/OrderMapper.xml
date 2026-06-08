@@ -30,12 +30,26 @@
         from stocks s
         join users u 
             ON s.user_seq = u.user_seq
-        where u.user_seq = #{userSeq}
+        where u.user_seq = #{user_seq}
           and u.user_type = 'BUSINESS'
           and (
               s.stock like concat('%', #{itemName}, '%')
               OR #{itemName} like concat('%', s.stock, '%')
           )
+    </select>
+    
+    <!-- 3. 사업자 이름과 주소 조회 -->
+    <select id="identityCheck" resultType="map">
+    	select 
+    		st.company_name AS companyName,
+    		st.zonecode AS zoneCode,
+    		st.address1 AS address1,
+    		st.address2 AS address2
+    	from users u
+    	join stores st 
+    		ON u.user_seq = st.user_seq
+    	where u.user_seq = #{user_seq}
+    		and u.user_type = 'BUSINESS'
     </select>
    
 </mapper>

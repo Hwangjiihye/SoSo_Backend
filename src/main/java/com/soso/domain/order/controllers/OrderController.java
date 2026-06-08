@@ -1,13 +1,13 @@
 package com.soso.domain.order.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.soso.domain.order.dto.OrderItemDTO;
@@ -29,11 +29,11 @@ public class OrderController {
 		
 //		String loginId = (String)request.getAttribute("loginId");
 		
-		Long userSeq = (Long)request.getAttribute("userSeq");
+		Long user_seq = (Long)request.getAttribute("user_seq");
 		
-		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, userSeq);
+		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, user_seq);
 		
-		System.out.println("userSeq = " + userSeq);
+		System.out.println("userSeq = " + user_seq);
 	    System.out.println("itemName = " + itemName);
 		
 		return ResponseEntity.ok(recommendList);
@@ -46,6 +46,17 @@ public class OrderController {
 		List<OrderItemDTO> list = OrderServ.compareItem(dto);
 		
 		return ResponseEntity.ok(list);
+	}
+	
+	// 사업자명과 주소
+	@GetMapping("/identity")
+	public ResponseEntity<Map<String, Object>> identityCheck(HttpServletRequest request) {
+		
+		Long user_seq = (Long) request.getAttribute("user_seq");
+		
+		Map<String, Object> identity = OrderServ.identityCheck(user_seq);
+		
+		return ResponseEntity.ok(identity);
 	}
 
 }
