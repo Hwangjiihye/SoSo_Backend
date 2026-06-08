@@ -29,8 +29,29 @@
     LEFT JOIN files f ON u.user_seq = f.user_seq AND f.file_category = 'STORE_IMAGE'
     WHERE u.user_seq = #{user_seq}
       AND u.user_type = 'BUSINESS'
-    -- 💡 GROUP_CONCAT을 쓰려면 유저 기준으로 묶어줘야 하네!
+    <!-- 💡 GROUP_CONCAT을 쓰려면 유저 기준으로 묶어줘야 하네! -->
     GROUP BY u.user_seq, s.biz_number
     </select>
 
-</mapper>
+    <!-- 사용자 정보 수정 -->
+    <update id="updateUser" parameterType="com.soso.domain.mypage.dto.BusinessUpdateDTO">
+        UPDATE users
+        SET nickname = #{nickname},
+            email = #{email},
+            phone = #{phone}
+        WHERE user_seq = #{userSeq}
+    </update>
+
+    <!-- 상점 정보 수정 -->
+    <update id="updateStore" parameterType="com.soso.domain.mypage.dto.BusinessUpdateDTO">
+        UPDATE stores
+        SET biz_number = #{bizNumber},
+            company_name = #{companyName},
+            zonecode = #{zonecode},
+            address1 = #{address1},
+            address2 = #{address2}
+        WHERE user_seq = #{userSeq}
+    </update>
+
+    </mapper>
+

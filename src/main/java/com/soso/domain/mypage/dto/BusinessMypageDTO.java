@@ -4,13 +4,11 @@ import java.time.LocalDate;
 
 public class BusinessMypageDTO {
     // User Info
-    private Long userSeq;
     private String userId;
     private String name;
     private String nickname;
     private String email;
     private String phone;
-    private String userType;
     private String createdAt;
 
     // Store Info
@@ -32,14 +30,6 @@ public class BusinessMypageDTO {
     
     public void setCreatedAt(String createdAt) {
     	this.createdAt = createdAt;
-    }
-
-    public Long getUserSeq() {
-        return userSeq;
-    }
-
-    public void setUserSeq(Long userSeq) {
-        this.userSeq = userSeq;
     }
 
     public String getUserId() {
@@ -80,14 +70,6 @@ public class BusinessMypageDTO {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public String getUserType() {
-        return userType;
-    }
-
-    public void setUserType(String userType) {
-        this.userType = userType;
     }
 
     public String getBizNumber() {

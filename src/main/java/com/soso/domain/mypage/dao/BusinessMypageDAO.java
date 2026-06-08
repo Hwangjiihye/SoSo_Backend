@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.soso.domain.mypage.dto.BusinessMypageDTO;
+import com.soso.domain.mypage.dto.BusinessUpdateDTO;
 
 @Repository
 public class BusinessMypageDAO {
@@ -16,5 +17,13 @@ public class BusinessMypageDAO {
 
     public BusinessMypageDTO getBusinessInfo(Long userSeq) {
         return sqlSession.selectOne(NAMESPACE + ".getBusinessInfo", userSeq);
+    }
+
+    public int updateUser(BusinessUpdateDTO updateDto) {
+        return sqlSession.update(NAMESPACE + ".updateUser", updateDto);
+    }
+
+    public int updateStore(BusinessUpdateDTO updateDto) {
+        return sqlSession.update(NAMESPACE + ".updateStore", updateDto);
     }
 }
