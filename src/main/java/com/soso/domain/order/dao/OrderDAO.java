@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.soso.domain.order.dto.OrderDTO;
 import com.soso.domain.order.dto.OrderItemDTO;
+import com.soso.domain.order.dto.OrderListDTO;
 import com.soso.domain.order.dto.OrderRecommendDTO;
 import com.soso.domain.order.dto.OrderSaveItemDTO;
 
@@ -48,4 +49,16 @@ public class OrderDAO {
 	public int orderItem(OrderSaveItemDTO dto) {
 		return mybatis.insert("order.orderItem", dto);
 	}
+	
+	// 발주번호(order_no) 업데이트
+		public int updateOrderNo(OrderDTO dto) {
+		    return mybatis.update("order.updateOrderNo", dto);
+	}
+		
+	// 발주서 목록으로 출력
+	public List<OrderListDTO> orderList(Long userSeq) {
+		return mybatis.selectList("order.orderList", userSeq);
+	}
+	
+	
 }

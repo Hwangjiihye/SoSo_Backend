@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.soso.domain.order.dto.OrderDTO;
 import com.soso.domain.order.dto.OrderItemDTO;
+import com.soso.domain.order.dto.OrderListDTO;
 import com.soso.domain.order.dto.OrderRecommendDTO;
 import com.soso.domain.order.services.OrderService;
 
@@ -76,6 +77,17 @@ public class OrderController {
 		int result = OrderServ.orderForm(dto);
 		
 		return ResponseEntity.ok(result);
+	}
+	
+	// 발주서 목록으로 출력
+	@GetMapping("/list")
+	public ResponseEntity<List<OrderListDTO>> orderList(HttpServletRequest request) {
+		
+		Long userSeq = (Long) request.getAttribute("user_seq");
+		
+		List<OrderListDTO> orderList = OrderServ.orderList(userSeq);
+		
+		return ResponseEntity.ok(orderList);
 	}
 
 }

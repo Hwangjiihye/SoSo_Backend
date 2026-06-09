@@ -68,5 +68,49 @@
     		(#{orderSeq}, #{itemSeq}, #{itemName}, #{categoryName}, #{quantity}, #{spec}, #{unitPrice}, #{totalPrice})
     </insert>
     
+    <!-- 6. 발주번호(Order_no) 업데이트 -->
+    <update id="updateOrderNo" parameterType="com.soso.domain.order.dto.OrderDTO">
+	    update orders
+	    set order_no = #{orderNo}
+	    where order_seq = #{orderSeq}
+	</update>
+    
+    <!-- 7. 발주서 정보 불러오기 -->
+    <select id="orderList" resultType="com.soso.domain.order.dto.OrderListDTO">
+    	select
+    		o.order_seq as orderSeq,
+    		o.order_no as orderNo,
+    		o.seller_seq as sellerSeq,
+    		st.company_name as companyName,
+    		oi.item_name as itemName,
+    		
+    	concat(
+		    min(oi.item_name),
+		    CASE 
+		        WHEN COUNT(oi.order_item_seq) > 1 
+		        THEN CONCAT(' 외 ', COUNT(oi.order_item_seq) - 1, '건')
+		        ELSE ''
+		    END
+		) AS itemSummary
+		
+    	from orders o
+    	join users u
+    		on o.seller_seq = u.user_seq
+    	join stores st
+    		on u.user_seq = st.user_seq
+    	join order_items oi
+    		on o.order_seq = oi.order_seq
+    		
+    	group by
+	        o.order_seq,
+	        o.order_no,
+	        o.seller_seq,
+	        st.company_name
+        
+    	order by o.order_seq desc
+    	
+    	
+    </select>
+    
    
 </mapper>

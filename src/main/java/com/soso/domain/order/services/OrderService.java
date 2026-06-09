@@ -1,5 +1,7 @@
 package com.soso.domain.order.services;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.soso.domain.order.dao.OrderDAO;
 import com.soso.domain.order.dto.OrderDTO;
 import com.soso.domain.order.dto.OrderItemDTO;
+import com.soso.domain.order.dto.OrderListDTO;
 import com.soso.domain.order.dto.OrderRecommendDTO;
 import com.soso.domain.order.dto.OrderSaveItemDTO;
 
@@ -43,12 +46,31 @@ public class OrderService {
 		// 2. 방금 생성된 order_seq 가져오기
 		Long orderSeq = dto.getOrderSeq();
 		
-		// 3. 발주 품목 목록 저장
+		// ↓ DB가 자동으로 만들어준 orderSeq를 이용해서 발주번호 orderNo를 만들고, 다시 orders 테이블에 저장하는 코드
+		
+		// 3. 오늘 날짜 생성  
+		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));  
+
+		// 4. 발주번호 생성  
+		String orderNo = String.format("ORD-%s-%03d", today, orderSeq);  
+
+		// 5. DTO에 발주번호 넣기  
+		dto.setOrderNo(orderNo);  
+
+		// 6. orders 테이블에 order_no 업데이트  
+		dao.updateOrderNo(dto);
+		
+		// 7. 발주 품목 목록 저장
 	    for (OrderSaveItemDTO item : dto.getItems()) {
 	        item.setOrderSeq(orderSeq);
 	        dao.orderItem(item);
 	    }
 
 	    return result;
+	}
+	
+	// 발주서 목록으로 출력
+	public List<OrderListDTO> orderList(Long userSeq) {
+		return dao.orderList(userSeq);
 	}
 }
