@@ -6,10 +6,13 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.soso.domain.order.dto.OrderDTO;
 import com.soso.domain.order.dto.OrderItemDTO;
 import com.soso.domain.order.dto.OrderRecommendDTO;
 import com.soso.domain.order.services.OrderService;
@@ -57,6 +60,22 @@ public class OrderController {
 		Map<String, Object> identity = OrderServ.identityCheck(user_seq);
 		
 		return ResponseEntity.ok(identity);
+	}
+	
+	// 발주서 작성
+	@PostMapping("/form")
+	public ResponseEntity<Integer> orderForm(@RequestBody OrderDTO dto, HttpServletRequest request) {
+		
+		Long buyerSeq = (Long) request.getAttribute("user_seq");
+		
+		// 발주자는 프론트에서 받는 게 아니라 로그인한 사용자로 고정
+		dto.setBuyerSeq(buyerSeq);
+		
+		// Service로 발주 저장 요청
+	    // Service 안에서 orders 먼저 저장하고, order_items를 품목 개수만큼 저장함
+		int result = OrderServ.orderForm(dto);
+		
+		return ResponseEntity.ok(result);
 	}
 
 }

@@ -51,5 +51,22 @@
     	where u.user_seq = #{user_seq}
     		and u.user_type = 'BUSINESS'
     </select>
+    
+    <!-- 4. 발주서 작성 -->
+    <insert id="orderForm" parameterType="com.soso.domain.order.dto.OrderDTO" useGeneratedKeys="true" keyProperty="orderSeq">
+    	insert into orders 
+    		(order_no, zonecode, address1, address2, order_memo, buyer_seq, seller_seq, total_amount, status, created_at)
+    	values
+    		(#{orderNo}, #{zonecode}, #{address1}, #{address2}, #{orderMemo}, #{buyerSeq}, #{sellerSeq}, #{totalAmount},'RECEIPT', NOW())
+    </insert>
+    
+    <!-- 5. 발주서 품목 1줄 -->
+    <insert id="orderItem" parameterType="com.soso.domain.order.dto.OrderSaveItemDTO">
+    	insert into order_items
+    		(order_seq, item_seq, item_name, category_name, quantity, spec, unit_price, total_price)
+    	values
+    		(#{orderSeq}, #{itemSeq}, #{itemName}, #{categoryName}, #{quantity}, #{spec}, #{unitPrice}, #{totalPrice})
+    </insert>
+    
    
 </mapper>
