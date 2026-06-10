@@ -38,7 +38,7 @@ public class TokenValidator implements HandlerInterceptor{
 			System.out.println(token); // 토큰이 잘 넘어오는지 확인
 			
 			try {
-				Long user_seq = jwt.getUserSeq(token); // 토큰이 정상이라면 로그인 ID를 request에 저장하고 컨트롤러로 보냄
+				Long user_seq = jwt.getUserSeq(token); // 토큰이 정상이라면 seq를 request에 저장하고 컨트롤러로 보냄
 				request.setAttribute("user_seq", user_seq);
 				return true;
 				
