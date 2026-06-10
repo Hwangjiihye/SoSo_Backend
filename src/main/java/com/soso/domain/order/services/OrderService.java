@@ -2,10 +2,12 @@ package com.soso.domain.order.services;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.soso.domain.order.dao.OrderDAO;
@@ -19,6 +21,9 @@ import com.soso.domain.order.dto.OrderSaveItemDTO;
 public class OrderService {
 	
 	@Autowired OrderDAO dao;
+	
+	@Autowired
+	private SimpMessagingTemplate messagingTemplate;
 	
 	// 사업자 재고 비교
 	public List<OrderRecommendDTO> recommendStock(String itemName, Long user_seq) {
@@ -72,5 +77,44 @@ public class OrderService {
 	// 발주서 목록으로 출력 + 검색 기능
 	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
 		return dao.orderList(userSeq, keyword);
+	}
+	
+	// 웹소켓
+	// 발주 상태 변경 + 사업자 화면에 웹소켓 알림 전송
+	public void updateOrderStatus(Long orderSeq, String status) {
+
+	    // 1. orders 테이블 status 변경
+	    dao.updateOrderStatus(orderSeq, status);
+
+	    // 2. 이 발주를 신청한 사업자 user_seq 조회
+	    Long buyerSeq = dao.findBuyerSeqByOrderSeq(orderSeq);
+
+	    // 3. 프론트로 보낼 데이터
+	    Map<String, Object> message = new HashMap<>();
+	    message.put("orderSeq", orderSeq);
+	    message.put("status", status);
+	    message.put("message", getStatusMessage(status));
+
+	    // 4. 사업자 화면이 구독 중인 주소로 전송
+	    System.out.println("웹소켓 전송 주소 = /sub/order/" + buyerSeq);
+	    System.out.println("전송 message = " + message);
+	    
+	    messagingTemplate.convertAndSend("/sub/order/" + buyerSeq, (Object) message);
+	}
+
+	// 상태별 메시지
+	private String getStatusMessage(String status) {
+	    switch (status) {
+	        case "ACCEPTED":
+	            return "발주가 접수완료되었습니다.";
+	        case "PREPARING":
+	            return "상품준비가 시작되었습니다.";
+	        case "SHIPPING":
+	            return "상품이 배송중입니다.";
+	        case "DELIVERED":
+	            return "배송이 완료되었습니다.";
+	        default:
+	            return "발주 상태가 변경되었습니다.";
+	    }
 	}
 }

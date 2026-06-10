@@ -118,9 +118,22 @@
 	        st.company_name
         
     	order by o.order_seq desc
-    	
-    	
     </select>
+    
+    <!-- 웹소켓 -->
+    <!-- 발주 상태 변경 -->
+	<update id="updateOrderStatus">
+	    UPDATE orders
+	    SET status = #{status}
+	    WHERE order_seq = #{orderSeq}
+	</update>
+	
+	<!-- 발주번호로 사업자 user_seq 조회 -->
+	<select id="findBuyerSeqByOrderSeq" resultType="long">
+	    SELECT buyer_seq
+	    FROM orders
+	    WHERE order_seq = #{orderSeq}
+	</select>
     
    
 </mapper>

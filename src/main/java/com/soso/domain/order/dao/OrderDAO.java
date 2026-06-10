@@ -65,4 +65,19 @@ public class OrderDAO {
 		return mybatis.selectList("order.orderList", params);
 	}
 	
+	// 웹소켓
+	// 발주 상태 변경
+	public int updateOrderStatus(Long orderSeq, String status) {
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("orderSeq", orderSeq);
+	    params.put("status", status);
+
+	    return mybatis.update("order.updateOrderStatus", params);
+	}
+
+	// orderSeq로 사업자 buyer_seq 조회
+	public Long findBuyerSeqByOrderSeq(Long orderSeq) {
+	    return mybatis.selectOne("order.findBuyerSeqByOrderSeq", orderSeq);
+	}
+	
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,6 +91,25 @@ public class OrderController {
 		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, keyword);
 		
 		return ResponseEntity.ok(orderList);
+	}
+	
+	// 웹소켓 사용자 확인
+	@GetMapping("/me")
+	public ResponseEntity<Long> webSocketMe(HttpServletRequest request) {
+		
+		Long webSocketMe = (Long) request.getAttribute("user_seq");
+		
+		return ResponseEntity.ok(webSocketMe);
+	}
+	
+	// 웹소켓 테스트 API
+	// 거래처가 상태 변경 버튼을 누른 것처럼 테스트하는 API
+	// 예: POST /order/test/status/1?status=ACCEPTED
+	@PostMapping("/test/status/{orderSeq}")
+	public ResponseEntity<String> testUpdateOrderStatus(@PathVariable Long orderSeq, @RequestParam String status) {
+	    OrderServ.updateOrderStatus(orderSeq, status);
+
+	    return ResponseEntity.ok("발주 상태 변경 및 웹소켓 알림 전송 완료");
 	}
 
 }
