@@ -5,7 +5,7 @@
 
 <mapper namespace="com.soso.domain.mypage.repository.BusinessMypageRepository">
 
-    <select id="getBusinessInfo" parameterType="long" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
+    <select id="getBusinessInfo" parameterType="map" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
         SELECT 
         u.user_id AS userId,
         u.name,
@@ -13,6 +13,7 @@
         u.email,
         u.phone,
         u.created_at AS createdAt,
+        s.store_seq AS storeSeq,
         s.biz_number AS bizNumber,
         s.company_name AS companyName,
         s.opening_date AS openingDate,
@@ -21,16 +22,43 @@
         s.address2,
         
         -- 🎯 [우주 치트키] 가게 사진 파일명들을 콤마(,)로 묶어서 하나의 문자열로 뽑아내네!
-        -- 결과 예시: "uuid1.png,uuid2.png"
-        GROUP_CONCAT(f.sysname ORDER BY f.files_seq ASC) AS profileImageUrl
+        -- board_seq가 s.store_seq와 같은 사진만 가져오도록 정교하게 수정함
+        (SELECT GROUP_CONCAT(f.sysname ORDER BY f.files_seq ASC)
+         FROM files f
+         WHERE f.user_seq = u.user_seq 
+           AND f.board_seq = s.store_seq 
+           AND f.file_category = 'STORE_IMAGE') AS profileImageUrl
         
     FROM users u
     LEFT JOIN stores s ON u.user_seq = s.user_seq
-    LEFT JOIN files f ON u.user_seq = f.user_seq AND f.file_category = 'STORE_IMAGE'
     WHERE u.user_seq = #{user_seq}
       AND u.user_type = 'BUSINESS'
-    <!-- 💡 GROUP_CONCAT을 쓰려면 유저 기준으로 묶어줘야 하네! -->
-    GROUP BY u.user_seq, s.biz_number
+      <if test="storeSeq != null">
+        AND s.store_seq = #{storeSeq}
+      </if>
+    <!-- 💡 특정 매장이 지정되지 않으면 가장 먼저 등록된 매장을 보여줌 -->
+    ORDER BY s.store_seq ASC
+    LIMIT 1
+    </select>
+
+    <!-- 🏪 특정 유저(사장님)가 소유한 모든 매장 목록 가져오기 -->
+    <select id="getAllStoresBySeq" parameterType="long" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
+        SELECT 
+            s.store_seq AS storeSeq,
+            s.biz_number AS bizNumber,
+            s.company_name AS companyName,
+            s.opening_date AS openingDate,
+            s.address1,
+            s.address2,
+            -- 첫 번째 사진만 대표 이미지로 가져오기
+            (SELECT sysname FROM files 
+             WHERE user_seq = s.user_seq 
+               AND board_seq = s.store_seq 
+               AND file_category = 'STORE_IMAGE' 
+             LIMIT 1) AS profileImageUrl
+        FROM stores s
+        WHERE s.user_seq = #{user_seq}
+        ORDER BY s.store_seq ASC
     </select>
 
     <!-- 사용자 정보 수정 -->

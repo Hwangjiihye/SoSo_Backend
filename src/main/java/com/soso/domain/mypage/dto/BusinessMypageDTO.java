@@ -12,6 +12,7 @@ public class BusinessMypageDTO {
     private String createdAt;
 
     // Store Info
+    private Long storeSeq;       // 매장 고유 번호 추가
     private String bizNumber;
     private String companyName;
     private LocalDate openingDate;
@@ -23,6 +24,14 @@ public class BusinessMypageDTO {
     private String profileImageUrl;
 
     public BusinessMypageDTO() {}
+    
+    public Long getStoreSeq() {
+        return storeSeq;
+    }
+
+    public void setStoreSeq(Long storeSeq) {
+        this.storeSeq = storeSeq;
+    }
     
     public String getCreatedAt() {
     	return createdAt;

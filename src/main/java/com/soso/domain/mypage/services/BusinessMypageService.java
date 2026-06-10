@@ -35,15 +35,27 @@ public class BusinessMypageService {
     @Autowired
     private BizValidationService bizValidationService; // 사업자 인증 서비스 주입
 
-    public BusinessMypageDTO getBusinessMypage(Long user_Seq) {
-        BusinessMypageDTO dto = businessMypageDAO.getBusinessInfo(user_Seq);
+    /**
+     * 👤 사장님 마이페이지 정보 조회
+     * 특정 매장(storeSeq) 정보와 함께 사장님의 계정 정보를 가져옵니다.
+     * storeSeq가 null이면 기본 매장(첫 번째)을 가져옵니다.
+     */
+    public BusinessMypageDTO getBusinessMypage(Long user_Seq, Long storeSeq) {
+        BusinessMypageDTO dto = businessMypageDAO.getBusinessInfo(user_Seq, storeSeq);
         
         if (dto != null && dto.getProfileImageUrl() != null && !dto.getProfileImageUrl().isEmpty()) {
-            // DB에 저장된 sysname을 풀 URL로 변환
-            dto.setProfileImageUrl(dto.getProfileImageUrl());
+            // DB에 저장된 sysname 목록을 풀 URL 형태로 변환하지 않고 그대로 넘깁니다. 
+            // 프론트엔드에서 split(',') 하여 처리하기 때문입니다.
         }
         
         return dto;
+    }
+
+    /**
+     * 🏪 사장님이 소유한 모든 매장 목록 조회
+     */
+    public List<BusinessMypageDTO> getAllStores(Long userSeq) {
+        return businessMypageDAO.getAllStores(userSeq);
     }
 
     @Transactional(rollbackFor = Exception.class)

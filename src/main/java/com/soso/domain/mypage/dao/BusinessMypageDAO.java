@@ -16,8 +16,18 @@ public class BusinessMypageDAO {
 
     private static final String NAMESPACE = "com.soso.domain.mypage.repository.BusinessMypageRepository";
 
-    public BusinessMypageDTO getBusinessInfo(Long userSeq) {
-        return sqlSession.selectOne(NAMESPACE + ".getBusinessInfo", userSeq);
+    public BusinessMypageDTO getBusinessInfo(Long userSeq, Long storeSeq) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("user_seq", userSeq);
+        params.put("storeSeq", storeSeq);
+        return sqlSession.selectOne(NAMESPACE + ".getBusinessInfo", params);
+    }
+
+    /**
+     * 🏪 특정 유저(사장님)가 소유한 모든 매장 목록 가져오기
+     */
+    public java.util.List<BusinessMypageDTO> getAllStores(Long userSeq) {
+        return sqlSession.selectList(NAMESPACE + ".getAllStoresBySeq", userSeq);
     }
 
     public int updateUser(BusinessUpdateDTO updateDto) {

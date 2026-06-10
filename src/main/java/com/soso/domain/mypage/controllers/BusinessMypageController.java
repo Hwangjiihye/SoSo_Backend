@@ -30,14 +30,27 @@ public class BusinessMypageController {
     private BusinessMypageService businessMypageService;
 
     @GetMapping("/profile")
-    public ResponseEntity<BusinessMypageDTO> getBusinessProfile(@RequestAttribute("user_seq") Long user_seq) {
-        BusinessMypageDTO profile = businessMypageService.getBusinessMypage(user_seq);
+    public ResponseEntity<BusinessMypageDTO> getBusinessProfile(
+            @RequestAttribute("user_seq") Long user_seq,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Long storeSeq) {
+        
+        // 특정 매장 번호(storeSeq)가 넘어오면 해당 매장 정보를, 없으면 기본 정보를 조회합니다.
+        BusinessMypageDTO profile = businessMypageService.getBusinessMypage(user_seq, storeSeq);
+        
         if (profile == null) {
-        	System.out.println("null프로필 : "+profile);
             return ResponseEntity.notFound().build();
         }
-        System.out.println("프로필 : "+profile.getCompanyName());
         return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * 🏪 사장님이 등록한 모든 매장 목록 조회 API
+     * 헤더의 프로필 스위처(Profile Switcher) 등에 사용됩니다.
+     */
+    @GetMapping("/stores")
+    public ResponseEntity<java.util.List<BusinessMypageDTO>> getAllStores(@RequestAttribute("user_seq") Long user_seq) {
+        java.util.List<BusinessMypageDTO> stores = businessMypageService.getAllStores(user_seq);
+        return ResponseEntity.ok(stores);
     }
 
     @PutMapping("/update")

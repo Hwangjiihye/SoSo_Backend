@@ -12,9 +12,15 @@
         u.user_type,
         u.status,
         u.nickname,
-        s.company_name  FROM users u
-    LEFT JOIN stores s ON u.user_seq = s.user_seq  WHERE u.user_id = #{id} 
+        s.company_name  
+    FROM users u
+    -- 🏪 [멀티 프로필 대응] 사장님이 여러 매장을 가질 수 있으므로 LEFT JOIN 시 여러 줄이 나올 수 있습니다.
+    LEFT JOIN stores s ON u.user_seq = s.user_seq  
+    WHERE u.user_id = #{id} 
       AND u.user_type = #{user_type}
+    -- 💡 매장이 여러 개라도 로그인 시점에는 가장 먼저 등록된 매장 하나만 기준(bizname)으로 가져옵니다.
+    ORDER BY s.store_seq ASC
+    LIMIT 1
 </select>
 	
 	 
