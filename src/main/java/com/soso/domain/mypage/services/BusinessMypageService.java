@@ -61,6 +61,7 @@ public class BusinessMypageService {
     @Transactional(rollbackFor = Exception.class)
     public String updateBusinessProfile(BusinessUpdateDTO updateDto) throws Exception {
         Long userSeq = updateDto.getUserSeq();
+        Long storeSeq = updateDto.getStoreSeq(); // 🏪 [멀티 프로필] 수정 대상 매장 번호
 
         // 1. 닉네임 중복 체크 (본인 제외)
         if (memberDAO.countByNicknameExcludingSelf(updateDto.getNickname(), userSeq.intValue()) > 0) {
@@ -74,23 +75,26 @@ public class BusinessMypageService {
 
         // 3. 사용자 및 상점 정보 업데이트
         businessMypageDAO.updateUser(updateDto);
-        businessMypageDAO.updateStore(updateDto);
+        businessMypageDAO.updateStore(updateDto); // Mapper에서 storeSeq 조건으로 특정 매장만 수정함
 
-        // 4. 기존 이미지 목록 조회
-        List<FileSaveDto> existingFiles = fileDAO.getFilesByUserAndCategory(userSeq.intValue(), "STORE_IMAGE");
+        // 4. [멀티 프로필 대응] 해당 매장(storeSeq)의 기존 이미지 목록만 조회
+        // board_seq에 storeSeq를 넣어 어떤 매장의 사진을 바꿀지 명확히 함
+        List<FileSaveDto> existingFiles = fileDAO.getFilesByBoardSeqAndCategory(storeSeq.intValue(), "STORE_IMAGE");
 
         // 5. 외관 사진 처리 (Index 0)
         MultipartFile exteriorImg = updateDto.getExteriorImg();
         if (exteriorImg != null && !exteriorImg.isEmpty()) {
             String oldSysName = (existingFiles.size() > 0) ? existingFiles.get(0).getSysname() : null;
-            fileService.updateFile(exteriorImg, userSeq.intValue(), "STORE_IMAGE", oldSysName);
+            // updateFile 대신 uploadToGcsAndGetUrlWithBoardSeq 등을 사용하여 storeSeq와 함께 저장하는 로직 권장
+            // 여기서는 기존 아키텍처를 유지하며 oldSysName을 교체함
+            fileService.updateFileWithBoardSeq(exteriorImg, userSeq.intValue(), "STORE_IMAGE", oldSysName, storeSeq.intValue());
         }
 
         // 6. 내부 사진 처리 (Index 1)
         MultipartFile interiorImg = updateDto.getInteriorImg();
         if (interiorImg != null && !interiorImg.isEmpty()) {
             String oldSysName = (existingFiles.size() > 1) ? existingFiles.get(1).getSysname() : null;
-            fileService.updateFile(interiorImg, userSeq.intValue(), "STORE_IMAGE", oldSysName);
+            fileService.updateFileWithBoardSeq(interiorImg, userSeq.intValue(), "STORE_IMAGE", oldSysName, storeSeq.intValue());
         }
 
         return "success";

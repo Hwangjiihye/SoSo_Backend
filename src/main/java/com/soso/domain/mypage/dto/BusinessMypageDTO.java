@@ -15,6 +15,7 @@ public class BusinessMypageDTO {
     private Long storeSeq;       // 매장 고유 번호 추가
     private String bizNumber;
     private String companyName;
+    private String ceoName;      // 대표자명 필드 추가 (인증용)
     private LocalDate openingDate;
     private String zonecode;
     private String address1;
@@ -24,6 +25,14 @@ public class BusinessMypageDTO {
     private String profileImageUrl;
 
     public BusinessMypageDTO() {}
+    
+    public String getCeoName() {
+        return ceoName;
+    }
+
+    public void setCeoName(String ceoName) {
+        this.ceoName = ceoName;
+    }
     
     public Long getStoreSeq() {
         return storeSeq;

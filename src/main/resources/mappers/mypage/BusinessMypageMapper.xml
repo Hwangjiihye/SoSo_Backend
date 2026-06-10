@@ -16,6 +16,7 @@
         s.store_seq AS storeSeq,
         s.biz_number AS bizNumber,
         s.company_name AS companyName,
+        s.ceo_name AS ceoName,        -- 👤 실제 사업자 대표자명 (인증용)
         s.opening_date AS openingDate,
         s.zonecode,
         s.address1,
@@ -36,7 +37,7 @@
       <if test="storeSeq != null">
         AND s.store_seq = #{storeSeq}
       </if>
-    <!-- 💡 특정 매장이 지정되지 않으면 가장 먼저 등록된 매장을 보여줌 -->
+    -- 💡 특정 매장이 지정되지 않으면 가장 먼저 등록된 매장을 보여줌
     ORDER BY s.store_seq ASC
     LIMIT 1
     </select>
@@ -47,6 +48,7 @@
             s.store_seq AS storeSeq,
             s.biz_number AS bizNumber,
             s.company_name AS companyName,
+            s.ceo_name AS ceoName,    -- 👤 rep_name에서 ceo_name으로 정확히 수정 (500 에러 해결)
             s.opening_date AS openingDate,
             s.address1,
             s.address2,
@@ -75,10 +77,19 @@
         UPDATE stores
         SET biz_number = #{bizNumber},
             company_name = #{companyName},
+            ceo_name = #{ceoName},    -- 👤 대표자명 수정 추가
             zonecode = #{zonecode},
             address1 = #{address1},
             address2 = #{address2}
         WHERE user_seq = #{userSeq}
+          -- 🏪 [멀티 프로필] 특정 매장만 수정하도록 조건 추가
+          <if test="storeSeq != null">
+            AND store_seq = #{storeSeq}
+          </if>
+          <!-- 💡 만약 storeSeq가 없다면 가장 최근에 등록된 매장을 기준으로 함 (방어 로직) -->
+          <if test="storeSeq == null">
+            AND store_seq = (SELECT MAX(store_seq) FROM (SELECT store_seq FROM stores WHERE user_seq = #{userSeq}) AS tmp)
+          </if>
     </update>
 
     <!-- 🏪 다중 매장 등록 (새로운 매장을 stores 테이블에 추가) 

@@ -108,13 +108,13 @@ public class FileService {
         // 5. 브라우저에서 접근 가능한 URL 주소를 반환합니다.
         return "https://storage.googleapis.com/" + bucketName + "/" + sysName;
     }
-
+    
     /**
-     * ⬆️ 파일 업로드 (특정 게시글/매장 번호 포함)
+     * ⬆️ 파일 업로드 (특정 게시글/매장 번호 boardSeq 포함)
      * @param file - 업로드할 파일
      * @param userSeq - 사용자 번호
      * @param category - 파일 카테고리
-     * @param boardSeq - 연결할 게시글 또는 매장의 고유 번호
+     * @param boardSeq - 매장 또는 게시글 번호
      * @return 업로드된 파일의 접근 URL
      */
     public String uploadToGcsAndGetUrlWithBoardSeq(MultipartFile file, Integer userSeq, String category, Integer boardSeq) throws IOException {
@@ -122,25 +122,26 @@ public class FileService {
             return "";
         }
 
+        // 1. 원본 파일명과 확장자 추출
         String oriname = file.getOriginalFilename();
         String ext = "";
         if (oriname != null && oriname.contains(".")) {
             ext = oriname.substring(oriname.lastIndexOf("."));
         }
 
-        // 시스템 파일명 생성 (랜덤 UUID 사용)
+        // 2. 중복 방지 시스템 파일명 생성
         String sysName = category.toLowerCase() + "/" + UUID.randomUUID().toString() + ext;
 
-        // GCS 업로드
+        // 3. GCS 실제 파일 업로드
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, sysName)
                 .setContentType(file.getContentType())
                 .build();
         storage.create(blobInfo, file.getBytes());
 
-        // DB 저장 (이번에는 boardSeq를 포함하여 어떤 데이터에 속한 파일인지 기록합니다)
+        // 4. DB(files 테이블)에 메타데이터 저장 (💡 boardSeq를 제대로 세팅!)
         FileSaveDto fileSaveDto = new FileSaveDto();
         fileSaveDto.setUserSeq(userSeq);
-        fileSaveDto.setBoardSeq(boardSeq); // 매장 번호 등을 여기에 저장!
+        fileSaveDto.setBoardSeq(boardSeq); // ⭕ null 대신 넘어온 매장 번호를 저장!
         fileSaveDto.setFileCategory(category);
         fileSaveDto.setOriname(oriname);
         fileSaveDto.setSysname(sysName);
@@ -149,6 +150,22 @@ public class FileService {
 
         fileDao.insertFile(fileSaveDto);
 
+        // 5. 접근 URL 주소 반환
         return "https://storage.googleapis.com/" + bucketName + "/" + sysName;
+    }
+
+    /**
+     * 🔄 기존 파일을 새 파일로 교체 (특정 게시글/매장 번호 포함)
+     * 🏪 [멀티 프로필] 특정 매장의 사진을 교체할 때 사용합니다.
+     */
+    public String updateFileWithBoardSeq(MultipartFile file, Integer userSeq, String category, String oldSysName, Integer boardSeq) throws IOException {
+        // 1. 기존 파일이 있으면 삭제
+        if (oldSysName != null && !oldSysName.isEmpty()) {
+            deleteFromGcs(oldSysName);
+            fileDao.deleteFile(oldSysName);
+        }
+
+        // 2. 새 파일을 boardSeq와 함께 업로드
+        return uploadToGcsAndGetUrlWithBoardSeq(file, userSeq, category, boardSeq);
     }
 }
