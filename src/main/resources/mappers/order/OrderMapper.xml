@@ -57,7 +57,7 @@
     	insert into orders 
     		(order_no, zonecode, address1, address2, order_memo, buyer_seq, seller_seq, total_amount, status, created_at)
     	values
-    		(#{orderNo}, #{zonecode}, #{address1}, #{address2}, #{orderMemo}, #{buyerSeq}, #{sellerSeq}, #{totalAmount},'RECEIPT', NOW())
+    		(#{orderNo}, #{zonecode}, #{address1}, #{address2}, #{orderMemo}, #{buyerSeq}, #{sellerSeq}, #{totalAmount},'REQUESTED', NOW())
     </insert>
     
     <!-- 5. 발주서 품목 1줄 -->
