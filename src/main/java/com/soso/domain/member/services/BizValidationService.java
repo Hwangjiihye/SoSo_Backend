@@ -12,78 +12,90 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.soso.domain.member.dao.MemberDAO;
 import com.soso.domain.member.dto.BizValidateDto;
+import com.soso.domain.mypage.dto.BusinessMultiProfileDTO; // 👈 멀티프로필 DTO 임포트
 
 @Service
 public class BizValidationService {
 
-	private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
 
-	@Autowired
-	private MemberDAO memberDao;
-	
+    @Autowired
+    private MemberDAO memberDao;
+    
     @Value("${api.public-data.service-key}")
     private String serviceKey;
 
+    // =========================================================================
+    // [방식 1] 🔑 회원가입할 때 호출하는 메서드 (기존 파라미터 방식 그대로 유지)
+    // =========================================================================
     public boolean validateBusiness(String bNo, String startDt, String pNm, String bNm) {
+        String cleanBNo = bNo.replaceAll("-", "");
+        String cleanStartDt = startDt.replaceAll("-", "");
         
-    	String cleanBNo = bNo.replaceAll("-", "");
+        System.out.println("[회원가입 검증] 👉 사업자번호: " + cleanBNo + " | 대표자: " + pNm);
         
-        // 2. 🔥 [실무 치트키] 외부 API 쏘기 전에 우리 DB 먼저 검사!
+        // 국세청 찌르기 전 공통 로직 실행 및 API 호출
+        return executeNtsApi(cleanBNo, cleanStartDt, pNm);
+    }
+
+    // =========================================================================
+    // [방식 2] 🏪 매장 추가(멀티프로필)할 때 호출하는 메서드 (새로운 DTO 방식 추가)
+    // =========================================================================
+    public boolean validateBusiness(BusinessMultiProfileDTO dto) {
+        String cleanBNo = dto.getB_no().replaceAll("-", "");
+        String cleanStartDt = dto.getStart_dt().replaceAll("-", "");
+        String pNm = dto.getP_nm();
+        
+        System.out.println("[멀티프로필 검증] 👉 사업자번호: " + cleanBNo + " | 대표자: " + pNm);
+        
+        // 국세청 찌르기 전 공통 로직 실행 및 API 호출
+        return executeNtsApi(cleanBNo, cleanStartDt, pNm);
+    }
+
+    // =========================================================================
+    // [공통 핵심 로직] 중복 검사 및 실제 국세청 API 통신을 전담하는 내부 메서드
+    // =========================================================================
+    private boolean executeNtsApi(String cleanBNo, String cleanStartDt, String pNm) {
+        // 1. 우리 DB 먼저 검사!
         int count = memberDao.countByBizNo(cleanBNo);
         if (count > 0) {
-            // 우리 DB에 이미 존재한다면 국세청 찌르지도 않고 바로 탈락!
-            // 여기서 예외를 던지거나, 프론트가 알아먹을 특수한 문자열을 리턴하네.
             throw new IllegalArgumentException("DUPLICATED_BIZ_NO"); 
         }
-    	
-        // 1. URL 빌드 (공공데이터포털 특유의 서비스키 중복 인코딩 방지 로직)
-        URI uri = UriComponentsBuilder
-                .fromUriString("https://api.odcloud.kr/api/nts-businessman/v1/validate")
-                .queryParam("serviceKey", serviceKey)
-                .build(true) // 서비스키가 이미 인코딩된 상태로 장부에 적혀있을 때를 대비한 안전장치일세
-                .toUri();
+        
+        // 2. 서비스키 인코딩 방지 URL 조립
+        String urlStr = "https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=" + serviceKey;
+        URI uri = URI.create(urlStr);
 
-        // 2. 헤더 및 데이터 정제
+        // 3. 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-      
-        String cleanStartDt = startDt.replaceAll("-", "");
-
-        // 3. 통합 DTO의 Request 이너 클래스 사용
-        // 💡 BizValidateDto.Request.BizInfo 형태로 계층 구조를 명확히 찔러넣네
+        // 4. 국세청 전송용 내장 DTO(BizValidateDto) 조립 
+        // 💡 4번째 상호명 자리는 공통적으로 ""(빈 문자열)을 던져서 무조건 패스시킵니다!
         BizValidateDto.Request.BizInfo bizInfo = new BizValidateDto.Request.BizInfo(
-                cleanBNo, 
-                cleanStartDt, 
-                pNm, 
-                bNm, 
-                "", "", ""
+                cleanBNo, cleanStartDt, pNm, "", "", "", ""
         );
 
         List<BizValidateDto.Request.BizInfo> list = new ArrayList<>();
         list.add(bizInfo);
         
         BizValidateDto.Request requestBody = new BizValidateDto.Request(list);
-
-        // 4. API 호출 (응답 타입도 BizValidateDto.Response 클래스로 지정)
         HttpEntity<BizValidateDto.Request> entity = new HttpEntity<>(requestBody, headers);
         
+        // 5. 국세청 API 실제 호출
         try {
-            System.out.println("====== 국세청 API 호출 시작 (통합 DTO 아키텍처) ======");
+            System.out.println("====== 국세청 공통 API 호출 시작 ======");
             ResponseEntity<BizValidateDto.Response> response = 
-                restTemplate.postForEntity(uri, entity, BizValidateDto.Response.class);
+                    restTemplate.postForEntity(uri, entity, BizValidateDto.Response.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 BizValidateDto.Response resBody = response.getBody();
-                
                 System.out.println("API 통신 성공! 상태: " + resBody.getStatus_code());
 
                 if (resBody.getData() != null && !resBody.getData().isEmpty()) {
-                    // 결과 코드 추출 (01: 유효함)
                     String validCode = resBody.getData().get(0).getValid();
                     System.out.println("사업자 검증 최종 결과: " + resBody.getData().get(0).getValid_msg());
                     
