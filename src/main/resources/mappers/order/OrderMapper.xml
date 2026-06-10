@@ -75,7 +75,7 @@
 	    where order_seq = #{orderSeq}
 	</update>
     
-    <!-- 7. 발주서 정보 불러오기 -->
+    <!-- 7. 발주서 정보 불러오기 + 검색 기능 -->
     <select id="orderList" resultType="com.soso.domain.order.dto.OrderListDTO">
     	select
     		o.order_seq as orderSeq,
@@ -100,7 +100,17 @@
     		on u.user_seq = st.user_seq
     	join order_items oi
     		on o.order_seq = oi.order_seq
-    		
+    	
+    	where o.buyer_seq = #{userSeq}
+
+		<if test="keyword != null and keyword != ''">
+		    and (
+		        o.order_no like concat('%', #{keyword}, '%')
+		        or st.company_name like concat('%', #{keyword}, '%')
+		        or oi.item_name like concat('%', #{keyword}, '%')
+		    )
+		</if>
+    	
     	group by
 	        o.order_seq,
 	        o.order_no,

@@ -79,13 +79,15 @@ public class OrderController {
 		return ResponseEntity.ok(result);
 	}
 	
-	// 발주서 목록으로 출력
+	// 발주서 목록으로 출력 + 검색 기능
 	@GetMapping("/list")
-	public ResponseEntity<List<OrderListDTO>> orderList(HttpServletRequest request) {
+	public ResponseEntity<List<OrderListDTO>> orderList(HttpServletRequest request, @RequestParam(value = "keyword", required = false) String keyword) {
 		
 		Long userSeq = (Long) request.getAttribute("user_seq");
 		
-		List<OrderListDTO> orderList = OrderServ.orderList(userSeq);
+		System.out.println("검색어 확인 : " + keyword);
+		
+		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, keyword);
 		
 		return ResponseEntity.ok(orderList);
 	}

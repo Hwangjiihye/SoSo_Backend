@@ -55,10 +55,14 @@ public class OrderDAO {
 		    return mybatis.update("order.updateOrderNo", dto);
 	}
 		
-	// 발주서 목록으로 출력
-	public List<OrderListDTO> orderList(Long userSeq) {
-		return mybatis.selectList("order.orderList", userSeq);
+	// 발주서 목록으로 출력 + 검색 기능
+	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("userSeq", userSeq);
+		params.put("keyword", keyword);
+
+		return mybatis.selectList("order.orderList", params);
 	}
-	
 	
 }
