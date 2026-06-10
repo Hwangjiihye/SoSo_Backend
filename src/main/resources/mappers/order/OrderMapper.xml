@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="order">
+
+	<!-- 1. 거래처 품목 목록 조회 -->
+	<select id="itemCheck" resultType="com.soso.domain.order.dto.OrderItemDTO">
+		select i.item_seq AS itemSeq, i.user_seq AS userSeq, u.user_id AS partnerId, st.company_name AS partnerName,
+			   i.category_seq AS categorySeq, i.item_code AS itemCode, i.item_name AS itemName, i.spec AS spec,
+			   i.unit_price AS unitPrice, i.item_image AS itemImage, ca.category_name AS categoryName
+		from items i
+		join users u
+			on i.user_seq = u.user_seq
+		join stores st
+			on u.user_seq = st.user_seq
+		left join categories ca
+			on i.category_seq = ca.category_seq
+		where u.user_type = 'PARTNER'
+		order by st.company_name, i.item_seq
+	</select>
+	
+	<!-- 2. 선택한 거래처 품목명과 내 stocks 재고 비교 -->
+    <select id="stockCheck" resultType="com.soso.domain.order.dto.OrderRecommendDTO">
+        select 
+            s.stock_seq AS stockSeq,
+            s.user_seq AS userSeq,
+            s.stock AS stock,
+            s.quantity AS quantity,
+            s.safety_stock AS safetyStock
+        from stocks s
+        join users u 
+            ON s.user_seq = u.user_seq
+        where u.user_seq = #{user_seq}
+          and u.user_type = 'BUSINESS'
+          and (
+              s.stock like concat('%', #{itemName}, '%')
+              OR #{itemName} like concat('%', s.stock, '%')
+          )
+    </select>
+    
+    <!-- 3. 사업자 이름과 주소 조회 -->
+    <select id="identityCheck" resultType="map">
+    	select 
+    		st.company_name AS companyName,
+    		st.zonecode AS zoneCode,
+    		st.address1 AS address1,
+    		st.address2 AS address2
+    	from users u
+    	join stores st 
+    		ON u.user_seq = st.user_seq
+    	where u.user_seq = #{user_seq}
+    		and u.user_type = 'BUSINESS'
+    </select>
+    
+    <!-- 4. 발주서 작성 -->
+    <insert id="orderForm" parameterType="com.soso.domain.order.dto.OrderDTO" useGeneratedKeys="true" keyProperty="orderSeq">
+    	insert into orders 
+    		(order_no, zonecode, address1, address2, order_memo, buyer_seq, seller_seq, total_amount, status, created_at)
+    	values
+    		(#{orderNo}, #{zonecode}, #{address1}, #{address2}, #{orderMemo}, #{buyerSeq}, #{sellerSeq}, #{totalAmount},'REQUESTED', NOW())
+    </insert>
+    
+    <!-- 5. 발주서 품목 1줄 -->
+    <insert id="orderItem" parameterType="com.soso.domain.order.dto.OrderSaveItemDTO">
+    	insert into order_items
+    		(order_seq, item_seq, item_name, category_name, quantity, spec, unit_price, total_price)
+    	values
+    		(#{orderSeq}, #{itemSeq}, #{itemName}, #{categoryName}, #{quantity}, #{spec}, #{unitPrice}, #{totalPrice})
+    </insert>
+    
+    <!-- 6. 발주번호(Order_no) 업데이트 -->
+    <update id="updateOrderNo" parameterType="com.soso.domain.order.dto.OrderDTO">
+	    update orders
+	    set order_no = #{orderNo}
+	    where order_seq = #{orderSeq}
+	</update>
+    
+    <!-- 7. 발주서 정보 불러오기 + 검색 기능 -->
+    <select id="orderList" resultType="com.soso.domain.order.dto.OrderListDTO">
+    	select
+    		o.order_seq as orderSeq,
+    		o.order_no as orderNo,
+    		o.seller_seq as sellerSeq,
+    		st.company_name as companyName,
+    		oi.item_name as itemName,
+    		
+    	concat(
+		    min(oi.item_name),
+		    CASE 
+		        WHEN COUNT(oi.order_item_seq) > 1 
+		        THEN CONCAT(' 외 ', COUNT(oi.order_item_seq) - 1, '건')
+		        ELSE ''
+		    END
+		) AS itemSummary
+		
+    	from orders o
+    	join users u
+    		on o.seller_seq = u.user_seq
+    	join stores st
+    		on u.user_seq = st.user_seq
+    	join order_items oi
+    		on o.order_seq = oi.order_seq
+    	
+    	where o.buyer_seq = #{userSeq}
+
+		<if test="keyword != null and keyword != ''">
+		    and (
+		        o.order_no like concat('%', #{keyword}, '%')
+		        or st.company_name like concat('%', #{keyword}, '%')
+		        or oi.item_name like concat('%', #{keyword}, '%')
+		    )
+		</if>
+    	
+    	group by
+	        o.order_seq,
+	        o.order_no,
+	        o.seller_seq,
+	        st.company_name
+        
+    	order by o.order_seq desc
+    </select>
+    
+    <!-- 웹소켓 -->
+    <!-- 발주 상태 변경 -->
+	<update id="updateOrderStatus">
+	    UPDATE orders
+	    SET status = #{status}
+	    WHERE order_seq = #{orderSeq}
+	</update>
+	
+	<!-- 발주번호로 사업자 user_seq 조회 -->
+	<select id="findBuyerSeqByOrderSeq" resultType="long">
+	    SELECT buyer_seq
+	    FROM orders
+	    WHERE order_seq = #{orderSeq}
+	</select>
+    
+   
+</mapper>

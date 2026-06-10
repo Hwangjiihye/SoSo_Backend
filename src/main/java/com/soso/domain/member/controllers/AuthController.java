@@ -28,7 +28,7 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> toLogin(@RequestBody LoginDTO dto) {
 		
-		System.out.println("로그인 아이디 : " + dto.getId() + "로그인 비밀번호 : " + dto.getPw());
+		System.out.println("로그인 아이디 : " + dto.getUser_seq() + "로그인 비밀번호 : " + dto.getPw());
 		
 		// 로그인 시도
 	    // 아이디, 비밀번호가 맞으면 회원 정보(Map)를 반환
