@@ -23,9 +23,11 @@ public class BizApiController {
             @RequestParam String bNo,
             @RequestParam String startDt,
             @RequestParam String pNm,
-            @RequestParam String bNm) {
+            @RequestParam String bNm,
+            @RequestParam(required = false, defaultValue = "false") boolean isMultiProfile) {
 
-        boolean isValid = bizValidationService.validateBusiness(bNo, startDt, pNm, bNm);
+        // 🏪 매장 추가(멀티프로필)나 정보 수정 시에는 중복 체크를 하지 않도록 플래그를 전달합니다.
+        boolean isValid = bizValidationService.validateBusiness(bNo, startDt, pNm, bNm, isMultiProfile);
 
         if (isValid) {
             return ResponseEntity.ok("인증 성공: 정상적인 사업자 정보입니다.");
