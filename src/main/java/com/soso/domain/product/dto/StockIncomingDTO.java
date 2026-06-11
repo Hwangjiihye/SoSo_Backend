@@ -2,12 +2,20 @@ package com.soso.domain.product.dto;
 
 import java.time.LocalDate;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class StockIncomingDTO {
     private int stockSeq;
     private String detailStockName;
     private int quantity;
     private int incomingPrice;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate expirationDate;
+    
     private String reason;
     private String memo;
 
