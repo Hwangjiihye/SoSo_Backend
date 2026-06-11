@@ -25,10 +25,10 @@ public class PartnerOrderService {
     private SimpMessagingTemplate messagingTemplate; // 웹소켓 알림을 보내는 도구
 
     /**
-     * 거래처 사장님 앞으로 들어온 발주 목록을 가져옵니다.
+     * 거래처 사장님 앞으로 들어온 발주 목록을 가져옵니다. (검색 및 필터 포함)
      */
-    public List<PartnerOrderListDTO> getOrderList(Long sellerSeq) {
-        return partnerOrderDAO.selectOrderList(sellerSeq);
+    public List<PartnerOrderListDTO> getOrderList(Long sellerSeq, String keyword, String status) {
+        return partnerOrderDAO.selectOrderList(sellerSeq, keyword, status);
     }
 
     /**

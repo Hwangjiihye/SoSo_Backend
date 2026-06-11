@@ -19,11 +19,15 @@ public class PartnerOrderDAO {
     private SqlSession session; // MyBatis와 대화하기 위한 객체
 
     /**
-     * 거래처용 발주 목록 조회
+     * 거래처용 발주 목록 조회 (검색 및 필터 포함)
      * partnerOrder 매퍼의 selectOrderList 쿼리를 실행합니다.
      */
-    public List<PartnerOrderListDTO> selectOrderList(Long sellerSeq) {
-        return session.selectList("partnerOrder.selectOrderList", sellerSeq);
+    public List<PartnerOrderListDTO> selectOrderList(Long sellerSeq, String keyword, String status) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("sellerSeq", sellerSeq);
+        params.put("keyword", keyword);
+        params.put("status", status);
+        return session.selectList("partnerOrder.selectOrderList", params);
     }
 
     /**

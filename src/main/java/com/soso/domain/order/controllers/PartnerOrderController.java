@@ -27,16 +27,16 @@ public class PartnerOrderController {
     private PartnerOrderService partnerOrderService; // 서비스 심부름꾼 주입
 
     /**
-     * [API 1] 거래처용 발주 목록 조회
-     * 요청 예: GET /api/partner/orders?sellerSeq=10
-     * @param sellerSeq 현재 로그인한 거래처 사장님의 고유 번호
+     * [API 1] 거래처용 발주 목록 조회 (검색 및 필터 포함)
+     * 요청 예: GET /api/partner/orders?sellerSeq=10&keyword=가게&status=SHIPPING
      */
     @GetMapping
-    public ResponseEntity<List<PartnerOrderListDTO>> getOrderList(@RequestParam Long sellerSeq) {
-        // 서비스에게 목록을 가져오라고 시킵니다.
-        List<PartnerOrderListDTO> list = partnerOrderService.getOrderList(sellerSeq);
+    public ResponseEntity<List<PartnerOrderListDTO>> getOrderList(
+            @RequestParam Long sellerSeq,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status) {
         
-        // 가져온 리스트를 프론트엔드에게 200 OK 상태와 함께 돌려줍니다.
+        List<PartnerOrderListDTO> list = partnerOrderService.getOrderList(sellerSeq, keyword, status);
         return ResponseEntity.ok(list);
     }
 
