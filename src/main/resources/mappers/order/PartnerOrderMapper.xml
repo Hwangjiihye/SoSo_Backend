@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 
+    [거래처 전용 발주 관리 매퍼]
+    초보자 가이드: namespace는 이 XML 파일을 자바 코드에서 찾기 위한 '별명' 같은 것입니다. 
+    id는 쿼리문의 고유 이름입니다.
+-->
+<mapper namespace="partnerOrder">
+
+    <!-- 1. 거래처 사장님 앞으로 접수된 발주 목록 조회 -->
+    <!-- o(orders)와 st(stores)를 조인하여 주문한 사람의 상호명(companyName)을 가져옵니다. -->
+    <select id="selectOrderList" parameterType="long" resultType="com.soso.domain.order.dto.PartnerOrderListDTO">
+        SELECT 
+            o.order_seq AS orderSeq,
+            o.order_no AS orderNo,
+            st.company_name AS companyName,
+            o.total_amount AS totalAmount,
+            o.status AS status,
+            o.created_at AS createdAt
+        FROM orders o
+        JOIN stores st ON o.buyer_seq = st.user_seq
+        WHERE o.seller_seq = #{sellerSeq} -- 컨트롤러에서 넘어온 거래처 사장님의 ID
+        ORDER BY o.order_seq DESC -- 최신 발주가 가장 위로 오게 정렬
+    </select>
+
+    <!-- 2. 특정 발주서의 상세 품목 리스트 조회 -->
+    <!-- 업장에서 발주 시 order_items 테이블에 품목 정보를 저장했으므로 이를 그대로 불러옵니다. -->
+    <select id="selectOrderDetail" parameterType="long" resultType="com.soso.domain.order.dto.PartnerOrderDetailDTO">
+        SELECT 
+            order_item_seq AS orderItemSeq,
+            item_name AS itemName,
+            category_name AS categoryName,
+            quantity AS quantity,
+            spec AS spec,
+            unit_price AS unitPrice,
+            total_price AS totalPrice
+        FROM order_items
+        WHERE order_seq = #{orderSeq} -- 사용자가 클릭한 발주서의 고유 번호
+    </select>
+
+    <!-- 3. 발주 상태 업데이트 -->
+    <!-- 거래처 사장님이 발주 상태(접수완료, 배송중 등)를 변경할 때 사용합니다. -->
+    <update id="updateOrderStatus">
+        UPDATE orders
+        SET status = #{status}
+        WHERE order_seq = #{orderSeq}
+    </update>
+
+    <!-- 4. 발주 번호로 해당 주문을 넣은 사업자의 고유 번호 조회 -->
+    <!-- 실시간 웹소켓 알림을 해당 사업자에게만 보내기 위해 필요합니다. -->
+    <select id="selectBuyerSeq" parameterType="long" resultType="long">
+        SELECT buyer_seq
+        FROM orders
+        WHERE order_seq = #{orderSeq}
+    </select>
+
+</mapper>
