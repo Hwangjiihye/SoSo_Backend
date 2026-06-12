@@ -167,8 +167,12 @@ public class StockService {
     public List<StockHistoryDTO> getHistories(int stockSeq) {
         return stockDAO.selectHistoriesByStockSeq(stockSeq);
     }
+
+    public void updateStockInfo(StockDTO stock) {
+        stockDAO.updateStock(stock);
+    }
+
     public int getcountExpiringSoon() {
         return stockDAO.selectgetcountExpiringSoon();
     }
-    
 }

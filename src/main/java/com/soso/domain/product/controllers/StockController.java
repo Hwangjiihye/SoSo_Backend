@@ -57,6 +57,17 @@ public class StockController {
         }
     }
 
+    @PutMapping("/{stockSeq}")
+    public ResponseEntity<String> update(@PathVariable int stockSeq, @RequestBody StockDTO stock) {
+        try {
+            stock.setStockSeq(stockSeq);
+            stockService.updateStockInfo(stock);
+            return ResponseEntity.ok("품목 정보가 수정되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/{stockSeq}/batches")
     public ResponseEntity<List<StockBatchDTO>> getBatches(@PathVariable int stockSeq) {
         return ResponseEntity.ok(stockService.getBatches(stockSeq));

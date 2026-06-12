@@ -123,10 +123,23 @@
         WHERE stock_seq = #{stockSeq} 
         ORDER BY created_at DESC
     </select>
-<select id="selectgetcountExpiringSoon" resultType="int">
-    SELECT COUNT(*) 
-    FROM stock_batches 
-    WHERE current_quantity > 0 
-      AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
-</select>
+
+    <update id="updateStock" parameterType="com.soso.domain.product.dto.StockDTO">
+        UPDATE stocks 
+        SET stock_name = #{stockName},
+            category = #{category},
+            unit = #{unit},
+            safety_stock = #{safetyStock},
+            default_expiry_days = #{defaultExpiryDays},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE stock_seq = #{stockSeq}
+    </update>
+
+    <select id="selectgetcountExpiringSoon" resultType="int">
+        SELECT COUNT(*) 
+        FROM stock_batches 
+        WHERE current_quantity > 0 
+          AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+    </select>
+
 </mapper>
