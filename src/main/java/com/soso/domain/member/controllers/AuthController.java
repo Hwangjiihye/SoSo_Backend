@@ -28,7 +28,7 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> toLogin(@RequestBody LoginDTO dto) {
 		
-		System.out.println("로그인 아이디 : " + dto.getId() + "로그인 비밀번호 : " + dto.getPw());
+		System.out.println("로그인 아이디 : " + dto.getUser_seq() + "로그인 비밀번호 : " + dto.getPw());
 		
 		// 로그인 시도
 	    // 아이디, 비밀번호가 맞으면 회원 정보(Map)를 반환
@@ -51,10 +51,16 @@ public class AuthController {
 			Long userSeq = Long.parseLong(String.valueOf(member.get("user_seq")));
 			String token = jwt.createToken(userSeq);
 			
+			// 보안을 위해 프론트로 보내기 전 비밀번호 제거
+			member.remove("password");
+			
 			// 응답 데이터 추가
 			result.put("token", token); // JWT 토큰
 			result.put("user_seq", userSeq); // 회원 id
 			result.put("user_type", member.get("user_type")); // 회원 유형
+			result.put("user_nickname", member.get("nickname"));
+			result.put("company_name", member.get("company_name"));
+//			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
 			
 			System.out.println("dto id = " + dto.getId());
 			System.out.println("dto pw = " + dto.getPw());

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soso.domain.mypage.repository.BusinessMypageRepository">
+
+    <select id="getBusinessInfo" parameterType="map" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
+        SELECT 
+        u.user_id AS userId,
+        u.name,
+        u.nickname,
+        u.email,
+        u.phone,
+        u.created_at AS createdAt,
+        s.store_seq AS storeSeq,
+        s.biz_number AS bizNumber,
+        s.company_name AS companyName,
+        s.ceo_name AS ceoName,        -- 👤 실제 사업자 대표자명 (인증용)
+        s.opening_date AS openingDate,
+        s.zonecode,
+        s.address1,
+        s.address2,
+        
+        -- 🎯 [우주 치트키] 가게 사진 파일명들을 콤마(,)로 묶어서 하나의 문자열로 뽑아내네!
+        -- board_seq가 s.store_seq와 같은 사진만 가져오도록 정교하게 수정함
+        (SELECT GROUP_CONCAT(f.sysname ORDER BY f.files_seq ASC)
+         FROM files f
+         WHERE f.user_seq = u.user_seq 
+           AND f.board_seq = s.store_seq 
+           AND f.file_category = 'STORE_IMAGE') AS profileImageUrl
+        
+    FROM users u
+    LEFT JOIN stores s ON u.user_seq = s.user_seq
+    WHERE u.user_seq = #{user_seq}
+      AND u.user_type = 'BUSINESS'
+      <if test="storeSeq != null">
+        AND s.store_seq = #{storeSeq}
+      </if>
+    -- 💡 특정 매장이 지정되지 않으면 가장 먼저 등록된 매장을 보여줌
+    ORDER BY s.store_seq ASC
+    LIMIT 1
+    </select>
+
+    <!-- 🏪 특정 유저(사장님)가 소유한 모든 매장 목록 가져오기 -->
+    <select id="getAllStoresBySeq" parameterType="long" resultType="com.soso.domain.mypage.dto.BusinessMypageDTO">
+        SELECT 
+            s.store_seq AS storeSeq,
+            s.biz_number AS bizNumber,
+            s.company_name AS companyName,
+            s.ceo_name AS ceoName,    -- 👤 rep_name에서 ceo_name으로 정확히 수정 (500 에러 해결)
+            s.opening_date AS openingDate,
+            s.address1,
+            s.address2,
+            -- 첫 번째 사진만 대표 이미지로 가져오기
+            (SELECT sysname FROM files 
+             WHERE user_seq = s.user_seq 
+               AND board_seq = s.store_seq 
+               AND file_category = 'STORE_IMAGE' 
+             LIMIT 1) AS profileImageUrl
+        FROM stores s
+        WHERE s.user_seq = #{user_seq}
+        ORDER BY s.store_seq ASC
+    </select>
+
+    <!-- 사용자 정보 수정 -->
+    <update id="updateUser" parameterType="com.soso.domain.mypage.dto.BusinessUpdateDTO">
+        UPDATE users
+        SET nickname = #{nickname},
+            email = #{email},
+            phone = #{phone}
+        WHERE user_seq = #{userSeq}
+    </update>
+
+    <!-- 상점 정보 수정 -->
+    <update id="updateStore" parameterType="com.soso.domain.mypage.dto.BusinessUpdateDTO">
+        UPDATE stores
+        SET biz_number = #{bizNumber},
+            company_name = #{companyName},
+            ceo_name = #{ceoName},    -- 👤 대표자명 수정 추가
+            zonecode = #{zonecode},
+            address1 = #{address1},
+            address2 = #{address2}
+        WHERE user_seq = #{userSeq}
+          -- 🏪 [멀티 프로필] 특정 매장만 수정하도록 조건 추가
+          <if test="storeSeq != null">
+            AND store_seq = #{storeSeq}
+          </if>
+          <!-- 💡 만약 storeSeq가 없다면 가장 최근에 등록된 매장을 기준으로 함 (방어 로직) -->
+          <if test="storeSeq == null">
+            AND store_seq = (SELECT MAX(store_seq) FROM (SELECT store_seq FROM stores WHERE user_seq = #{userSeq}) AS tmp)
+          </if>
+    </update>
+
+    <!-- 🏪 다중 매장 등록 (새로운 매장을 stores 테이블에 추가) 
+         useGeneratedKeys="true" : DB에서 자동으로 만든 ID(PK)값을 가져오겠다는 설정
+         keyProperty="storeSeq"  : 가져온 ID값을 DTO의 storeSeq 필드에 넣어주겠다는 설정 -->
+    <insert id="insertStore" parameterType="com.soso.domain.mypage.dto.BusinessMultiProfileDTO" useGeneratedKeys="true" keyProperty="storeSeq">
+        INSERT INTO stores (
+            user_seq,      <!-- 사장님 고유 번호 -->
+            biz_number,    <!-- 사업자 등록 번호 (DTO: b_no) -->
+            company_name,  <!-- 매장 상호명 (DTO: b_nm) -->
+            ceo_name,      <!-- 대표자 성명 (DTO: p_nm) -->
+            opening_date,  <!-- 개업 일자 (DTO: start_dt) -->
+            zonecode,      <!-- 우편번호 -->
+            address1,      <!-- 기본 주소 -->
+            address2       <!-- 상세 주소 -->
+        ) VALUES (
+            #{userSeq}, 
+            #{b_no}, 
+            #{b_nm}, 
+            #{p_nm}, 
+            #{start_dt}, 
+            #{zipcode}, 
+            #{address1}, 
+            #{address2}
+        )
+    </insert>
+
+    </mapper>
+

@@ -15,6 +15,7 @@ public class LoginDAO {
 	private SqlSessionTemplate mybatis;
 	
 	public Map<String, Object> toLogin(LoginDTO dto) {
+		System.out.println(dto.getUser_type());
 		
 		
 		return mybatis.selectOne("Login.toLogin", dto);
