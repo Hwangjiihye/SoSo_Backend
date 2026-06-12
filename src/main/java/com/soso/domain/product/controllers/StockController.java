@@ -68,6 +68,16 @@ public class StockController {
         }
     }
 
+    @DeleteMapping("/{stockSeq}")
+    public ResponseEntity<String> delete(@PathVariable int stockSeq) {
+        try {
+            stockService.deleteStock(stockSeq);
+            return ResponseEntity.ok("품목이 삭제되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/{stockSeq}/batches")
     public ResponseEntity<List<StockBatchDTO>> getBatches(@PathVariable int stockSeq) {
         return ResponseEntity.ok(stockService.getBatches(stockSeq));

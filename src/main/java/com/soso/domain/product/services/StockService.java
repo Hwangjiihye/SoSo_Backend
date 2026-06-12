@@ -172,6 +172,16 @@ public class StockService {
         stockDAO.updateStock(stock);
     }
 
+    @Transactional
+    public void deleteStock(int stockSeq) {
+        // 1. 연관된 이력 삭제
+        stockDAO.deleteHistoryByStockSeq(stockSeq);
+        // 2. 연관된 배치 삭제
+        stockDAO.deleteBatchesByStockSeq(stockSeq);
+        // 3. 품목 마스터 삭제
+        stockDAO.deleteStock(stockSeq);
+    }
+
     public int getcountExpiringSoon() {
         return stockDAO.selectgetcountExpiringSoon();
     }

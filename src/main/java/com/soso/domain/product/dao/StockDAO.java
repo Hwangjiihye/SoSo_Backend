@@ -60,6 +60,18 @@ public class StockDAO {
         sqlSession.update(NAMESPACE + "updateStock", stock);
     }
 
+    public void deleteStock(int stockSeq) {
+        sqlSession.delete(NAMESPACE + "deleteStock", stockSeq);
+    }
+
+    public void deleteBatchesByStockSeq(int stockSeq) {
+        sqlSession.delete(NAMESPACE + "deleteBatchesByStockSeq", stockSeq);
+    }
+
+    public void deleteHistoryByStockSeq(int stockSeq) {
+        sqlSession.delete(NAMESPACE + "deleteHistoryByStockSeq", stockSeq);
+    }
+
     public int selectgetcountExpiringSoon() {
         return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon");
     }

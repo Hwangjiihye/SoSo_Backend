@@ -135,6 +135,18 @@
         WHERE stock_seq = #{stockSeq}
     </update>
 
+    <delete id="deleteStock" parameterType="int">
+        DELETE FROM stocks WHERE stock_seq = #{stockSeq}
+    </delete>
+
+    <delete id="deleteBatchesByStockSeq" parameterType="int">
+        DELETE FROM stock_batches WHERE stock_seq = #{stockSeq}
+    </delete>
+
+    <delete id="deleteHistoryByStockSeq" parameterType="int">
+        DELETE FROM stock_history WHERE stock_seq = #{stockSeq}
+    </delete>
+
     <select id="selectgetcountExpiringSoon" resultType="int">
         SELECT COUNT(*) 
         FROM stock_batches 

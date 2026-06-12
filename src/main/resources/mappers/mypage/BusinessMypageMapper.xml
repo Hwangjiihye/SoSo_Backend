@@ -77,12 +77,12 @@
         UPDATE stores
         SET biz_number = #{bizNumber},
             company_name = #{companyName},
-            ceo_name = #{ceoName},    -- 👤 대표자명 수정 추가
+            ceo_name = #{ceoName},    <!-- 👤 대표자명 수정 추가-->
             zonecode = #{zonecode},
             address1 = #{address1},
             address2 = #{address2}
         WHERE user_seq = #{userSeq}
-          -- 🏪 [멀티 프로필] 특정 매장만 수정하도록 조건 추가
+          <!-- 🏪 [멀티 프로필] 특정 매장만 수정하도록 조건 추가 -->
           <if test="storeSeq != null">
             AND store_seq = #{storeSeq}
           </if>
