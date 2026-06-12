@@ -123,5 +123,10 @@
         WHERE stock_seq = #{stockSeq} 
         ORDER BY created_at DESC
     </select>
-
+<select id="selectgetcountExpiringSoon" resultType="int">
+    SELECT COUNT(*) 
+    FROM stock_batches 
+    WHERE current_quantity > 0 
+      AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+</select>
 </mapper>

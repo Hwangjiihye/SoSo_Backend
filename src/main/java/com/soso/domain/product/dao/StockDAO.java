@@ -55,4 +55,9 @@ public class StockDAO {
     public List<StockHistoryDTO> selectHistoriesByStockSeq(int stockSeq) {
         return sqlSession.selectList(NAMESPACE + "selectHistoriesByStockSeq", stockSeq);
     }
+    public int selectgetcountExpiringSoon() {
+        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon");
+    }
+    
+    
 }

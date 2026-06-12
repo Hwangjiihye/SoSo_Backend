@@ -66,4 +66,8 @@ public class StockController {
     public ResponseEntity<List<StockHistoryDTO>> getHistories(@PathVariable int stockSeq) {
         return ResponseEntity.ok(stockService.getHistories(stockSeq));
     }
+    @GetMapping("/countExpiringSoon")
+    public ResponseEntity<Integer> getcountExpiringSoon() {
+        return ResponseEntity.ok(stockService.getcountExpiringSoon());
+    }
 }
