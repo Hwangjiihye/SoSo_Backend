@@ -109,6 +109,9 @@ public class StockService {
             history.setCurrentTotalStock(currentMaster.getCurrentStock());
             history.setReason(request.getReason());
             history.setMemo(request.getMemo());
+            history.setDetailStockName(batch.getDetailStockName()); 
+            history.setExpirationDate(batch.getExpirationDate());
+            history.setPrice(batch.getIncomingPrice());
             stockDAO.insertHistory(history);
         }
     }

@@ -28,11 +28,7 @@ public class StockController {
 
     @PostMapping("/incoming")
     public ResponseEntity<String> incoming(@RequestBody StockIncomingDTO incoming) {
-        System.out.println(incoming.getQuantity());
-        System.out.println(incoming.getStockSeq());
-        System.out.println(incoming.getDetailStockName());
-        System.out.println(incoming.getMemo());
-        System.out.println(incoming.getExpirationDate());
+
     	try {
             stockService.processIncoming(incoming);
             return ResponseEntity.ok("입고 처리가 완료되었습니다.");
