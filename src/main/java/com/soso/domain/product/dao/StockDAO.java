@@ -16,8 +16,8 @@ public class StockDAO {
 
     private static final String NAMESPACE = "com.soso.mappers.product.StockMapper.";
 
-    public List<StockDTO> selectStockList() {
-        return sqlSession.selectList(NAMESPACE + "selectStockList");
+    public List<StockDTO> selectStockList(Map<String, Object> filters) {
+        return sqlSession.selectList(NAMESPACE + "selectStockList", filters);
     }
 
     public void insertStock(StockDTO stock) {

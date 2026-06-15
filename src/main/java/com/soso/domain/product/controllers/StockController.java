@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -16,8 +18,17 @@ public class StockController {
     private StockService stockService;
 
     @GetMapping
-    public ResponseEntity<List<StockDTO>> list() {
-        return ResponseEntity.ok(stockService.getAllStocks());
+    public ResponseEntity<List<StockDTO>> list(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String status) {
+        
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("search", search);
+        filters.put("category", category);
+        filters.put("status", status);
+        
+        return ResponseEntity.ok(stockService.getStockList(filters));
     }
 
     @PostMapping

@@ -19,8 +19,8 @@ public class StockService {
     @Autowired
     private StockDAO stockDAO;
 
-    public List<StockDTO> getAllStocks() {
-        return stockDAO.selectStockList();
+    public List<StockDTO> getStockList(Map<String, Object> filters) {
+        return stockDAO.selectStockList(filters);
     }
 
     public void createStock(StockDTO stock) {
