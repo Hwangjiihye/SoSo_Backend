@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="payment">
+
+	<!-- 계좌 등록 --> 
+	<insert id="account">
+		insert into accounts (store_seq, bank_name, account_number, account_name, billing_key, is_active, created_at)
+		values ( #{storeSeq}, #{bankName}, #{accountNumber}, #{accountName}, null, 'Y', Now() )
+	</insert>
+
+	<!-- 계좌 조회 -->
+	<select id="list" parameterType="Long" resultType="com.soso.domain.payment.dto.AccountDTO">
+		select * from accounts where store_seq = #{storeSeq} and is_active = 'Y' order by account_seq desc limit 4
+	</select>
+   
+    <!-- 계좌 등록 4개 제한 -->
+    <select id="limit" parameterType="Long" resultType="int">
+    	select count(*) from accounts where store_seq = #{storeSeq} and is_active = 'Y'
+    </select>
+    
+    <!-- 계좌 삭제 처리: 실제 삭제 X, 비활성화 + 계좌번호 마스킹 -->
+    <update id="accountDel" parameterType="Long">
+    	update accounts 
+    	set 
+    		is_active = 'N',
+	        account_number = CONCAT('DELETED-', RIGHT(account_number, 4)),
+	        billing_key = NULL
+    	WHERE account_seq = #{accountSeq}
+    </update>
+</mapper>
