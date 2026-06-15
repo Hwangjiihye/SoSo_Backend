@@ -30,6 +30,13 @@ public class AccountDAO {
     }
 
     /**
+     * 모든 PARTNER 타입 회원의 매장 정보를 조회합니다.
+     */
+    public List<AccountSearchResponseDto> getAllPartnerStores() {
+        return mybatis.selectList(NAMESPACE + ".getAllPartnerStores");
+    }
+
+    /**
      * 거래처 관계 정보를 저장합니다.
      */
     public int insertPartnerRelation(AccountRelationRequestDto relationDto) {

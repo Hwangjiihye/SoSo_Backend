@@ -29,6 +29,13 @@ public class AccountService {
     }
 
     /**
+     * 모든 파트너사(거래처) 조회
+     */
+    public List<AccountSearchResponseDto> getAllPartnerStores() {
+        return accountDAO.getAllPartnerStores();
+    }
+
+    /**
      * 거래처 관계 등록
      */
     @Transactional

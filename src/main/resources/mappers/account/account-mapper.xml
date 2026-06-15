@@ -24,6 +24,25 @@
         AND u.status = 'ACTIVE'
     </select>
 
+    <!-- 모든 PARTNER 타입 회원의 매장 정보 조회 -->
+    <select id="getAllPartnerStores" resultType="com.soso.domain.account.dto.AccountSearchResponseDto">
+        SELECT 
+            s.store_seq AS storeSeq,
+            s.user_seq AS userSeq,
+            s.biz_number AS bizNumber,
+            s.company_name AS companyName,
+            s.ceo_name AS ceoName,
+            s.opening_date AS openingDate,
+            s.zonecode,
+            s.address1,
+            s.address2
+        FROM stores s
+        JOIN users u ON s.user_seq = u.user_seq
+        WHERE u.user_type = 'PARTNER'
+        AND u.status = 'ACTIVE'
+        ORDER BY s.company_name ASC
+    </select>
+
     <!-- 거래처 관계 등록 -->
     <insert id="insertPartnerRelation" parameterType="com.soso.domain.account.dto.AccountRelationRequestDto">
         INSERT INTO partner_relations (

@@ -46,6 +46,22 @@ public class AccountController {
     }
 
     /**
+     * 모든 거래처(PARTNER 타입 유저의 매장) 조회 API
+     */
+    @GetMapping("/all-partners")
+    public ResponseEntity<Map<String, Object>> getAllPartnerStores() {
+        logger.info("모든 거래처 조회 요청");
+        
+        List<AccountSearchResponseDto> results = accountService.getAllPartnerStores();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("results", results);
+        response.put("count", results.size());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 거래처 관계 등록 API
      */
     @PostMapping("/register")
