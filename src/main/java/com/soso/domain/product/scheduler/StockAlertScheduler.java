@@ -1,4 +1,4 @@
-package com.soso.domain.product.util;
+package com.soso.domain.product.scheduler;
 
 import com.soso.domain.product.dao.StockDAO;
 import com.soso.domain.product.dao.StockHistoryDAO;
