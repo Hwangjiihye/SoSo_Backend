@@ -10,7 +10,7 @@
 	</insert>
 
 	<!-- 계좌 조회 -->
-	<select id="list" parameterType="Long" resultType="com.soso.domain.payment.dto.AccountDTO">
+	<select id="list" parameterType="Long" resultType="com.soso.domain.payment.dto.PaymentDTO">
 		select * from accounts where store_seq = #{storeSeq} and is_active = 'Y' order by account_seq desc limit 4
 	</select>
    
