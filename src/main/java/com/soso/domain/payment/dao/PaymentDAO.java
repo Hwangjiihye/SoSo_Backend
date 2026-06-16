@@ -6,8 +6,9 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.soso.domain.payment.dto.PaymentDTO;
 import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
+import com.soso.domain.payment.dto.PaymentCardDTO;
+import com.soso.domain.payment.dto.PaymentDTO;
 
 @Repository
 public class PaymentDAO {
@@ -38,6 +39,16 @@ public class PaymentDAO {
 	// 자동이체 설정 등록
 	public int autoPaymentSchedule(AutoPaymentScheduleDTO dto) {
 		return mybatis.insert("payment.autoSchedule", dto);
+	}
+	
+	// 카드 등록
+	public int insertCard(PaymentCardDTO dto) {
+		return mybatis.insert("payment.insertCard", dto);
+	}
+	
+	// 카드 조회
+	public List<PaymentCardDTO> selectCard(Long storeSeq) {
+		return mybatis.selectList("payment.selectCard", storeSeq);
 	}
 	
 

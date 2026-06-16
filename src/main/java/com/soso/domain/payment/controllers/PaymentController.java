@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.soso.domain.payment.dto.PaymentDTO;
 import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
+import com.soso.domain.payment.dto.PaymentCardDTO;
+import com.soso.domain.payment.dto.PaymentDTO;
 import com.soso.domain.payment.services.PaymentService;
 
 @RestController
@@ -57,6 +58,19 @@ public class PaymentController {
 	public ResponseEntity<String> autoPaymentSchedule(@RequestBody AutoPaymentScheduleDTO dto) {
 	    accountServ.autoPaymentSchedule(dto);
 	    return ResponseEntity.ok("자동이체 설정이 등록되었습니다.");
+	}
+	
+	// 카드 등록
+	@PostMapping("/cards")
+	public ResponseEntity<String> insertCard(@RequestBody PaymentCardDTO dto) {
+		accountServ.insertCard(dto);
+		return ResponseEntity.ok("카드가 등록되었습니다");
+	}
+	
+	// 카드 조회
+	@GetMapping("/cards")
+	public ResponseEntity<List<PaymentCardDTO>> selectCard(@RequestParam Long storeSeq) {
+		return ResponseEntity.ok(accountServ.selectCard(storeSeq));
 	}
 
 }

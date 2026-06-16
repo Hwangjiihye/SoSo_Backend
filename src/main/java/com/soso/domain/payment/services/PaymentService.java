@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.soso.domain.payment.dao.PaymentDAO;
-import com.soso.domain.payment.dto.PaymentDTO;
 import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
+import com.soso.domain.payment.dto.PaymentCardDTO;
+import com.soso.domain.payment.dto.PaymentDTO;
 
 @Service
 public class PaymentService {
@@ -63,6 +64,29 @@ public class PaymentService {
 	    }
 
 	    return dao.autoPaymentSchedule(dto);
+	}
+	
+	// 카드 등록
+	public int insertCard(PaymentCardDTO dto) {
+		
+		if(dto.getStoreSeq() == null || dto.getStoreSeq() == 0) {
+			throw new RuntimeException("사업장 정보가 없습니다.");
+		}
+		
+		if(dto.getBillingKey() == null || dto.getBillingKey().isBlank()) {
+			throw new RuntimeException("빌링키 정보가 없습니다.");
+		}
+		return dao.insertCard(dto);
+	}
+	
+	// 카드 조회
+	public List<PaymentCardDTO> selectCard(Long storeSeq) {
+		
+		if(storeSeq == null || storeSeq == 0) {
+			throw new RuntimeException("사업장 정보가 없습니다.");
+		}
+		
+		return dao.selectCard(storeSeq);
 	}
 
 }
