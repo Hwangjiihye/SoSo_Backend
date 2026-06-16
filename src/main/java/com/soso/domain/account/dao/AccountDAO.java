@@ -4,11 +4,13 @@ import com.soso.domain.account.dto.AccountRelationRequestDto;
 import com.soso.domain.account.dto.AccountRelationResponseDto;
 import com.soso.domain.account.dto.AccountSearchResponseDto;
 import com.soso.domain.account.dto.ItemResponseDto;
+import com.soso.domain.account.dto.PartnerDetailDto;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @file AccountDAO.java
@@ -30,10 +32,10 @@ public class AccountDAO {
     }
 
     /**
-     * 모든 PARTNER 타입 회원의 매장 정보를 조회합니다.
+     * 모든 PARTNER 타입 회원의 매장 정보를 조회합니다. (필터 적용)
      */
-    public List<AccountSearchResponseDto> getAllPartnerStores() {
-        return mybatis.selectList(NAMESPACE + ".getAllPartnerStores");
+    public List<AccountSearchResponseDto> getAllPartnerStores(Map<String, Object> params) {
+        return mybatis.selectList(NAMESPACE + ".getAllPartnerStores", params);
     }
 
     /**
@@ -44,10 +46,10 @@ public class AccountDAO {
     }
 
     /**
-     * 특정 사업장(소상공인)의 등록된 거래처 목록을 조회합니다.
+     * 특정 사업장(소상공인)의 등록된 거래처 목록을 조회합니다. (필터 적용)
      */
-    public List<AccountRelationResponseDto> getPartnerRelationsByBusinessSeq(int businessSeq) {
-        return mybatis.selectList(NAMESPACE + ".getPartnerRelationsByBusinessSeq", businessSeq);
+    public List<AccountRelationResponseDto> getPartnerRelationsByBusinessSeq(Map<String, Object> params) {
+        return mybatis.selectList(NAMESPACE + ".getPartnerRelationsByBusinessSeq", params);
     }
 
     /**
@@ -55,6 +57,13 @@ public class AccountDAO {
      */
     public List<ItemResponseDto> getItemsByPartnerSeq(int partnerSeq) {
         return mybatis.selectList(NAMESPACE + ".getItemsByPartnerSeq", partnerSeq);
+    }
+
+    /**
+     * 특정 거래처(PARTNER)의 상세 정보를 조회합니다.
+     */
+    public PartnerDetailDto getPartnerDetail(int partnerSeq) {
+        return mybatis.selectOne(NAMESPACE + ".getPartnerDetail", partnerSeq);
     }
 
     /**
