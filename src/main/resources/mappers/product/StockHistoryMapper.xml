@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soso.domain.product.dao.StockHistoryDAO">
+
+    <!-- 재고 변동 이력 기록 -->
+    <insert id="insertStockHistory" parameterType="com.soso.domain.product.dto.StockHistoryDTO">
+        INSERT INTO stock_history (
+            stock_seq, 
+            batch_seq, 
+            transaction_type, 
+            change_quantity, 
+            current_total_stock, 
+            detail_stock_name, 
+            price, 
+            expiration_date, 
+            reason, 
+            memo, 
+            created_at
+        ) VALUES (
+            #{stockSeq}, 
+            #{batchSeq}, 
+            #{transactionType}, 
+            #{changeQuantity}, 
+            #{currentTotalStock}, 
+            #{detailStockName}, 
+            #{price}, 
+            #{expirationDate}, 
+            #{reason}, 
+            #{memo}, 
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 대시보드 메인용 최신 5건 고정 조회 -->
+    <select id="getTop5StockHistory" resultType="com.soso.domain.product.dto.StockHistoryDTO">
+        SELECT 
+            history_seq AS historySeq,
+            stock_seq AS stockSeq,
+            batch_seq AS batchSeq,
+            transaction_type AS transactionType,
+            change_quantity AS changeQuantity,
+            current_total_stock AS currentTotalStock,
+            detail_stock_name AS detailStockName,
+            price,
+            expiration_date AS expirationDate,
+            reason,
+            memo,
+            created_at AS createdAt
+        FROM stock_history
+        ORDER BY history_seq DESC
+        LIMIT 5
+    </select>
+
+    <!-- 팝업 모달창용 페이징 쿼리 -->
+    <select id="getStockHistoryWithPaging" resultType="com.soso.domain.product.dto.StockHistoryDTO">
+        SELECT 
+            history_seq AS historySeq,
+            stock_seq AS stockSeq,
+            batch_seq AS batchSeq,
+            transaction_type AS transactionType,
+            change_quantity AS changeQuantity,
+            current_total_stock AS currentTotalStock,
+            detail_stock_name AS detailStockName,
+            price,
+            expiration_date AS expirationDate,
+            reason,
+            memo,
+            created_at AS createdAt
+        FROM stock_history
+        ORDER BY history_seq DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 전체 이력 개수 조회 -->
+    <select id="getTotalHistoryCount" resultType="int">
+        SELECT COUNT(*) FROM stock_history
+    </select>
+
+</mapper>
