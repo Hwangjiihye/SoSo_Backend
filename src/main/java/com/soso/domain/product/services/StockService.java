@@ -1,6 +1,7 @@
 package com.soso.domain.product.services;
 
 import com.soso.domain.product.dao.StockDAO;
+import com.soso.domain.product.dao.StockHistoryDAO;
 import com.soso.domain.product.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ public class StockService {
 
     @Autowired
     private StockDAO stockDAO;
+
+    @Autowired
+    private StockHistoryDAO stockHistoryDAO;
 
     public List<StockDTO> getStockList(Map<String, Object> filters) {
         return stockDAO.selectStockList(filters);
@@ -113,6 +117,20 @@ public class StockService {
             history.setExpirationDate(batch.getExpirationDate());
             history.setPrice(batch.getIncomingPrice());
             stockDAO.insertHistory(history);
+        }
+
+        // 5. 안전재고 미달 체크 (ALERT)
+        StockDTO finalMaster = stockDAO.selectStockBySeq(request.getStockSeq());
+        if (finalMaster != null && finalMaster.getCurrentStock() < finalMaster.getSafetyStock()) {
+            StockHistoryDTO alertHistory = new StockHistoryDTO();
+            alertHistory.setStockSeq(request.getStockSeq());
+            alertHistory.setTransactionType("ALERT");
+            alertHistory.setChangeQuantity(0);
+            alertHistory.setCurrentTotalStock(finalMaster.getCurrentStock());
+            alertHistory.setReason("안전재고 미달");
+            alertHistory.setDetailStockName(finalMaster.getStockName());
+            alertHistory.setMemo("현재 " + finalMaster.getCurrentStock() + "개 - 안전 재고 미만");
+            stockHistoryDAO.insertStockHistory(alertHistory);
         }
     }
 

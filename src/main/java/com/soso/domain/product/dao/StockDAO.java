@@ -75,4 +75,8 @@ public class StockDAO {
     public int selectgetcountExpiringSoon() {
         return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon");
     }
+
+    public List<StockBatchDTO> selectExpiringBatches() {
+        return sqlSession.selectList(NAMESPACE + "selectExpiringBatches");
+    }
 }

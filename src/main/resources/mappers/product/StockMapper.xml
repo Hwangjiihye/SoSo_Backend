@@ -190,4 +190,21 @@
           AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
     </select>
 
+    <select id="selectExpiringBatches" resultType="com.soso.domain.product.dto.StockBatchDTO">
+        SELECT 
+            batch_seq as batchSeq,
+            stock_seq as stockSeq,
+            lot_number as lotNumber,
+            detail_stock_name as detailStockName,
+            initial_quantity as initialQuantity,
+            current_quantity as currentQuantity,
+            incoming_price as incomingPrice,
+            expiration_date as expirationDate,
+            incoming_date as incomingDate
+        FROM stock_batches 
+        WHERE current_quantity > 0 
+          AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+        ORDER BY expiration_date ASC
+    </select>
+
 </mapper>

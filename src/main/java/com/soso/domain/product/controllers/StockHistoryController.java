@@ -34,6 +34,7 @@ public class StockHistoryController {
     public ResponseEntity<Map<String, Object>> getModalHistory(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+    	System.out.println(page);
         Map<String, Object> data = stockHistoryService.getModalHistory(page, size);
         return ResponseEntity.ok(data);
     }
