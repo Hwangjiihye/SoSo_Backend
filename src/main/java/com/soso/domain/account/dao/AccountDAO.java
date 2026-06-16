@@ -63,4 +63,11 @@ public class AccountDAO {
     public int deletePartnerRelation(int relationSeq) {
         return mybatis.delete(NAMESPACE + ".deletePartnerRelation", relationSeq);
     }
+
+    /**
+     * 특정 유저(userSeq)의 첫 번째 매장(storeSeq)을 조회합니다.
+     */
+    public Integer getFirstStoreSeqByUserSeq(int userSeq) {
+        return mybatis.selectOne(NAMESPACE + ".getFirstStoreSeqByUserSeq", userSeq);
+    }
 }

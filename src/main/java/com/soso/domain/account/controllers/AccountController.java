@@ -125,4 +125,19 @@ public class AccountController {
         
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 특정 유저의 첫 번째 매장 시퀀스 조회 API
+     */
+    @GetMapping("/first-store/{userSeq}")
+    public ResponseEntity<Map<String, Object>> getFirstStoreSeq(@PathVariable("userSeq") int userSeq) {
+        logger.info("첫 번째 매장 시퀀스 조회 요청: userSeq={}", userSeq);
+        
+        Integer storeSeq = accountService.getFirstStoreSeqByUserSeq(userSeq);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("storeSeq", storeSeq);
+        
+        return ResponseEntity.ok(response);
+    }
 }

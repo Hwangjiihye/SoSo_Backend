@@ -64,4 +64,11 @@ public class AccountService {
     public boolean deleteAccount(int relationSeq) {
         return accountDAO.deletePartnerRelation(relationSeq) > 0;
     }
+
+    /**
+     * 유저의 첫 번째 매장 시퀀스 조회
+     */
+    public Integer getFirstStoreSeqByUserSeq(int userSeq) {
+        return accountDAO.getFirstStoreSeqByUserSeq(userSeq);
+    }
 }

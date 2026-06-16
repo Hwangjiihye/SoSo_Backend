@@ -100,4 +100,13 @@
         DELETE FROM partner_relations WHERE relation_seq = #{relationSeq}
     </delete>
 
+    <!-- 유저의 첫 번째 매장 ID 조회 -->
+    <select id="getFirstStoreSeqByUserSeq" parameterType="int" resultType="Integer">
+        SELECT store_seq 
+        FROM stores 
+        WHERE user_seq = #{userSeq} 
+        ORDER BY store_seq ASC 
+        LIMIT 1
+    </select>
+
 </mapper>
