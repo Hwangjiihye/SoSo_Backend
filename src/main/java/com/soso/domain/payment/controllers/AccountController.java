@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.soso.domain.payment.dto.AccountDTO;
+import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
 import com.soso.domain.payment.services.AccountService;
 
 @RestController
@@ -49,6 +50,13 @@ public class AccountController {
 			return ResponseEntity.badRequest().body("삭제할 계좌가 없습니다.");
 		}
 		return ResponseEntity.ok("계좌가 삭제 되었습니다.");
+	}
+	
+	// 자동이체 설정 등록
+	@PostMapping("/autoPaymentSchedule")
+	public ResponseEntity<String> autoPaymentSchedule(@RequestBody AutoPaymentScheduleDTO dto) {
+	    accountServ.autoPaymentSchedule(dto);
+	    return ResponseEntity.ok("자동이체 설정이 등록되었습니다.");
 	}
 
 }

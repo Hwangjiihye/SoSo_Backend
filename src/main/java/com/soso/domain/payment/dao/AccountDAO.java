@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.soso.domain.payment.dto.AccountDTO;
+import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
 
 @Repository
 public class AccountDAO {
@@ -32,6 +33,11 @@ public class AccountDAO {
 	// 계좌 삭제 처리: 실제 삭제 X -> Update
 	public int accountDel(Long accountSeq) {
 		return mybatis.update("payment.accountDel", accountSeq);
+	}
+	
+	// 자동이체 설정 등록
+	public int autoPaymentSchedule(AutoPaymentScheduleDTO dto) {
+		return mybatis.insert("payment.autoSchedule", dto);
 	}
 	
 

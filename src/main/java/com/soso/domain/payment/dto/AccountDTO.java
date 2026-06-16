@@ -10,10 +10,11 @@ public class AccountDTO {
 	private String billingKey;
 	private String isActive;
 	private String createAt;
+	private Integer testBalance;
 	
 	public AccountDTO() {}
 	public AccountDTO(Long accountSeq, Long storeSeq, String bankName, String accountNumber, String accountName,
-			String billingKey, String isActive, String createAt) {
+			String billingKey, String isActive, String createAt, Integer testBalance) {
 		super();
 		this.accountSeq = accountSeq;
 		this.storeSeq = storeSeq;
@@ -23,6 +24,7 @@ public class AccountDTO {
 		this.billingKey = billingKey;
 		this.isActive = isActive;
 		this.createAt = createAt;
+		this.testBalance = testBalance;
 	}
 	
 	public Long getAccountSeq() {
@@ -72,5 +74,11 @@ public class AccountDTO {
 	}
 	public void setCreateAt(String createAt) {
 		this.createAt = createAt;
+	}
+	public Integer getTestBalance() {
+		return testBalance;
+	}
+	public void setTestBalance(Integer testBalance) {
+		this.testBalance = testBalance;
 	}
 }
