@@ -200,7 +200,7 @@ public class StockService {
         stockDAO.deleteStock(stockSeq);
     }
 
-    public int getcountExpiringSoon() {
-        return stockDAO.selectgetcountExpiringSoon();
+    public int getcountExpiringSoon(Map<String, Object> filters) {
+        return stockDAO.getcountExpiringSoon(filters);
     }
 }

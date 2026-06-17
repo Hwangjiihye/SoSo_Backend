@@ -6,6 +6,7 @@ public class OrderDTO { // 발주서 작성
 	
 	private Long orderSeq;
 	private Long buyerSeq;
+	private Integer buyerStoreSeq;
 	private Long sellerSeq;
 	private Integer totalAmount;
 	private String status;
@@ -33,12 +34,13 @@ public class OrderDTO { // 발주서 작성
 	}
 
 	public OrderDTO() {}
-	public OrderDTO(Long orderSeq, Long buyerSeq, Long sellerSeq, Integer totalAmount, String status, String createdAt,
+	public OrderDTO(Long orderSeq, Long buyerSeq, Integer buyerStoreSeq, Long sellerSeq, Integer totalAmount, String status, String createdAt,
 			String orderNo, String zonecode, String address1, String address2, String orderMemo,
 			List<OrderSaveItemDTO> items) {
 		super();
 		this.orderSeq = orderSeq;
 		this.buyerSeq = buyerSeq;
+		this.buyerStoreSeq = buyerStoreSeq;
 		this.sellerSeq = sellerSeq;
 		this.totalAmount = totalAmount;
 		this.status = status;
@@ -65,6 +67,14 @@ public class OrderDTO { // 발주서 작성
 
 	public void setBuyerSeq(Long buyerSeq) {
 		this.buyerSeq = buyerSeq;
+	}
+
+	public Integer getBuyerStoreSeq() {
+		return buyerStoreSeq;
+	}
+
+	public void setBuyerStoreSeq(Integer buyerStoreSeq) {
+		this.buyerStoreSeq = buyerStoreSeq;
 	}
 
 	public Long getSellerSeq() {

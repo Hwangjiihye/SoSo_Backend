@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FinanceMapper">
+
+    <select id="getFinanceList" parameterType="map" resultType="com.soso.domain.finance.dto.FinanceDTO">
+        SELECT 
+            finance_seq AS financeSeq,
+            user_seq AS userSeq,
+            store_seq AS storeSeq,
+            type,
+            amount,
+            category,
+            description,
+            target_date AS targetDate,
+            created_at AS createdAt
+        FROM finances
+        WHERE store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
+        <if test="startDate != null and startDate != ''">
+            AND target_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND target_date &lt;= #{endDate}
+        </if>
+        <if test="type != null and type != '' and type != 'ALL'">
+            AND type = #{type}
+        </if>
+        ORDER BY target_date DESC, finance_seq DESC
+    </select>
+
+    <select id="getDailySummary" parameterType="map" resultType="map">
+        SELECT 
+            target_date AS targetDate,
+            SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) AS totalIncome,
+            SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) AS totalExpense
+        FROM finances
+        WHERE store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
+          AND target_date LIKE CONCAT(#{yearMonth}, '%')
+        GROUP BY target_date
+        ORDER BY target_date ASC
+    </select>
+
+</mapper>

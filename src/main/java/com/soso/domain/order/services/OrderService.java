@@ -74,9 +74,9 @@ public class OrderService {
 	    return result;
 	}
 	
-	// 발주서 목록으로 출력 + 검색 기능
-	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
-		return dao.orderList(userSeq, keyword);
+	// 발주서 목록으로 출력 + 검색 및 필터링 기능
+	public List<OrderListDTO> orderList(Long userSeq, String keyword, String status, String startDate, String endDate) {
+		return dao.orderList(userSeq, keyword, status, startDate, endDate);
 	}
 	
 	// 웹소켓

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GroupBuyMapper">
+
+    <select id="getGroupBuyListByUser" parameterType="map" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
+        SELECT 
+            gb.group_buy_seq AS groupBuySeq,
+            gb.item_seq AS itemSeq,
+            gbp.store_seq AS storeSeq,
+            i.item_name AS itemName,
+            gb.target_quantity AS targetQuantity,
+            gb.current_quantity AS currentQuantity,
+            gb.end_date AS endDate,
+            gb.status,
+            gb.created_at AS createdAt
+        FROM group_buys gb
+        JOIN items i ON gb.item_seq = i.item_seq
+        JOIN group_buy_participants gbp ON gb.group_buy_seq = gbp.group_buy_seq
+        WHERE gbp.store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
+        ORDER BY gb.created_at DESC
+    </select>
+
+</mapper>

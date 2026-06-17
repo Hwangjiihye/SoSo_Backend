@@ -72,8 +72,8 @@ public class StockDAO {
         sqlSession.delete(NAMESPACE + "deleteHistoryByStockSeq", stockSeq);
     }
 
-    public int selectgetcountExpiringSoon() {
-        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon");
+    public int getcountExpiringSoon(Map<String, Object> filters) {
+        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon", filters);
     }
 
     public List<StockBatchDTO> selectExpiringBatches() {

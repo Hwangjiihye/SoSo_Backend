@@ -32,19 +32,34 @@ public class StockHistoryDAO {
     }
 
     /**
-     * 팝업 모달창용 페이징 쿼리
+     * 팝업 모달창용 페이징 쿼리 (필터링 추가)
      */
-    public List<StockHistoryDTO> getStockHistoryWithPaging(int offset, int size) {
+    public List<StockHistoryDTO> getStockHistoryWithPaging(int offset, int size, int userSeq, Integer storeSeq, Integer stockSeq, String transactionType, String startDate, String endDate, String keyword) {
         Map<String, Object> params = new HashMap<>();
         params.put("offset", offset);
         params.put("size", size);
+        params.put("userSeq", userSeq);
+        params.put("storeSeq", storeSeq);
+        params.put("stockSeq", stockSeq);
+        params.put("transactionType", transactionType);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
+        params.put("keyword", keyword);
         return sqlSession.selectList(NAMESPACE + "getStockHistoryWithPaging", params);
     }
 
     /**
-     * 전체 이력 개수 조회 (페이징용)
+     * 전체 이력 개수 조회 (필터링 추가)
      */
-    public int getTotalHistoryCount() {
-        return sqlSession.selectOne(NAMESPACE + "getTotalHistoryCount");
+    public int getTotalHistoryCount(int userSeq, Integer storeSeq, Integer stockSeq, String transactionType, String startDate, String endDate, String keyword) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userSeq", userSeq);
+        params.put("storeSeq", storeSeq);
+        params.put("stockSeq", stockSeq);
+        params.put("transactionType", transactionType);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
+        params.put("keyword", keyword);
+        return sqlSession.selectOne(NAMESPACE + "getTotalHistoryCount", params);
     }
 }
