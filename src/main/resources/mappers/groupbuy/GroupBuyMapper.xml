@@ -6,7 +6,6 @@
         SELECT 
             gb.group_buy_seq AS groupBuySeq,
             gb.item_seq AS itemSeq,
-            gbp.store_seq AS storeSeq,
             i.item_name AS itemName,
             gb.target_quantity AS targetQuantity,
             gb.current_quantity AS currentQuantity,
@@ -16,11 +15,8 @@
         FROM group_buys gb
         JOIN items i ON gb.item_seq = i.item_seq
         JOIN group_buy_participants gbp ON gb.group_buy_seq = gbp.group_buy_seq
-        WHERE gbp.store_seq = (
-            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
-            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
-            END
-        )
+        JOIN stores s ON gbp.user_seq = s.user_seq
+        WHERE s.user_seq = #{userSeq}
         ORDER BY gb.created_at DESC
     </select>
 

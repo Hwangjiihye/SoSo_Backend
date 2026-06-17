@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class StockHistoryDTO {
     private int historySeq;
     private int stockSeq;
+    private int storeSeq;
     private Integer batchSeq;
     private String transactionType;
     private int changeQuantity;
@@ -23,6 +24,8 @@ public class StockHistoryDTO {
     public void setHistorySeq(int historySeq) { this.historySeq = historySeq; }
     public int getStockSeq() { return stockSeq; }
     public void setStockSeq(int stockSeq) { this.stockSeq = stockSeq; }
+    public int getStoreSeq() { return storeSeq; }
+    public void setStoreSeq(int storeSeq) { this.storeSeq = storeSeq; }
     public Integer getBatchSeq() { return batchSeq; }
     public void setBatchSeq(Integer batchSeq) { this.batchSeq = batchSeq; }
     public String getTransactionType() { return transactionType; }

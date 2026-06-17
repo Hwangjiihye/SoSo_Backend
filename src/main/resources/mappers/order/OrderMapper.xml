@@ -81,7 +81,7 @@
     		o.order_seq as orderSeq,
     		o.order_no as orderNo,
     		o.seller_seq as sellerSeq,
-    		o.buyer_store_seq as buyerStoreSeq,
+    		o.buyer_seq as buyerSeq,
     		o.status as status,
     		o.created_at as createdAt,
     		o.total_amount as totalAmount,
@@ -104,11 +104,7 @@
     	join order_items oi
     		on o.order_seq = oi.order_seq
     	
-    	where o.buyer_store_seq = (
-            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
-            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
-            END
-        )
+    	where o.buyer_seq = #{userSeq}
 
 		<if test="keyword != null and keyword != ''">
 		    and (
@@ -131,7 +127,7 @@
 	        o.order_seq,
 	        o.order_no,
 	        o.seller_seq,
-	        o.buyer_store_seq,
+	        o.buyer_seq,
 	        o.status,
 	        o.created_at,
 	        o.total_amount,
@@ -155,5 +151,36 @@
 	    WHERE order_seq = #{orderSeq}
 	</select>
     
+    <!-- 8. 발주 상세 - 기본 정보 -->
+    <select id="findOrderInfoBySeq" parameterType="long" resultType="map">
+        SELECT 
+            o.order_seq AS orderSeq,
+            o.order_no AS orderNo,
+            o.status AS status,
+            o.created_at AS createdAt,
+            o.total_amount AS totalAmount,
+            o.order_memo AS orderMemo,
+            o.zonecode,
+            o.address1,
+            o.address2,
+            st.company_name AS companyName
+        FROM orders o
+        JOIN stores st ON o.seller_seq = st.user_seq
+        WHERE o.order_seq = #{orderSeq}
+    </select>
+
+    <!-- 9. 발주 상세 - 품목 리스트 -->
+    <select id="findOrderItemsBySeq" parameterType="long" resultType="map">
+        SELECT 
+            order_item_seq AS orderItemSeq,
+            item_name AS itemName,
+            category_name AS categoryName,
+            quantity,
+            spec,
+            unit_price AS unitPrice,
+            total_price AS totalPrice
+        FROM order_items
+        WHERE order_seq = #{orderSeq}
+    </select>
    
 </mapper>

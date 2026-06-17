@@ -84,6 +84,7 @@ public class OrderController {
 	@GetMapping("/list")
 	public ResponseEntity<List<OrderListDTO>> orderList(
 			HttpServletRequest request, 
+			@RequestParam(value = "storeSeq", required = false) Integer storeSeq,
 			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "status", required = false) String status,
 			@RequestParam(value = "startDate", required = false) String startDate,
@@ -91,9 +92,16 @@ public class OrderController {
 		
 		Long userSeq = (Long) request.getAttribute("user_seq");
 		
-		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, keyword, status, startDate, endDate);
+		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, storeSeq, keyword, status, startDate, endDate);
 		
 		return ResponseEntity.ok(orderList);
+	}
+	
+	// 발주서 상세 내역 조회
+	@GetMapping("/list/{orderSeq}")
+	public ResponseEntity<Map<String, Object>> getOrderDetail(@PathVariable Long orderSeq) {
+		Map<String, Object> detail = OrderServ.getOrderDetail(orderSeq);
+		return ResponseEntity.ok(detail);
 	}
 	
 	// 웹소켓 사용자 확인

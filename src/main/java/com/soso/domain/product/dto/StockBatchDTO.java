@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public class StockBatchDTO {
     private int batchSeq;
     private int stockSeq;
+    private int storeSeq;
     private String lotNumber;
     private String detailStockName;
     private int initialQuantity;
@@ -19,6 +20,8 @@ public class StockBatchDTO {
     public void setBatchSeq(int batchSeq) { this.batchSeq = batchSeq; }
     public int getStockSeq() { return stockSeq; }
     public void setStockSeq(int stockSeq) { this.stockSeq = stockSeq; }
+    public int getStoreSeq() { return storeSeq; }
+    public void setStoreSeq(int storeSeq) { this.storeSeq = storeSeq; }
     public String getLotNumber() { return lotNumber; }
     public void setLotNumber(String lotNumber) { this.lotNumber = lotNumber; }
     public String getDetailStockName() { return detailStockName; }

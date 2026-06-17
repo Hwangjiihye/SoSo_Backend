@@ -6,7 +6,6 @@
         SELECT 
             finance_seq AS financeSeq,
             user_seq AS userSeq,
-            store_seq AS storeSeq,
             type,
             amount,
             category,
@@ -14,11 +13,7 @@
             target_date AS targetDate,
             created_at AS createdAt
         FROM finances
-        WHERE store_seq = (
-            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
-            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
-            END
-        )
+        WHERE user_seq = #{userSeq}
         <if test="startDate != null and startDate != ''">
             AND target_date &gt;= #{startDate}
         </if>
@@ -37,11 +32,7 @@
             SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) AS totalIncome,
             SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) AS totalExpense
         FROM finances
-        WHERE store_seq = (
-            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
-            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
-            END
-        )
+        WHERE user_seq = #{userSeq}
           AND target_date LIKE CONCAT(#{yearMonth}, '%')
         GROUP BY target_date
         ORDER BY target_date ASC

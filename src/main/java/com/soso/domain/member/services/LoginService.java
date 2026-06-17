@@ -1,6 +1,7 @@
 package com.soso.domain.member.services;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,5 +53,8 @@ public class LoginService {
 		
 		// 6. 전부 맞으면 회원 정보 반환
 		return member;
+	}
+	public List<Integer> getStoreListByUserSeq(Long userSeq) {
+	    return LoginDAO.getStoreListByUserSeq(userSeq);
 	}
 }

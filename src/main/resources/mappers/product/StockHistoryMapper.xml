@@ -6,6 +6,7 @@
     <insert id="insertStockHistory" parameterType="com.soso.domain.product.dto.StockHistoryDTO">
         INSERT INTO stock_history (
             stock_seq, 
+            store_seq,
             batch_seq, 
             transaction_type, 
             change_quantity, 
@@ -18,6 +19,7 @@
             created_at
         ) VALUES (
             #{stockSeq}, 
+            #{storeSeq},
             #{batchSeq}, 
             #{transactionType}, 
             #{changeQuantity}, 
@@ -32,10 +34,11 @@
     </insert>
 
     <!-- 대시보드 메인용 최신 5건 고정 조회 -->
-    <select id="getTop5StockHistory" resultType="com.soso.domain.product.dto.StockHistoryDTO">
+    <select id="getTop5StockHistory" parameterType="map" resultType="com.soso.domain.product.dto.StockHistoryDTO">
         SELECT 
             history_seq AS historySeq,
             stock_seq AS stockSeq,
+            store_seq AS storeSeq,
             batch_seq AS batchSeq,
             transaction_type AS transactionType,
             change_quantity AS changeQuantity,
@@ -47,6 +50,11 @@
             memo,
             created_at AS createdAt
         FROM stock_history
+        WHERE store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
         ORDER BY history_seq DESC
         LIMIT 5
     </select>

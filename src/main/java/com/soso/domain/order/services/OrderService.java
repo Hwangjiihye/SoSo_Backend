@@ -75,8 +75,23 @@ public class OrderService {
 	}
 	
 	// 발주서 목록으로 출력 + 검색 및 필터링 기능
-	public List<OrderListDTO> orderList(Long userSeq, String keyword, String status, String startDate, String endDate) {
-		return dao.orderList(userSeq, keyword, status, startDate, endDate);
+	public List<OrderListDTO> orderList(Long userSeq, Integer storeSeq, String keyword, String status, String startDate, String endDate) {
+		return dao.orderList(userSeq, storeSeq, keyword, status, startDate, endDate);
+	}
+
+	// 발주서 상세 내역 조회
+	public Map<String, Object> getOrderDetail(Long orderSeq) {
+		Map<String, Object> result = new HashMap<>();
+		
+		// 1. 발주서 기본 정보 (상대 거래처명 포함)
+		Map<String, Object> orderInfo = dao.findOrderInfoBySeq(orderSeq);
+		result.put("orderInfo", orderInfo);
+		
+		// 2. 발주 품목 리스트
+		List<Map<String, Object>> items = dao.findOrderItemsBySeq(orderSeq);
+		result.put("items", items);
+		
+		return result;
 	}
 	
 	// 웹소켓

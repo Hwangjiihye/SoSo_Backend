@@ -56,10 +56,11 @@ public class OrderDAO {
 	}
 		
 	// 발주서 목록으로 출력 + 검색 및 필터링 기능
-	public List<OrderListDTO> orderList(Long userSeq, String keyword, String status, String startDate, String endDate) {
+	public List<OrderListDTO> orderList(Long userSeq, Integer storeSeq, String keyword, String status, String startDate, String endDate) {
 
 		Map<String, Object> params = new HashMap<>();
 		params.put("userSeq", userSeq);
+		params.put("storeSeq", storeSeq);
 		params.put("keyword", keyword);
 		params.put("status", status);
 		params.put("startDate", startDate);
@@ -81,6 +82,16 @@ public class OrderDAO {
 	// orderSeq로 사업자 buyer_seq 조회
 	public Long findBuyerSeqByOrderSeq(Long orderSeq) {
 	    return mybatis.selectOne("order.findBuyerSeqByOrderSeq", orderSeq);
+	}
+	
+	// 발주 상세 - 기본 정보
+	public Map<String, Object> findOrderInfoBySeq(Long orderSeq) {
+		return mybatis.selectOne("order.findOrderInfoBySeq", orderSeq);
+	}
+
+	// 발주 상세 - 품목 리스트
+	public List<Map<String, Object>> findOrderItemsBySeq(Long orderSeq) {
+		return mybatis.selectList("order.findOrderItemsBySeq", orderSeq);
 	}
 	
 }
