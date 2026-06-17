@@ -1,6 +1,7 @@
 package com.soso.domain.member.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,12 +63,11 @@ public class AuthController {
 			result.put("company_name", member.get("company_name"));
 //			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
 			
-			System.out.println("dto id = " + dto.getId());
-			System.out.println("dto pw = " + dto.getPw());
-			System.out.println("userType : " + dto.getUser_type());
-			System.out.println("조회 결과 = " + member.get("user_seq"));
+			List<Integer> storeList = LoginServ.getStoreListByUserSeq(userSeq);
+			System.out.println("storeseq : "+storeList.get(0));
+			result.put("selectedStoreSeq", storeList.get(0));
 			
-			System.out.println(token);
+			
 			return ResponseEntity.ok(result);
 		}
 		// 정보가 틀리다면 토큰 인증 실패

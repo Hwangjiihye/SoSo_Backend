@@ -1,5 +1,6 @@
 package com.soso.domain.member.dao;
 
+import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
@@ -20,6 +21,9 @@ public class LoginDAO {
 		
 		return mybatis.selectOne("Login.toLogin", dto);
 	}
-	
+	public List<Integer> getStoreListByUserSeq(Long userSeq) {
+	    // "LoginMapper"는 실제 XML의 namespace로 맞춰주게나
+	    return mybatis.selectList("Login.getStoreListByUserSeq", userSeq);
+	}
 	
 }
