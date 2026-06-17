@@ -5,6 +5,7 @@
     <select id="selectStockList" parameterType="map" resultType="com.soso.domain.product.dto.StockDTO">
 		SELECT
 		s.stock_seq as stockSeq,
+        s.store_seq as storeSeq,
 		s.stock_name as stockName,
 		s.category,
 		s.unit,
@@ -15,16 +16,17 @@
 		s.updated_at as updatedAt,
 		(SELECT MIN(DATEDIFF(expiration_date, CURRENT_DATE()))
 		FROM stock_batches
-		WHERE stock_seq = s.stock_seq
+		WHERE stock_seq = s.stock_seq AND store_seq = #{storeSeq}
 		AND current_quantity > 0
 		AND expiration_date >= CURRENT_DATE()) as daysUntilExpiry,
 		(SELECT MIN(DATEDIFF(expiration_date, CURRENT_DATE()))
 		FROM stock_batches
-		WHERE stock_seq = s.stock_seq AND current_quantity > 0) as remainedDays
+		WHERE stock_seq = s.stock_seq AND store_seq = #{storeSeq} AND current_quantity > 0) as remainedDays
 		FROM stocks s
         <where>
+            s.store_seq = #{storeSeq}
             <if test="search != null and search != ''">
-               s.stock_name LIKE CONCAT('%', #{search}, '%')
+               AND s.stock_name LIKE CONCAT('%', #{search}, '%')
             </if>
             
             <if test="category != null and category != '' and category != 'ALL'">
@@ -46,7 +48,8 @@
                         AND s.stock_seq IN (
                             SELECT DISTINCT stock_seq 
                             FROM stock_batches 
-                            WHERE current_quantity &gt; 0 
+                            WHERE store_seq = #{storeSeq}
+                              AND current_quantity &gt; 0 
                               AND DATEDIFF(expiration_date, CURRENT_DATE()) BETWEEN 0 AND 7
                         )
                     </when>
@@ -56,14 +59,15 @@
         ORDER BY s.stock_seq DESC
     </select>
 
-    <insert id="insertStock" parameterType="com.soso.domain.product.dto.StockDTO">
-        INSERT INTO stocks (stock_name, category, unit, safety_stock, default_expiry_days, current_stock)
-        VALUES (#{stockName}, #{category}, #{unit}, #{safetyStock}, #{defaultExpiryDays}, 0)
+    <insert id="insertStock" parameterType="map">
+        INSERT INTO stocks (store_seq, stock_name, category, unit, safety_stock, default_expiry_days, current_stock)
+        VALUES (#{storeSeq}, #{stockName}, #{category}, #{unit}, #{safetyStock}, #{defaultExpiryDays}, 0)
     </insert>
 
-    <select id="selectStockBySeq" parameterType="int" resultType="com.soso.domain.product.dto.StockDTO">
+    <select id="selectStockBySeq" parameterType="map" resultType="com.soso.domain.product.dto.StockDTO">
         SELECT 
             stock_seq as stockSeq,
+            store_seq as storeSeq,
             stock_name as stockName,
             category,
             unit,
@@ -73,30 +77,31 @@
             created_at as createdAt,
             updated_at as updatedAt
         FROM stocks 
-        WHERE stock_seq = #{stockSeq}
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </select>
 
     <update id="updateCurrentStock" parameterType="map">
         UPDATE stocks 
         SET current_stock = current_stock + #{changeQuantity},
             updated_at = CURRENT_TIMESTAMP
-        WHERE stock_seq = #{stockSeq}
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </update>
 
     <insert id="insertBatch" parameterType="com.soso.domain.product.dto.StockBatchDTO" useGeneratedKeys="true" keyProperty="batchSeq">
         INSERT INTO stock_batches (
-            stock_seq, lot_number, detail_stock_name, initial_quantity, 
+            stock_seq, store_seq, lot_number, detail_stock_name, initial_quantity, 
             current_quantity, incoming_price, expiration_date, incoming_date
         ) VALUES (
-            #{stockSeq}, #{lotNumber}, #{detailStockName}, #{initialQuantity}, 
+            #{stockSeq}, #{storeSeq}, #{lotNumber}, #{detailStockName}, #{initialQuantity}, 
             #{currentQuantity}, #{incomingPrice}, #{expirationDate}, CURRENT_DATE
         )
     </insert>
 
-    <select id="selectAvailableBatches" parameterType="int" resultType="com.soso.domain.product.dto.StockBatchDTO">
+    <select id="selectAvailableBatches" parameterType="map" resultType="com.soso.domain.product.dto.StockBatchDTO">
         SELECT 
             batch_seq as batchSeq,
             stock_seq as stockSeq,
+            store_seq as storeSeq,
             lot_number as lotNumber,
             detail_stock_name as detailStockName,
             initial_quantity as initialQuantity,
@@ -105,30 +110,31 @@
             expiration_date as expirationDate,
             incoming_date as incomingDate
         FROM stock_batches 
-        WHERE stock_seq = #{stockSeq} AND current_quantity > 0
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq} AND current_quantity > 0
         ORDER BY expiration_date ASC, batch_seq ASC
     </select>
 
     <update id="updateBatchQuantity" parameterType="com.soso.domain.product.dto.StockBatchDTO">
         UPDATE stock_batches 
         SET current_quantity = #{currentQuantity}
-        WHERE batch_seq = #{batchSeq}
+        WHERE batch_seq = #{batchSeq} AND store_seq = #{storeSeq}
     </update>
 
     <insert id="insertHistory" parameterType="com.soso.domain.product.dto.StockHistoryDTO">
         INSERT INTO stock_history (
-            stock_seq, batch_seq, transaction_type, change_quantity, 
+            stock_seq, store_seq, batch_seq, transaction_type, change_quantity, 
             current_total_stock, detail_stock_name, price, expiration_date, reason, memo, created_at
         ) VALUES (
-            #{stockSeq}, #{batchSeq}, #{transactionType}, #{changeQuantity}, 
+            #{stockSeq}, #{storeSeq}, #{batchSeq}, #{transactionType}, #{changeQuantity}, 
             #{currentTotalStock}, #{detailStockName}, #{price}, #{expirationDate}, #{reason}, #{memo}, CURRENT_TIMESTAMP
         )
     </insert>
 
-    <select id="selectBatchesByStockSeq" parameterType="int" resultType="com.soso.domain.product.dto.StockBatchDTO">
+    <select id="selectBatchesByStockSeq" parameterType="map" resultType="com.soso.domain.product.dto.StockBatchDTO">
         SELECT 
             batch_seq as batchSeq,
             stock_seq as stockSeq,
+            store_seq as storeSeq,
             lot_number as lotNumber,
             detail_stock_name as detailStockName,
             initial_quantity as initialQuantity,
@@ -137,14 +143,15 @@
             expiration_date as expirationDate,
             incoming_date as incomingDate
         FROM stock_batches 
-        WHERE stock_seq = #{stockSeq} 
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
         ORDER BY expiration_date ASC
     </select>
 
-    <select id="selectHistoriesByStockSeq" parameterType="int" resultType="com.soso.domain.product.dto.StockHistoryDTO">
+    <select id="selectHistoriesByStockSeq" parameterType="map" resultType="com.soso.domain.product.dto.StockHistoryDTO">
         SELECT 
             history_seq as historySeq,
             stock_seq as stockSeq,
+            store_seq as storeSeq,
             batch_seq as batchSeq,
             transaction_type as transactionType,
             change_quantity as changeQuantity,
@@ -156,7 +163,7 @@
             memo,
             created_at as createdAt
         FROM stock_history 
-        WHERE stock_seq = #{stockSeq} 
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
         ORDER BY created_at DESC
     </select>
 
@@ -168,25 +175,26 @@
             safety_stock = #{safetyStock},
             default_expiry_days = #{defaultExpiryDays},
             updated_at = CURRENT_TIMESTAMP
-        WHERE stock_seq = #{stockSeq}
+        WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </update>
 
-    <delete id="deleteStock" parameterType="int">
-        DELETE FROM stocks WHERE stock_seq = #{stockSeq}
+    <delete id="deleteStock" parameterType="map">
+        DELETE FROM stocks WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </delete>
 
-    <delete id="deleteBatchesByStockSeq" parameterType="int">
-        DELETE FROM stock_batches WHERE stock_seq = #{stockSeq}
+    <delete id="deleteBatchesByStockSeq" parameterType="map">
+        DELETE FROM stock_batches WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </delete>
 
-    <delete id="deleteHistoryByStockSeq" parameterType="int">
-        DELETE FROM stock_history WHERE stock_seq = #{stockSeq}
+    <delete id="deleteHistoryByStockSeq" parameterType="map">
+        DELETE FROM stock_history WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </delete>
 
-    <select id="selectgetcountExpiringSoon" resultType="int">
+    <select id="selectgetcountExpiringSoon" parameterType="int" resultType="int">
         SELECT COUNT(*) 
         FROM stock_batches 
         WHERE current_quantity > 0 
+          AND store_seq = #{storeSeq}
           AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
     </select>
 
@@ -194,6 +202,7 @@
         SELECT 
             batch_seq as batchSeq,
             stock_seq as stockSeq,
+            store_seq as storeSeq,
             lot_number as lotNumber,
             detail_stock_name as detailStockName,
             initial_quantity as initialQuantity,

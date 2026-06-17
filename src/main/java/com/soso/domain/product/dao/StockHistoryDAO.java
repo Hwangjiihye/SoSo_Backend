@@ -27,24 +27,25 @@ public class StockHistoryDAO {
     /**
      * 대시보드 메인용 최신 5건 고정 조회
      */
-    public List<StockHistoryDTO> getTop5StockHistory() {
-        return sqlSession.selectList(NAMESPACE + "getTop5StockHistory");
+    public List<StockHistoryDTO> getTop5StockHistory(int storeSeq) {
+        return sqlSession.selectList(NAMESPACE + "getTop5StockHistory", storeSeq);
     }
 
     /**
      * 팝업 모달창용 페이징 쿼리
      */
-    public List<StockHistoryDTO> getStockHistoryWithPaging(int offset, int size) {
+    public List<StockHistoryDTO> getStockHistoryWithPaging(int offset, int size, int storeSeq) {
         Map<String, Object> params = new HashMap<>();
         params.put("offset", offset);
         params.put("size", size);
+        params.put("storeSeq", storeSeq);
         return sqlSession.selectList(NAMESPACE + "getStockHistoryWithPaging", params);
     }
 
     /**
      * 전체 이력 개수 조회 (페이징용)
      */
-    public int getTotalHistoryCount() {
-        return sqlSession.selectOne(NAMESPACE + "getTotalHistoryCount");
+    public int getTotalHistoryCount(int storeSeq) {
+        return sqlSession.selectOne(NAMESPACE + "getTotalHistoryCount", storeSeq);
     }
 }

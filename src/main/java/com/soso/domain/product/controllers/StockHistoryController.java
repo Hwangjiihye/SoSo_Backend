@@ -2,6 +2,7 @@ package com.soso.domain.product.controllers;
 
 import com.soso.domain.product.dto.StockHistoryDTO;
 import com.soso.domain.product.services.StockHistoryService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,21 +22,21 @@ public class StockHistoryController {
      * 대시보드 메인 화면용 최신 5건 DTO 리스트 반환
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<List<StockHistoryDTO>> getDashboardHistory() {
-        List<StockHistoryDTO> history = stockHistoryService.getDashboardHistory();
+    public ResponseEntity<List<StockHistoryDTO>> getDashboardHistory(@RequestParam int storeSeq) {
+        List<StockHistoryDTO> history = stockHistoryService.getDashboardHistory(storeSeq);
         return ResponseEntity.ok(history);
     }
 
     /**
      * GET /api/stock-history/modal
-     * 모달창용 페이징 데이터 반환 (page: 페이지 번호, size: 페이지당 항목 수)
+     * 모달창용 페이징 데이터 반환
      */
     @GetMapping("/modal")
     public ResponseEntity<Map<String, Object>> getModalHistory(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-    	System.out.println(page);
-        Map<String, Object> data = stockHistoryService.getModalHistory(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam int storeSeq) {
+        Map<String, Object> data = stockHistoryService.getModalHistory(page, size, storeSeq);
         return ResponseEntity.ok(data);
     }
 }

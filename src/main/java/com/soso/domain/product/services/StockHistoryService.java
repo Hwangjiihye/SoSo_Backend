@@ -19,18 +19,18 @@ public class StockHistoryService {
     /**
      * 대시보드 메인 화면용 최신 5건 조회
      */
-    public List<StockHistoryDTO> getDashboardHistory() {
-        return stockHistoryDAO.getTop5StockHistory();
+    public List<StockHistoryDTO> getDashboardHistory(int storeSeq) {
+        return stockHistoryDAO.getTop5StockHistory(storeSeq);
     }
 
     /**
      * 모달창용 페이징 데이터 조회
      */
-    public Map<String, Object> getModalHistory(int page, int size) {
+    public Map<String, Object> getModalHistory(int page, int size, int storeSeq) {
         int offset = (page - 1) * size;
         
-        List<StockHistoryDTO> historyList = stockHistoryDAO.getStockHistoryWithPaging(offset, size);
-        int totalCount = stockHistoryDAO.getTotalHistoryCount();
+        List<StockHistoryDTO> historyList = stockHistoryDAO.getStockHistoryWithPaging(offset, size, storeSeq);
+        int totalCount = stockHistoryDAO.getTotalHistoryCount(storeSeq);
         
         Map<String, Object> response = new HashMap<>();
         response.put("historyList", historyList);

@@ -27,13 +27,13 @@ public class StockService {
         return stockDAO.selectStockList(filters);
     }
 
-    public void createStock(StockDTO stock) {
-        stockDAO.insertStock(stock);
+    public void createStock(int storeSeq,StockDTO stock) {
+        stockDAO.insertStock(storeSeq,stock);
     }
 
     @Transactional
-    public void processIncoming(StockIncomingDTO incoming) {
-        StockDTO master = stockDAO.selectStockBySeq(incoming.getStockSeq());
+    public void processIncoming(StockIncomingDTO incoming, int storeSeq) {
+        StockDTO master = stockDAO.selectStockBySeq(incoming.getStockSeq(), storeSeq);
         if (master == null) {
             throw new RuntimeException("존재하지 않는 품목입니다.");
         }
@@ -51,6 +51,7 @@ public class StockService {
         // 3. 배치 등록
         StockBatchDTO batch = new StockBatchDTO();
         batch.setStockSeq(incoming.getStockSeq());
+        batch.setStoreSeq(storeSeq);
         batch.setLotNumber(lotNumber);
         batch.setDetailStockName(incoming.getDetailStockName());
         batch.setInitialQuantity(incoming.getQuantity());
@@ -60,12 +61,13 @@ public class StockService {
         stockDAO.insertBatch(batch);
 
         // 4. 마스터 총재고 업데이트
-        updateMasterStock(incoming.getStockSeq(), incoming.getQuantity());
+        updateMasterStock(incoming.getStockSeq(), incoming.getQuantity(), storeSeq);
 
         // 5. 이력 기록
-        StockDTO updatedMaster = stockDAO.selectStockBySeq(incoming.getStockSeq());
+        StockDTO updatedMaster = stockDAO.selectStockBySeq(incoming.getStockSeq(), storeSeq);
         StockHistoryDTO history = new StockHistoryDTO();
         history.setStockSeq(incoming.getStockSeq());
+        history.setStoreSeq(storeSeq);
         history.setBatchSeq(batch.getBatchSeq());
         history.setTransactionType("INCOMING");
         history.setChangeQuantity(incoming.getQuantity());
@@ -79,11 +81,11 @@ public class StockService {
     }
 
     @Transactional
-    public void processOutbound(StockOutboundRequest request) {
+    public void processOutbound(StockOutboundRequest request, int storeSeq) {
         int remainingToOut = request.getQuantity();
         
         // 1. FIFO 기준 배치 조회 (유통기한 임박순)
-        List<StockBatchDTO> batches = stockDAO.selectAvailableBatches(request.getStockSeq());
+        List<StockBatchDTO> batches = stockDAO.selectAvailableBatches(request.getStockSeq(), storeSeq);
         
         if (batches.isEmpty() || batches.stream().mapToInt(StockBatchDTO::getCurrentQuantity).sum() < remainingToOut) {
             throw new RuntimeException("재고가 부족하여 출고를 완료할 수 없습니다.");
@@ -101,12 +103,13 @@ public class StockService {
             remainingToOut -= deductQty;
             
             // 3. 마스터 총재고 차감
-            updateMasterStock(request.getStockSeq(), -deductQty);
+            updateMasterStock(request.getStockSeq(), -deductQty, storeSeq);
             
             // 4. 이력 기록
-            StockDTO currentMaster = stockDAO.selectStockBySeq(request.getStockSeq());
+            StockDTO currentMaster = stockDAO.selectStockBySeq(request.getStockSeq(), storeSeq);
             StockHistoryDTO history = new StockHistoryDTO();
             history.setStockSeq(request.getStockSeq());
+            history.setStoreSeq(storeSeq);
             history.setBatchSeq(batch.getBatchSeq());
             history.setTransactionType("OUTBOUND");
             history.setChangeQuantity(-deductQty);
@@ -120,10 +123,11 @@ public class StockService {
         }
 
         // 5. 안전재고 미달 체크 (ALERT)
-        StockDTO finalMaster = stockDAO.selectStockBySeq(request.getStockSeq());
+        StockDTO finalMaster = stockDAO.selectStockBySeq(request.getStockSeq(), storeSeq);
         if (finalMaster != null && finalMaster.getCurrentStock() < finalMaster.getSafetyStock()) {
             StockHistoryDTO alertHistory = new StockHistoryDTO();
             alertHistory.setStockSeq(request.getStockSeq());
+            alertHistory.setStoreSeq(storeSeq);
             alertHistory.setTransactionType("ALERT");
             alertHistory.setChangeQuantity(0);
             alertHistory.setCurrentTotalStock(finalMaster.getCurrentStock());
@@ -135,10 +139,10 @@ public class StockService {
     }
 
     @Transactional
-    public void processAdjust(StockAdjustRequest request) {
+    public void processAdjust(StockAdjustRequest request, int storeSeq) {
         // 1. 특정 배치 조정 시
         if (request.getBatchSeq() != null && request.getBatchSeq() > 0) {
-            List<StockBatchDTO> batches = stockDAO.selectBatchesByStockSeq(request.getStockSeq());
+            List<StockBatchDTO> batches = stockDAO.selectBatchesByStockSeq(request.getStockSeq(), storeSeq);
             StockBatchDTO targetBatch = batches.stream()
                 .filter(b -> b.getBatchSeq() == request.getBatchSeq())
                 .findFirst()
@@ -152,16 +156,17 @@ public class StockService {
         }
 
         // 2. 마스터 업데이트
-        updateMasterStock(request.getStockSeq(), request.getChangeQuantity());
+        updateMasterStock(request.getStockSeq(), request.getChangeQuantity(), storeSeq);
         
         // 3. 이력 기록
-        StockDTO currentMaster = stockDAO.selectStockBySeq(request.getStockSeq());
+        StockDTO currentMaster = stockDAO.selectStockBySeq(request.getStockSeq(), storeSeq);
         if (currentMaster.getCurrentStock() < 0) {
              throw new RuntimeException("조정 후 총 재고가 0보다 작을 수 없습니다.");
         }
         
         StockHistoryDTO history = new StockHistoryDTO();
         history.setStockSeq(request.getStockSeq());
+        history.setStoreSeq(storeSeq);
         history.setBatchSeq(request.getBatchSeq());
         history.setTransactionType("ADJUST");
         history.setChangeQuantity(request.getChangeQuantity());
@@ -171,19 +176,20 @@ public class StockService {
         stockDAO.insertHistory(history);
     }
 
-    private void updateMasterStock(int stockSeq, int changeQty) {
+    private void updateMasterStock(int stockSeq, int changeQty, int storeSeq) {
         Map<String, Object> params = new HashMap<>();
         params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
         params.put("changeQuantity", changeQty);
         stockDAO.updateCurrentStock(params);
     }
 
-    public List<StockBatchDTO> getBatches(int stockSeq) {
-        return stockDAO.selectBatchesByStockSeq(stockSeq);
+    public List<StockBatchDTO> getBatches(int stockSeq, int storeSeq) {
+        return stockDAO.selectBatchesByStockSeq(stockSeq, storeSeq);
     }
 
-    public List<StockHistoryDTO> getHistories(int stockSeq) {
-        return stockDAO.selectHistoriesByStockSeq(stockSeq);
+    public List<StockHistoryDTO> getHistories(int stockSeq, int storeSeq) {
+        return stockDAO.selectHistoriesByStockSeq(stockSeq, storeSeq);
     }
 
     public void updateStockInfo(StockDTO stock) {
@@ -191,16 +197,16 @@ public class StockService {
     }
 
     @Transactional
-    public void deleteStock(int stockSeq) {
+    public void deleteStock(int stockSeq, int storeSeq) {
         // 1. 연관된 이력 삭제
-        stockDAO.deleteHistoryByStockSeq(stockSeq);
+        stockDAO.deleteHistoryByStockSeq(stockSeq, storeSeq);
         // 2. 연관된 배치 삭제
-        stockDAO.deleteBatchesByStockSeq(stockSeq);
+        stockDAO.deleteBatchesByStockSeq(stockSeq, storeSeq);
         // 3. 품목 마스터 삭제
-        stockDAO.deleteStock(stockSeq);
+        stockDAO.deleteStock(stockSeq, storeSeq);
     }
 
-    public int getcountExpiringSoon() {
-        return stockDAO.selectgetcountExpiringSoon();
+    public int getcountExpiringSoon(int storeSeq) {
+        return stockDAO.selectgetcountExpiringSoon(storeSeq);
     }
 }

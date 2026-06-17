@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public class StockDTO {
     private int stockSeq;
+    private int storeSeq;
     private String stockName;
     private String category;
     private String unit;
@@ -18,6 +19,8 @@ public class StockDTO {
 
     public int getStockSeq() { return stockSeq; }
     public void setStockSeq(int stockSeq) { this.stockSeq = stockSeq; }
+    public int getStoreSeq() { return storeSeq; }
+    public void setStoreSeq(int storeSeq) { this.storeSeq = storeSeq; }
     public String getStockName() { return stockName; }
     public void setStockName(String stockName) { this.stockName = stockName; }
     public String getCategory() { return category; }

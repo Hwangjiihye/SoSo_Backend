@@ -5,6 +5,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,12 +21,18 @@ public class StockDAO {
         return sqlSession.selectList(NAMESPACE + "selectStockList", filters);
     }
 
-    public void insertStock(StockDTO stock) {
+    public void insertStock(int storeSeq, StockDTO stock) {
+    	 Map<String, Object> params = new HashMap<>();
+         params.put("stockSeq", stock);
+         params.put("storeSeqq", storeSeq);
         sqlSession.insert(NAMESPACE + "insertStock", stock);
     }
 
-    public StockDTO selectStockBySeq(int stockSeq) {
-        return sqlSession.selectOne(NAMESPACE + "selectStockBySeq", stockSeq);
+    public StockDTO selectStockBySeq(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        return sqlSession.selectOne(NAMESPACE + "selectStockBySeq", params);
     }
 
     public void updateCurrentStock(Map<String, Object> params) {
@@ -36,8 +43,11 @@ public class StockDAO {
         sqlSession.insert(NAMESPACE + "insertBatch", batch);
     }
 
-    public List<StockBatchDTO> selectAvailableBatches(int stockSeq) {
-        return sqlSession.selectList(NAMESPACE + "selectAvailableBatches", stockSeq);
+    public List<StockBatchDTO> selectAvailableBatches(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        return sqlSession.selectList(NAMESPACE + "selectAvailableBatches", params);
     }
 
     public void updateBatchQuantity(StockBatchDTO batch) {
@@ -48,32 +58,47 @@ public class StockDAO {
         sqlSession.insert(NAMESPACE + "insertHistory", history);
     }
 
-    public List<StockBatchDTO> selectBatchesByStockSeq(int stockSeq) {
-        return sqlSession.selectList(NAMESPACE + "selectBatchesByStockSeq", stockSeq);
+    public List<StockBatchDTO> selectBatchesByStockSeq(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        return sqlSession.selectList(NAMESPACE + "selectBatchesByStockSeq", params);
     }
 
-    public List<StockHistoryDTO> selectHistoriesByStockSeq(int stockSeq) {
-        return sqlSession.selectList(NAMESPACE + "selectHistoriesByStockSeq", stockSeq);
+    public List<StockHistoryDTO> selectHistoriesByStockSeq(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        return sqlSession.selectList(NAMESPACE + "selectHistoriesByStockSeq", params);
     }
 
     public void updateStock(StockDTO stock) {
         sqlSession.update(NAMESPACE + "updateStock", stock);
     }
 
-    public void deleteStock(int stockSeq) {
-        sqlSession.delete(NAMESPACE + "deleteStock", stockSeq);
+    public void deleteStock(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        sqlSession.delete(NAMESPACE + "deleteStock", params);
     }
 
-    public void deleteBatchesByStockSeq(int stockSeq) {
-        sqlSession.delete(NAMESPACE + "deleteBatchesByStockSeq", stockSeq);
+    public void deleteBatchesByStockSeq(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        sqlSession.delete(NAMESPACE + "deleteBatchesByStockSeq", params);
     }
 
-    public void deleteHistoryByStockSeq(int stockSeq) {
-        sqlSession.delete(NAMESPACE + "deleteHistoryByStockSeq", stockSeq);
+    public void deleteHistoryByStockSeq(int stockSeq, int storeSeq) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("stockSeq", stockSeq);
+        params.put("storeSeq", storeSeq);
+        sqlSession.delete(NAMESPACE + "deleteHistoryByStockSeq", params);
     }
 
-    public int selectgetcountExpiringSoon() {
-        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon");
+    public int selectgetcountExpiringSoon(int storeSeq) {
+        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon", storeSeq);
     }
 
     public List<StockBatchDTO> selectExpiringBatches() {
