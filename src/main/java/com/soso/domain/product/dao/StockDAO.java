@@ -22,9 +22,7 @@ public class StockDAO {
     }
 
     public void insertStock(int storeSeq, StockDTO stock) {
-    	 Map<String, Object> params = new HashMap<>();
-         params.put("stockSeq", stock);
-         params.put("storeSeqq", storeSeq);
+ 
         sqlSession.insert(NAMESPACE + "insertStock", stock);
     }
 
