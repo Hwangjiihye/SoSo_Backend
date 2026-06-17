@@ -22,6 +22,10 @@
     ORDER BY s.store_seq ASC
     LIMIT 1
 </select>
-	
+	<select id="getStoreListByUserSeq" parameterType="long" resultType="int">
+    SELECT store_seq
+    FROM stores
+    WHERE user_seq = #{userSeq}
+</select>
 	 
 </mapper>
