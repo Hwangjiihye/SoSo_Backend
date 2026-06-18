@@ -24,9 +24,13 @@ jobs:
       run: |
           mkdir -p src/main/resources/secure
           
-          echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.yml
+          cat << 'EOF' > src/main/resources/application-secret.yml
+          ${{ secrets.APPLICATION_SECRET }}
+          EOF
           
-          echo "${{ secrets.GCS_KEY }}" > src/main/resources/secure/gcs_key.json
+          cat << 'EOF' > src/main/resources/secure/gcs_key.json
+          ${{ secrets.GCS_KEY }}
+          EOF
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
