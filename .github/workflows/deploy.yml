@@ -22,7 +22,7 @@ jobs:
         distribution: 'temurin'
     - name: Create Secret properties
       run: |
-          mkdir -p src/main/resources
+          mkdir -p src/main/resources/secure
           echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/secure/application-secret.yml
     - name: Build with Maven
       run: mvn clean package -DskipTests
