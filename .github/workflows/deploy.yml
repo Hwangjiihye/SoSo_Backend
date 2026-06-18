@@ -20,7 +20,10 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-
+    - name: Create Secret properties
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APPLICATION_SECRET }}" > src/main/resources/application-secret.yml
     - name: Build with Maven
       run: mvn clean package -DskipTests
 
@@ -71,4 +74,5 @@ jobs:
           
           sleep 1
           echo "🚀 새 애플리케이션이 관리자(sudo) 권한으로 백그라운드 구동 명령을 받았습니다."
+
 
