@@ -24,7 +24,7 @@ jobs:
       run: |
           mkdir -p src/main/resources/secure
           
-          cat << 'EOF' > src/main/resources/application-secret.yml
+          cat << 'EOF' > src/main/resources/application-secret.properties
           ${{ secrets.APPLICATION_SECRET }}
           EOF
           
