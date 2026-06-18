@@ -24,16 +24,21 @@ public class StockController {
      */
     @GetMapping
     public ResponseEntity<List<StockDTO>> list(
-            @RequestParam int storeSeq,
+            jakarta.servlet.http.HttpServletRequest request,
+            @RequestParam(required = false) Integer storeSeq,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String status) {
         
+        Long userSeqLong = (Long) request.getAttribute("user_seq");
+        int userSeq = userSeqLong != null ? userSeqLong.intValue() : 0;
+
         Map<String, Object> filters = new HashMap<>();
+        filters.put("userSeq", userSeq);
+        filters.put("storeSeq", storeSeq);
         filters.put("search", search);
         filters.put("category", category);
         filters.put("status", status);
-        filters.put("storeSeq", storeSeq);
         
         return ResponseEntity.ok(stockService.getStockList(filters));
     }
@@ -142,7 +147,17 @@ public class StockController {
     }
 
     @GetMapping("/countExpiringSoon")
-    public ResponseEntity<Integer> getcountExpiringSoon(@RequestParam int storeSeq) {
-        return ResponseEntity.ok(stockService.getcountExpiringSoon(storeSeq));
+    public ResponseEntity<Integer> getcountExpiringSoon(
+            jakarta.servlet.http.HttpServletRequest request,
+            @RequestParam(required = false) Integer storeSeq) {
+        
+        Long userSeqLong = (Long) request.getAttribute("user_seq");
+        int userSeq = userSeqLong != null ? userSeqLong.intValue() : 0;
+        
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("userSeq", userSeq);
+        filters.put("storeSeq", storeSeq);
+        
+        return ResponseEntity.ok(stockService.getcountExpiringSoon(filters));
     }
 }

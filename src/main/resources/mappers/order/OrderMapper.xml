@@ -111,44 +111,62 @@
 	    where order_seq = #{orderSeq}
 	</update>
     
-    <!-- 7. 발주서 정보 불러오기 + 검색 기능 -->
-	<select id="orderList" resultType="com.soso.domain.order.dto.OrderListDTO">
-	    select
-	        o.order_seq as orderSeq,
-	        o.order_no as orderNo,
-	        o.seller_seq as sellerSeq,
-	        st.company_name as companyName,
-	        min(oi.item_name) as itemName,
-	
-	        concat(
-	            min(oi.item_name),
-	            CASE 
-	                WHEN COUNT(oi.order_item_seq) > 1 
-	                THEN CONCAT(' 외 ', COUNT(oi.order_item_seq) - 1, '건')
-	                ELSE ''
-	            END
-	        ) AS itemSummary
-	
-	    from orders o
-	    join stores st
-	        on o.seller_seq = st.store_seq
-	    join order_items oi
-	        on o.order_seq = oi.order_seq
-	
-	    where o.buyer_seq = #{storeSeq}
-	
-	    <if test="keyword != null and keyword != ''">
-	        and (
-	            o.order_no like concat('%', #{keyword}, '%')
-	            or st.company_name like concat('%', #{keyword}, '%')
-	            or oi.item_name like concat('%', #{keyword}, '%')
-	        )
-	    </if>
-	
-	    group by
+    <!-- 7. 발주서 정보 불러오기 + 검색 및 필터링 기능 -->
+    <select id="orderList" resultType="com.soso.domain.order.dto.OrderListDTO">
+    	select
+    		o.order_seq as orderSeq,
+    		o.order_no as orderNo,
+    		o.seller_seq as sellerSeq,
+    		o.buyer_seq as buyerSeq,
+    		o.status as status,
+    		o.created_at as createdAt,
+    		o.total_amount as totalAmount,
+    		st.company_name as companyName,
+    		
+    	concat(
+		    min(oi.item_name),
+		    CASE 
+		        WHEN COUNT(oi.order_item_seq) > 1 
+		        THEN CONCAT(' 외 ', COUNT(oi.order_item_seq) - 1, '건')
+		        ELSE ''
+		    END
+		) AS itemSummary
+		
+    	from orders o
+    	join users u
+    		on o.seller_seq = u.user_seq
+    	join stores st
+    		on u.user_seq = st.user_seq
+    	join order_items oi
+    		on o.order_seq = oi.order_seq
+    	
+    	where o.buyer_seq = #{userSeq}
+
+		<if test="keyword != null and keyword != ''">
+		    and (
+		        o.order_no like concat('%', #{keyword}, '%')
+		        or st.company_name like concat('%', #{keyword}, '%')
+		        or oi.item_name like concat('%', #{keyword}, '%')
+		    )
+		</if>
+		<if test="status != null and status != '' and status != 'ALL'">
+		    and o.status = #{status}
+		</if>
+		<if test="startDate != null and startDate != ''">
+		    and o.created_at &gt;= #{startDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+		    and o.created_at &lt;= #{endDate}
+		</if>
+    	
+    	group by
 	        o.order_seq,
 	        o.order_no,
 	        o.seller_seq,
+	        o.buyer_seq,
+	        o.status,
+	        o.created_at,
+	        o.total_amount,
 	        st.company_name
 	
 	    order by o.order_seq desc
@@ -169,5 +187,36 @@
 	    WHERE order_seq = #{orderSeq}
 	</select>
     
+    <!-- 8. 발주 상세 - 기본 정보 -->
+    <select id="findOrderInfoBySeq" parameterType="long" resultType="map">
+        SELECT 
+            o.order_seq AS orderSeq,
+            o.order_no AS orderNo,
+            o.status AS status,
+            o.created_at AS createdAt,
+            o.total_amount AS totalAmount,
+            o.order_memo AS orderMemo,
+            o.zonecode,
+            o.address1,
+            o.address2,
+            st.company_name AS companyName
+        FROM orders o
+        JOIN stores st ON o.seller_seq = st.user_seq
+        WHERE o.order_seq = #{orderSeq}
+    </select>
+
+    <!-- 9. 발주 상세 - 품목 리스트 -->
+    <select id="findOrderItemsBySeq" parameterType="long" resultType="map">
+        SELECT 
+            order_item_seq AS orderItemSeq,
+            item_name AS itemName,
+            category_name AS categoryName,
+            quantity,
+            spec,
+            unit_price AS unitPrice,
+            total_price AS totalPrice
+        FROM order_items
+        WHERE order_seq = #{orderSeq}
+    </select>
    
 </mapper>

@@ -48,6 +48,11 @@ public class OrderService {
 //		return dao.identityCheck(user_seq);
 //	}
 	
+	// 발주 신청시 공급업체 목록 조회
+	public List<OrderItemDTO> suppliers() {
+	    return dao.suppliers();
+	}
+	
 	// 발주서 작성
 	public int orderForm(OrderDTO dto) {
 		
@@ -80,15 +85,51 @@ public class OrderService {
 	    return result;
 	}
 	
+
 	// 발주 신청시 공급업체 목록 조회
-	public List<OrderItemDTO> suppliers() {
-	    return dao.suppliers();
+//	public List<OrderItemDTO> suppliers() {
+//	    return dao.suppliers();
+
+	// 발주서 목록으로 출력 + 검색 및 필터링 기능
+//	public List<OrderListDTO> orderList(Long userSeq, Integer storeSeq, String keyword, String status, String startDate, String endDate) {
+//		return dao.orderList(userSeq, storeSeq, keyword, status, startDate, endDate);
+//	}
+
+	// 발주서 상세 내역 조회
+	public Map<String, Object> getOrderDetail(Long orderSeq) {
+		Map<String, Object> result = new HashMap<>();
+		
+		// 1. 발주서 기본 정보 (상대 거래처명 포함)
+		Map<String, Object> orderInfo = dao.findOrderInfoBySeq(orderSeq);
+		result.put("orderInfo", orderInfo);
+		
+		// 2. 발주 품목 리스트
+		List<Map<String, Object>> items = dao.findOrderItemsBySeq(orderSeq);
+		result.put("items", items);
+		
+		return result;
+	}
+	
+	// 발주서 목록 출력 + 검색 및 필터링
+	public List<OrderListDTO> orderList(
+	        Long storeSeq,
+	        Integer offset,
+	        String keyword,
+	        String status,
+	        String startDate,
+	        String endDate
+	) {
+	    if (offset == null) {
+	        offset = 0;
+	    }
+
+	    return dao.orderList(storeSeq, offset, keyword, status, startDate, endDate);
 	}
 	
 	// 발주서 목록으로 출력 + 검색 기능
-	public List<OrderListDTO> orderList(Long storeSeq, String keyword) {
-	    return dao.orderList(storeSeq, keyword);
-	}
+//	public List<OrderListDTO> orderList(Long storeSeq, String keyword) {
+//	    return dao.orderList(storeSeq, keyword);
+//	}
 //	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
 //		return dao.orderList(userSeq, keyword);
 //	}
