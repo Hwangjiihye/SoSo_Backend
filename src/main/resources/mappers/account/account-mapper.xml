@@ -40,6 +40,10 @@
         JOIN users u ON s.user_seq = u.user_seq
         WHERE u.user_type = 'PARTNER'
         AND u.status = 'ACTIVE'
+
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%') OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%'))
+        </if>
         <if test="city != null and city != ''">
             AND s.address1 LIKE CONCAT(#{city}, '%')
         </if>
@@ -85,17 +89,24 @@
         FROM partner_relations pr
         JOIN stores s ON pr.partner_seq = s.store_seq
         WHERE pr.business_seq = #{businessSeq}
+
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%') OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%'))
+        </if>
+
         <if test="city != null and city != ''">
             AND s.address1 LIKE CONCAT(#{city}, '%')
         </if>
         <if test="district != null and district != ''">
             AND s.address1 LIKE CONCAT('%', #{district}, '%')
         </if>
+
         <if test="searchTerm != null and searchTerm != ''">
             AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%')
                  OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%')
                  OR s.biz_number LIKE CONCAT('%', #{searchTerm}, '%'))
         </if>
+
         ORDER BY pr.created_at DESC
     </select>
 

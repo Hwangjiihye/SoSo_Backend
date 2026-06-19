@@ -4,7 +4,6 @@
 
     <select id="selectStockList" parameterType="map" resultType="com.soso.domain.product.dto.StockDTO">
 		SELECT
-		s.stock_seq as stockSeq,
         s.store_seq as storeSeq,
 		s.stock_name as stockName,
 		s.category,
@@ -24,7 +23,11 @@
 		WHERE stock_seq = s.stock_seq AND store_seq = #{storeSeq} AND current_quantity > 0) as remainedDays
 		FROM stocks s
         <where>
-            s.store_seq = #{storeSeq}
+            AND s.store_seq = (
+                CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+                ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+                END
+            )
             <if test="search != null and search != ''">
                AND s.stock_name LIKE CONCAT('%', #{search}, '%')
             </if>
@@ -58,7 +61,6 @@
         </where>
         ORDER BY s.stock_seq DESC
     </select>
-
     <insert id="insertStock" parameterType="map">
         INSERT INTO stocks (store_seq, stock_name, category, unit, safety_stock, default_expiry_days, current_stock)
         VALUES (#{storeSeq}, #{stockName}, #{category}, #{unit}, #{safetyStock}, #{defaultExpiryDays}, 0)
@@ -92,7 +94,7 @@
             stock_seq, store_seq, lot_number, detail_stock_name, initial_quantity, 
             current_quantity, incoming_price, expiration_date, incoming_date
         ) VALUES (
-            #{stockSeq}, #{storeSeq}, #{lotNumber}, #{detailStockName}, #{initialQuantity}, 
+            #{stockSeq}, #{storeSeq}, #{lotNumber}, #{detailStockName}, #{initialQuantity},
             #{currentQuantity}, #{incomingPrice}, #{expirationDate}, CURRENT_DATE
         )
     </insert>
@@ -189,7 +191,6 @@
     <delete id="deleteHistoryByStockSeq" parameterType="map">
         DELETE FROM stock_history WHERE stock_seq = #{stockSeq} AND store_seq = #{storeSeq}
     </delete>
-
     <select id="selectgetcountExpiringSoon" parameterType="int" resultType="int">
         SELECT COUNT(*) 
         FROM stock_batches 
@@ -198,7 +199,7 @@
           AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
     </select>
 
-    <select id="selectExpiringBatches" resultType="com.soso.domain.product.dto.StockBatchDTO">
+    <select id="selectExpiringBatches" parameterType="map" resultType="com.soso.domain.product.dto.StockBatchDTO">
         SELECT 
             batch_seq as batchSeq,
             stock_seq as stockSeq,

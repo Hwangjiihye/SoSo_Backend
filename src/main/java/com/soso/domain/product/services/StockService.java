@@ -276,7 +276,9 @@ public class StockService {
         // 3. 품목 마스터 삭제
         stockDAO.deleteStock(stockSeq, storeSeq);
     }
-
+    public int getcountExpiringSoon(Map<String, Object> filters) {
+        return stockDAO.getcountExpiringSoon(filters);
+    }
     public int getcountExpiringSoon(int storeSeq) {
         return stockDAO.selectgetcountExpiringSoon(storeSeq);
     }

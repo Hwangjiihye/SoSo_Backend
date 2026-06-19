@@ -5,11 +5,14 @@ import com.soso.domain.account.dto.AccountRelationRequestDto;
 import com.soso.domain.account.dto.AccountRelationResponseDto;
 import com.soso.domain.account.dto.AccountSearchResponseDto;
 import com.soso.domain.account.dto.ItemResponseDto;
+import com.soso.domain.account.dto.PartnerDetailDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @file AccountService.java
@@ -29,9 +32,10 @@ public class AccountService {
     }
 
     /**
-     * 모든 파트너사(거래처) 조회
+     * 모든 파트너사(거래처) 조회 (필터 적용)
      */
     public List<AccountSearchResponseDto> getAllPartnerStores(String searchTerm, String city, String district) {
+
         return accountDAO.getAllPartnerStores(searchTerm, city, district);
     }
 
@@ -44,10 +48,12 @@ public class AccountService {
     }
 
     /**
-     * 등록된 거래처 목록 조회
+     * 등록된 거래처 목록 조회 (필터 적용)
      */
     public List<AccountRelationResponseDto> getRegisteredAccounts(int businessSeq, String searchTerm, String city, String district) {
+
         return accountDAO.getPartnerRelationsByBusinessSeq(businessSeq, searchTerm, city, district);
+
     }
 
     /**

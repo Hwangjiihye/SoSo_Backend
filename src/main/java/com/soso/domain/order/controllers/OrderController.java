@@ -80,17 +80,28 @@ public class OrderController {
 		return ResponseEntity.ok(result);
 	}
 	
-	// 발주서 목록으로 출력 + 검색 기능
+	// 발주서 목록으로 출력 + 검색 및 필터링 기능
 	@GetMapping("/list")
-	public ResponseEntity<List<OrderListDTO>> orderList(HttpServletRequest request, @RequestParam(value = "keyword", required = false) String keyword) {
+	public ResponseEntity<List<OrderListDTO>> orderList(
+			HttpServletRequest request, 
+			@RequestParam(value = "storeSeq", required = false) Integer storeSeq,
+			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "startDate", required = false) String startDate,
+			@RequestParam(value = "endDate", required = false) String endDate) {
 		
 		Long userSeq = (Long) request.getAttribute("user_seq");
 		
-		System.out.println("검색어 확인 : " + keyword);
-		
-		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, keyword);
+		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, storeSeq, keyword, status, startDate, endDate);
 		
 		return ResponseEntity.ok(orderList);
+	}
+	
+	// 발주서 상세 내역 조회
+	@GetMapping("/list/{orderSeq}")
+	public ResponseEntity<Map<String, Object>> getOrderDetail(@PathVariable Long orderSeq) {
+		Map<String, Object> detail = OrderServ.getOrderDetail(orderSeq);
+		return ResponseEntity.ok(detail);
 	}
 	
 	// 웹소켓 사용자 확인
