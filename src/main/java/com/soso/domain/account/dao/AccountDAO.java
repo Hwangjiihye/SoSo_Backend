@@ -32,8 +32,12 @@ public class AccountDAO {
     /**
      * 모든 PARTNER 타입 회원의 매장 정보를 조회합니다.
      */
-    public List<AccountSearchResponseDto> getAllPartnerStores() {
-        return mybatis.selectList(NAMESPACE + ".getAllPartnerStores");
+    public List<AccountSearchResponseDto> getAllPartnerStores(String searchTerm, String city, String district) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("searchTerm", searchTerm);
+        params.put("city", city);
+        params.put("district", district);
+        return mybatis.selectList(NAMESPACE + ".getAllPartnerStores", params);
     }
 
     /**
@@ -46,8 +50,13 @@ public class AccountDAO {
     /**
      * 특정 사업장(소상공인)의 등록된 거래처 목록을 조회합니다.
      */
-    public List<AccountRelationResponseDto> getPartnerRelationsByBusinessSeq(int businessSeq) {
-        return mybatis.selectList(NAMESPACE + ".getPartnerRelationsByBusinessSeq", businessSeq);
+    public List<AccountRelationResponseDto> getPartnerRelationsByBusinessSeq(int businessSeq, String searchTerm, String city, String district) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("businessSeq", businessSeq);
+        params.put("searchTerm", searchTerm);
+        params.put("city", city);
+        params.put("district", district);
+        return mybatis.selectList(NAMESPACE + ".getPartnerRelationsByBusinessSeq", params);
     }
 
     /**
@@ -69,5 +78,12 @@ public class AccountDAO {
      */
     public Integer getFirstStoreSeqByUserSeq(int userSeq) {
         return mybatis.selectOne(NAMESPACE + ".getFirstStoreSeqByUserSeq", userSeq);
+    }
+
+    /**
+     * 특정 거래처(파트너사) 상세 정보를 조회합니다.
+     */
+    public AccountSearchResponseDto getPartnerDetail(int partnerSeq) {
+        return mybatis.selectOne(NAMESPACE + ".getPartnerDetail", partnerSeq);
     }
 }

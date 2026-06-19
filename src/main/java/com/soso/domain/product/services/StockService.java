@@ -3,7 +3,9 @@ package com.soso.domain.product.services;
 import com.soso.domain.product.dao.StockDAO;
 import com.soso.domain.product.dao.StockHistoryDAO;
 import com.soso.domain.product.dto.*;
+import com.soso.domain.notification.events.NotificationEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,12 @@ public class StockService {
 
     @Autowired
     private StockHistoryDAO stockHistoryDAO;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private com.soso.domain.notification.dao.NotificationDAO notificationDAO;
 
     public List<StockDTO> getStockList(Map<String, Object> filters) {
         return stockDAO.selectStockList(filters);
@@ -122,7 +130,7 @@ public class StockService {
             stockDAO.insertHistory(history);
         }
 
-        // 5. 안전재고 미달 체크 (ALERT)
+        // 5. 안전재고 미달 체크 (ALERT) 및 실시간 알림 발행
         StockDTO finalMaster = stockDAO.selectStockBySeq(request.getStockSeq(), storeSeq);
         if (finalMaster != null && finalMaster.getCurrentStock() < finalMaster.getSafetyStock()) {
             StockHistoryDTO alertHistory = new StockHistoryDTO();
@@ -135,6 +143,19 @@ public class StockService {
             alertHistory.setDetailStockName(finalMaster.getStockName());
             alertHistory.setMemo("현재 " + finalMaster.getCurrentStock() + "개 - 안전 재고 미만");
             stockHistoryDAO.insertStockHistory(alertHistory);
+
+            // 알림 이벤트 발행
+            eventPublisher.publishEvent(new NotificationEvent(
+                this, 
+                storeSeq, 
+                "SAFETY_LACK", 
+                "안전재고 부족 알림", 
+                String.format("[%s] 재고가 안전 기준(%d개) 미만으로 떨어졌습니다. (현재: %d개)", 
+                    finalMaster.getStockName(), finalMaster.getSafetyStock(), finalMaster.getCurrentStock())
+            ));
+
+            // 파트너(거래처)로도 알림 발행
+            publishPartnerSafetyAlert(storeSeq, finalMaster);
         }
     }
 
@@ -174,6 +195,21 @@ public class StockService {
         history.setReason(request.getReason());
         history.setMemo(request.getMemo());
         stockDAO.insertHistory(history);
+
+        // 안전재고 미달 체크 및 실시간 알림 발행
+        if (currentMaster != null && currentMaster.getCurrentStock() < currentMaster.getSafetyStock()) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                this, 
+                storeSeq, 
+                "SAFETY_LACK", 
+                "안전재고 부족 알림", 
+                String.format("[%s] 재고 조정 후 재고가 안전 기준(%d개) 미만으로 떨어졌습니다. (현재: %d개)", 
+                    currentMaster.getStockName(), currentMaster.getSafetyStock(), currentMaster.getCurrentStock())
+            ));
+
+            // 파트너(거래처)로도 알림 발행
+            publishPartnerSafetyAlert(storeSeq, currentMaster);
+        }
     }
 
     private void updateMasterStock(int stockSeq, int changeQty, int storeSeq) {
@@ -186,6 +222,41 @@ public class StockService {
 
     public List<StockBatchDTO> getBatches(int stockSeq, int storeSeq) {
         return stockDAO.selectBatchesByStockSeq(stockSeq, storeSeq);
+    }
+
+    /**
+     * [초보자 가이드 - 파트너 안전재고 부족 알림 발행]
+     * 기능: 가맹점의 재고가 안전재고 수량 미만으로 떨어졌을 때, 가맹점과 거래 중인 파트너(거래처)들의 대시보드로
+     *      실시간 "안전재고 부족" 알림(SAFETY_LACK)을 동시에 발행해주는 헬퍼 메소드입니다.
+     * @param businessStoreSeq 재고가 부족해진 소상공인 가맹점 매장 번호 (stores.store_seq)
+     * @param master 재고 부족이 발생한 품목의 마스터 DTO 객체 (품목명, 현재고 등)
+     */
+    private void publishPartnerSafetyAlert(int businessStoreSeq, StockDTO master) {
+        try {
+            // 1. 재고가 부족한 가맹점 매장의 상호명(예: 교촌치킨 옥길점)을 조회
+            String companyName = notificationDAO.selectCompanyNameByStoreSeq(businessStoreSeq);
+            if (companyName == null || companyName.isEmpty()) {
+                companyName = "가맹점";
+            }
+            
+            // 2. 가맹점과 거래 관계가 맺어진 파트너(거래처)들의 매장 일련번호 목록을 조회
+            List<Integer> partnerSeqs = notificationDAO.selectPartnerStoreSeqsByBusinessSeq(businessStoreSeq);
+            if (partnerSeqs != null) {
+                // 3. 각 파트너(거래처)들을 순회하며 각각의 알림 채널로 실시간 알림 이벤트를 전송
+                for (Integer partnerStoreSeq : partnerSeqs) {
+                    eventPublisher.publishEvent(new NotificationEvent(
+                        this,
+                        partnerStoreSeq,
+                        "SAFETY_LACK",
+                        "가맹점 안전재고 부족",
+                        String.format("[%s]의 [%s] 품목이 안전재고 미달 상태입니다. (현재: %d개)", 
+                            companyName, master.getStockName(), master.getCurrentStock())
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[StockService] 파트너 안전재고 부족 알림 발행 중 오류: " + e.getMessage());
+        }
     }
 
     public List<StockHistoryDTO> getHistories(int stockSeq, int storeSeq) {

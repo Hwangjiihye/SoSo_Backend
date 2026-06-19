@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soso.mappers.notification.NotificationMapper">
+
+    <update id="createTableIfNotExists">
+        CREATE TABLE IF NOT EXISTS notifications (
+            notification_seq INT AUTO_INCREMENT PRIMARY KEY,
+            store_seq INT NOT NULL,
+            type VARCHAR(20) NOT NULL,
+            title VARCHAR(100) NOT NULL,
+            message TEXT NOT NULL,
+            is_read CHAR(1) DEFAULT 'N',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    </update>
+
+    <insert id="insertNotification" parameterType="com.soso.domain.notification.dto.NotificationDTO" useGeneratedKeys="true" keyProperty="notificationSeq">
+        INSERT INTO notifications (store_seq, type, title, message, is_read, created_at)
+        VALUES (#{storeSeq}, #{type}, #{title}, #{message}, #{isRead}, #{createdAt})
+    </insert>
+
+    <select id="selectRecentNotifications" parameterType="int" resultType="com.soso.domain.notification.dto.NotificationDTO">
+        SELECT 
+            notification_seq AS notificationSeq,
+            store_seq AS storeSeq,
+            type,
+            title,
+            message,
+            is_read AS isRead,
+            created_at AS createdAt
+        FROM notifications
+        WHERE store_seq = #{storeSeq}
+          AND created_at &gt;= DATE_SUB(NOW(), INTERVAL 3 DAY)
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateNotificationRead" parameterType="int">
+        UPDATE notifications
+        SET is_read = 'Y'
+        WHERE notification_seq = #{notificationSeq}
+    </update>
+
+    <!-- 
+        [초보자 가이드]
+        기능: 특정 매장의 일련번호(store_seq)를 전달받아서, 그 매장의 상호명(company_name)을 데이터베이스에서 찾아 글자(String)로 반환합니다.
+        용도: 실시간 알림창에 "교촌치킨 옥길점"과 같이 가맹점 이름을 띄우기 위해 매장명을 알 때 사용합니다.
+    -->
+    <select id="selectCompanyNameByStoreSeq" parameterType="int" resultType="string">
+        SELECT company_name
+        FROM stores
+        WHERE store_seq = #{storeSeq}
+    </select>
+
+    <!-- 
+        [초보자 가이드]
+        기능: 로그인한 유저의 고유 번호(user_seq)를 받아, 그 유저가 소유하고 있는 첫 번째 매장의 일련번호(store_seq)를 조회합니다.
+        용도: 파트너(거래처)나 소상공인이 로그인했을 때, 알림을 구독할 대상 매장 일련번호를 백엔드에서 특정하기 위해 사용합니다.
+    -->
+    <select id="selectStoreSeqByUserSeq" parameterType="long" resultType="java.lang.Integer">
+        SELECT store_seq
+        FROM stores
+        WHERE user_seq = #{userSeq}
+        ORDER BY store_seq ASC
+        LIMIT 1
+    </select>
+
+    <!-- 
+        [초보자 가이드]
+        기능: 소상공인 가게의 일련번호(businessSeq)를 가지고, 이 가게와 납품 거래가 맺어져 있는 파트너(거래처)들의 매장 일련번호(partner_seq) 리스트를 가져옵니다.
+        용도: 소상공인 매장의 식자재 재고가 부족해졌을 때, 연관된 거래처 사장님들에게도 실시간 재고 부족 알림을 보내기 위해 조회합니다.
+    -->
+    <select id="selectPartnerStoreSeqsByBusinessSeq" parameterType="int" resultType="int">
+        SELECT partner_seq
+        FROM partner_relations
+        WHERE business_seq = #{businessSeq}
+    </select>
+
+    <!-- 
+        [초보자 가이드]
+        기능: 특정 매장 일련번호(store_seq)를 가지고, 그 매장을 소유한 유저의 유형(BUSINESS / PARTNER)과 상호명(company_name)을 조인 쿼리로 한번에 가져옵니다.
+        용도: 알림 수신 시 대시보드를 열어보는 사람의 계정 형태를 구별하고 예시 데이터를 보여주기 위한 기본 정보 획득용입니다.
+    -->
+    <select id="selectStoreOwnerInfo" parameterType="int" resultType="map">
+        SELECT u.user_type AS userType, s.company_name AS companyName
+        FROM stores s
+        JOIN users u ON s.user_seq = u.user_seq
+        WHERE s.store_seq = #{storeSeq}
+    </select>
+
+</mapper>

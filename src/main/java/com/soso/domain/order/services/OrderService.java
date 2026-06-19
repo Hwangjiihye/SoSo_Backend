@@ -24,6 +24,12 @@ public class OrderService {
 	
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
+
+	@Autowired
+	private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+	@Autowired
+	private com.soso.domain.notification.dao.NotificationDAO notificationDAO;
 	
 	// 사업자 재고 비교
 	public List<OrderRecommendDTO> recommendStock(String itemName, Long user_seq) {
@@ -70,6 +76,39 @@ public class OrderService {
 	        item.setOrderSeq(orderSeq);
 	        dao.orderItem(item);
 	    }
+
+		// [초보자 가이드 - 실시간 알림 연동]
+		// 기능: 가맹점 사장님이 거래처(파트너)로 발주서를 전송하면, 해당 거래처 사장님 대시보드에 실시간으로 알림을 발생시키고 DB에 저장합니다.
+		try {
+			// 1. 발주서의 판매자(sellerSeq) 정보가 있는지 확인
+			if (dto.getSellerSeq() != null) {
+				// 2. 판매자 userSeq에 매핑된 파트너 매장의 storeSeq를 가져옴
+				Integer sellerStoreSeq = notificationDAO.selectStoreSeqByUserSeq(dto.getSellerSeq());
+				if (sellerStoreSeq != null) {
+					// 3. 발주한 구매자(buyerSeq)의 매장 storeSeq를 가져와서 가맹점 상호명(예: 교촌치킨 옥길점)을 조회
+					Integer buyerStoreSeq = notificationDAO.selectStoreSeqByUserSeq(dto.getBuyerSeq());
+					String buyerName = "가맹점";
+					if (buyerStoreSeq != null) {
+						String company = notificationDAO.selectCompanyNameByStoreSeq(buyerStoreSeq);
+						if (company != null && !company.isEmpty()) {
+							buyerName = company;
+						}
+					}
+					// 4. Spring의 비비동기 이벤트 시스템(ApplicationEventPublisher)을 통해 
+					// 파트너 매장(sellerStoreSeq) 앞으로 "NEW_ORDER" (신규 발주서) 타입의 알림 이벤트를 발행합니다.
+					// 이 이벤트는 NotificationService로 전달되어 DB에 인서트되고 웹소켓 토픽을 통해 실시간으로 프론트엔드에 전송됩니다.
+					eventPublisher.publishEvent(new com.soso.domain.notification.events.NotificationEvent(
+						this,
+						sellerStoreSeq,
+						"NEW_ORDER",
+						"신규 발주서 도착",
+						String.format("[%s] 신규 발주서가 등록되었습니다. (발주번호: %s)", buyerName, orderNo)
+					));
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("[OrderService] 파트너 알림 발송 중 오류: " + e.getMessage());
+		}
 
 	    return result;
 	}

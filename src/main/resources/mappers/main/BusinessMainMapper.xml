@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="businessMain">
+
+    <!-- 1. 총 재고 품목 수 -->
+    <select id="selectTotalStocksCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM stocks 
+        WHERE store_seq = #{storeSeq}
+    </select>
+
+    <!-- 2. 부족 재고(안전재고 미달) 품목 수 -->
+    <select id="selectLackStocksCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM stocks 
+        WHERE store_seq = #{storeSeq} 
+          AND current_stock &lt; safety_stock
+    </select>
+
+    <!-- 3. 유통기한 임박 품목 수 (7일 이내) -->
+    <select id="selectExpiringSoonCount" parameterType="int" resultType="int">
+        SELECT COUNT(DISTINCT stock_seq) 
+        FROM stock_batches 
+        WHERE store_seq = #{storeSeq} 
+          AND current_quantity > 0 
+          AND expiration_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+    </select>
+
+    <!-- 4. 진행 중인 공동 발주 건수 -->
+    <select id="selectActiveGroupBuysCount" resultType="int">
+        SELECT COUNT(*) 
+        FROM group_buys 
+        WHERE status = 'RECRUITING' 
+          AND end_date >= NOW()
+    </select>
+
+    <!-- 5. 현재 재고 현황 (Bar Chart) -->
+    <select id="selectCurrentStockStatus" parameterType="int" resultType="map">
+        SELECT 
+            stock_name AS name,
+            current_stock AS value
+        FROM stocks
+        WHERE store_seq = #{storeSeq}
+        ORDER BY current_stock DESC
+        LIMIT 8
+    </select>
+
+    <!-- 6. 최근 6개월 월별 매출 현황 (Line Chart) -->
+    <select id="selectMonthlySales" parameterType="long" resultType="map">
+        SELECT 
+            DATE_FORMAT(target_date, '%c월') AS month,
+            SUM(amount) AS amount
+        FROM finances
+        WHERE user_seq = #{userSeq}
+          AND type = 'INCOME'
+          AND target_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(target_date, '%c월'), MONTH(target_date)
+        ORDER BY MONTH(target_date) ASC
+    </select>
+
+    <!-- 7. 공동 발주 목록 (최근 5개) -->
+    <select id="selectGroupOrders" parameterType="map" resultType="map">
+        SELECT 
+            gb.group_buy_seq AS id,
+            gb.group_name AS title,
+            gb.status,
+            gb.target_participants AS targetParticipants,
+            gb.current_participants AS currentParticipants,
+            gb.end_date AS endDate,
+            (SELECT COUNT(*) FROM group_buy_participants WHERE group_buy_seq = gb.group_buy_seq AND user_seq = #{userSeq}) AS isJoined
+        FROM group_buys gb
+        WHERE gb.status = 'RECRUITING'
+          AND gb.end_date >= NOW()
+        ORDER BY gb.created_at DESC
+        LIMIT 5
+    </select>
+
+</mapper>

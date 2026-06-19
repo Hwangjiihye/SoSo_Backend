@@ -31,8 +31,8 @@ public class AccountService {
     /**
      * 모든 파트너사(거래처) 조회
      */
-    public List<AccountSearchResponseDto> getAllPartnerStores() {
-        return accountDAO.getAllPartnerStores();
+    public List<AccountSearchResponseDto> getAllPartnerStores(String searchTerm, String city, String district) {
+        return accountDAO.getAllPartnerStores(searchTerm, city, district);
     }
 
     /**
@@ -46,8 +46,8 @@ public class AccountService {
     /**
      * 등록된 거래처 목록 조회
      */
-    public List<AccountRelationResponseDto> getRegisteredAccounts(int businessSeq) {
-        return accountDAO.getPartnerRelationsByBusinessSeq(businessSeq);
+    public List<AccountRelationResponseDto> getRegisteredAccounts(int businessSeq, String searchTerm, String city, String district) {
+        return accountDAO.getPartnerRelationsByBusinessSeq(businessSeq, searchTerm, city, district);
     }
 
     /**
@@ -70,5 +70,12 @@ public class AccountService {
      */
     public Integer getFirstStoreSeqByUserSeq(int userSeq) {
         return accountDAO.getFirstStoreSeqByUserSeq(userSeq);
+    }
+
+    /**
+     * 특정 거래처(파트너사) 상세 정보 조회
+     */
+    public AccountSearchResponseDto getPartnerDetail(int partnerSeq) {
+        return accountDAO.getPartnerDetail(partnerSeq);
     }
 }
