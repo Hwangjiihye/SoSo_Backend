@@ -1,0 +1,84 @@
+package com.soso.domain.groupbuy.controllers;
+
+import com.soso.domain.groupbuy.dto.GroupBuyDTO;
+import com.soso.domain.groupbuy.dto.ParticipantInfoDTO;
+import com.soso.domain.groupbuy.services.GroupBuyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/group-buys")
+public class GroupBuyController {
+
+    @Autowired
+    private GroupBuyService groupBuyService;
+
+    // B. 공동구매 생성 API
+    @PostMapping
+    public ResponseEntity<?> createGroupBuy(@RequestBody GroupBuyDTO groupBuyDTO,
+                                            @RequestAttribute("userSeq") Integer userSeq) {
+        // 보안: 세션(RequestAttribute)에서 뽑은 userSeq를 무조건 강제 세팅
+        groupBuyDTO.setUserSeq(userSeq);
+        groupBuyService.createGroupBuy(groupBuyDTO);
+        
+        return ResponseEntity.ok().body(Map.of("message", "공동구매가 성공적으로 등록되었습니다."));
+    }
+
+    // C. 공동구매 목록 조회 API (?filter=my)
+    @GetMapping
+    public ResponseEntity<List<GroupBuyDTO>> getGroupBuys(
+            @RequestParam(required = false) String filter,
+            @RequestAttribute("userType") String userType,
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        List<GroupBuyDTO> list = groupBuyService.getGroupBuys(userType, userSeq, filter);
+        return ResponseEntity.ok(list);
+    }
+
+    // D. 공동구매 참여 API
+    @PostMapping("/{groupBuySeq}/join")
+    public ResponseEntity<?> joinGroupBuy(@PathVariable("groupBuySeq") int groupBuySeq,
+                                          @RequestAttribute("userSeq") Integer userSeq) {
+        try {
+            groupBuyService.joinGroupBuy(groupBuySeq, userSeq);
+            return ResponseEntity.ok().body(Map.of("message", "공동구매 참여가 완료되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // E. 그룹 상태 변경 API
+    @PatchMapping("/{groupBuySeq}/status")
+    public ResponseEntity<?> updateGroupBuyStatus(@PathVariable("groupBuySeq") int groupBuySeq,
+                                                  @RequestBody Map<String, String> requestBody,
+                                                  @RequestAttribute("userSeq") Integer userSeq,
+                                                  @RequestAttribute("userType") String userType) {
+        if (!"PARTNER".equals(userType)) {
+            return ResponseEntity.status(403).body(Map.of("error", "거래처 권한이 필요합니다."));
+        }
+
+        String status = requestBody.get("status");
+        try {
+            groupBuyService.updateGroupBuyStatus(groupBuySeq, status, userSeq);
+            return ResponseEntity.ok().body(Map.of("message", "상태가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // F. 참여 멤버 및 배송 정보 리스트 조회 API
+    @GetMapping("/{groupBuySeq}/participants")
+    public ResponseEntity<?> getParticipants(@PathVariable("groupBuySeq") int groupBuySeq,
+                                             @RequestAttribute("userType") String userType) {
+        if (!"PARTNER".equals(userType)) {
+            return ResponseEntity.status(403).body(Map.of("error", "거래처 권한이 필요합니다."));
+        }
+        
+        List<ParticipantInfoDTO> participants = groupBuyService.getParticipants(groupBuySeq);
+        return ResponseEntity.ok(participants);
+    }
+}
