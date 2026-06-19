@@ -39,7 +39,11 @@ public class TokenValidator implements HandlerInterceptor{
 			
 			try {
 				Long user_seq = jwt.getUserSeq(token); // 토큰이 정상이라면 seq를 request에 저장하고 컨트롤러로 보냄
+				String user_type = jwt.getUserType(token);
 				request.setAttribute("user_seq", user_seq);
+				request.setAttribute("userSeq", user_seq); // groupbuy 등에서 사용하는 이름으로도 세팅
+				request.setAttribute("user_type", user_type);
+				request.setAttribute("userType", user_type); // groupbuy 등에서 사용하는 이름으로 세팅
 				return true;
 				
 			}catch(Exception e) {
