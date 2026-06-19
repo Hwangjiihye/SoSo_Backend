@@ -63,10 +63,22 @@
         SELECT 
             group_buy_seq AS groupBuySeq,
             user_seq AS userSeq,
+            partner_seq AS partnerSeq,
+            item_seq AS itemSeq,
+            category,
+            group_name AS groupName,
+            description,
             target_participants AS targetParticipants,
             current_participants AS currentParticipants,
+            quantity,
+            unit_price AS unitPrice,
+            total_amount AS totalAmount,
             end_date AS endDate,
-            status
+            pickup_location AS pickupLocation,
+            pickup_time AS pickupTime,
+            notice,
+            status,
+            created_at AS createdAt
         FROM group_buys
         WHERE group_buy_seq = #{groupBuySeq}
     </select>
