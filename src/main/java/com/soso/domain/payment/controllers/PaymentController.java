@@ -1,6 +1,8 @@
 package com.soso.domain.payment.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
+import com.soso.domain.payment.dto.OrderPaymentRequestDTO;
 import com.soso.domain.payment.dto.PaymentCardDTO;
 import com.soso.domain.payment.dto.PaymentDTO;
 import com.soso.domain.payment.services.PaymentService;
@@ -71,6 +74,30 @@ public class PaymentController {
 	@GetMapping("/cards")
 	public ResponseEntity<List<PaymentCardDTO>> selectCard(@RequestParam Long storeSeq) {
 		return ResponseEntity.ok(accountServ.selectCard(storeSeq));
+	}
+	
+	// 발주 결제 요청
+	// 프론트에서 "등록된 카드로 결제" 버튼을 눌렀을 때 호출됨
+	@PostMapping("/order/pay")
+	public ResponseEntity<Map<String, Object>> payOrders(@RequestBody OrderPaymentRequestDTO dto) {
+
+	    // 실제 결제 로직은 Service에서 처리
+	    // Controller는 요청을 받고 Service로 넘기는 역할만 함
+	    Map<String, Object> result = accountServ.payOrders(dto);
+
+	    // Service에서 만든 결과를 프론트로 반환
+	    return ResponseEntity.ok(result);
+	}
+	
+
+	 // 이체관리 최근 결제 내역 조회
+	 // 카드 결제 성공 후 payments 테이블에 저장된 내역을
+	 // 이체관리 화면 아래에 보여주기 위한 API
+	@GetMapping("/recent-payments")
+	public ResponseEntity<List<Map<String, Object>>> selectRecentPayments(
+	        @RequestParam Integer storeSeq) {
+
+	    return ResponseEntity.ok(accountServ.selectRecentPayments(storeSeq));
 	}
 
 }

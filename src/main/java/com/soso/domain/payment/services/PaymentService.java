@@ -1,21 +1,53 @@
 package com.soso.domain.payment.services;
 
+//포트원 API 호출을 위해 사용
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+//application.properties 값을 가져오기 위해 사용
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+//결제 저장 중 하나라도 실패하면 전체 롤백하기 위해 사용
+import org.springframework.transaction.annotation.Transactional;
 
 import com.soso.domain.payment.dao.PaymentDAO;
 import com.soso.domain.payment.dto.AutoPaymentScheduleDTO;
+import com.soso.domain.payment.dto.OrderPaymentRequestDTO;
 import com.soso.domain.payment.dto.PaymentCardDTO;
 import com.soso.domain.payment.dto.PaymentDTO;
+
+import tools.jackson.databind.ObjectMapper;
+
 
 @Service
 public class PaymentService {
 	
 	@Autowired
 	private PaymentDAO dao;
+	
+	
+    // application.properties에 작성한 포트원 상점 ID
+    @Value("${portone.store-id}")
+    private String portoneStoreId;
+
+    // application.properties에 작성한 포트원 채널 키
+    @Value("${portone.channel-key}")
+    private String portoneChannelKey;
+
+    // application.properties에 작성한 포트원 API Secret
+    // 서버에서 포트원 API 호출할 때만 사용한다.
+    // 절대 프론트로 내려주면 안 됨.
+    @Value("${portone.api-secret}")
+    private String portoneApiSecret;
+    
+    
 	
 	// 계좌 등록 + 4개 제한
 	public int insertAccount(PaymentDTO dto) {
@@ -88,5 +120,258 @@ public class PaymentService {
 		
 		return dao.selectCard(storeSeq);
 	}
+	
+	/**
+	 * 발주 결제 처리
+	 *
+	 * 현재 단계:
+	 * 1. 프론트에서 넘어온 결제 요청값 검증
+	 * 2. Service까지 요청이 잘 들어오는지 확인
+	 *
+	 * 다음 단계에서 여기 안에
+	 * 카드 조회 → 발주 조회 → 포트원 결제 → DB 저장 로직을 추가할 예정
+	 */
+	// 포트원 결제 성공 후 DB 저장 중 에러가 나면 DB 작업을 롤백하기 위해 사용
+	@Transactional
+	public Map<String, Object> payOrders(OrderPaymentRequestDTO dto) {
 
+	    // 응답으로 내려줄 Map
+	    Map<String, Object> result = new HashMap<>();
+
+	    // 매장 번호가 없으면 결제 불가
+	    if (dto.getStoreSeq() == null) {
+	        result.put("success", false);
+	        result.put("message", "사업장 정보가 없습니다.");
+	        return result;
+	    }
+
+	    // 거래처 번호가 없으면 결제 불가
+	    if (dto.getPartnerSeq() == null) {
+	        result.put("success", false);
+	        result.put("message", "거래처 정보가 없습니다.");
+	        return result;
+	    }
+
+	    // 카드 번호가 없으면 결제 불가
+	    if (dto.getCardSeq() == null) {
+	        result.put("success", false);
+	        result.put("message", "결제 카드 정보가 없습니다.");
+	        return result;
+	    }
+
+	    // 결제할 발주 목록이 없으면 결제 불가
+	    if (dto.getOrderSeqList() == null || dto.getOrderSeqList().isEmpty()) {
+	        result.put("success", false);
+	        result.put("message", "결제할 발주가 없습니다.");
+	        return result;
+	    }
+
+	    // 확인용 로그
+	    System.out.println("Service 발주 결제 요청 storeSeq: " + dto.getStoreSeq());
+	    System.out.println("Service 발주 결제 요청 partnerSeq: " + dto.getPartnerSeq());
+	    System.out.println("Service 발주 결제 요청 cardSeq: " + dto.getCardSeq());
+	    System.out.println("Service 발주 결제 요청 orderSeqList: " + dto.getOrderSeqList());
+	    
+	 // 결제에 사용할 카드 조회
+	 // storeSeq = 현재 결제하는 사업자 매장 번호
+	 // cardSeq = 사용자가 선택한 카드 번호
+	 PaymentCardDTO card = dao.selectCardForPayment(
+	         dto.getStoreSeq(),
+	         dto.getCardSeq()
+	 );
+
+	 // 카드가 조회되지 않으면 결제 진행 불가
+	 if (card == null) {
+	     result.put("success", false);
+	     result.put("message", "결제할 카드를 찾을 수 없습니다.");
+	     return result;
+	 }
+
+	// 카드 조회 성공 확인용 로그
+	 System.out.println("결제 카드 조회 성공 cardSeq: " + card.getCardSeq());
+	 System.out.println("결제 카드 billingKey: " + card.getBillingKey());
+
+
+	 // 결제 대상 발주 목록 조회
+	 // 사용자가 선택한 발주가 실제로 현재 매장과 거래처 사이의 발주인지 확인한다.
+	 // 이미 결제된 발주는 payment.xml 쿼리에서 제외된다.
+	 List<Map<String, Object>> orders = dao.selectOrdersForPayment(
+	         dto.getStoreSeq(),
+	         dto.getPartnerSeq(),
+	         dto.getOrderSeqList()
+	 );
+
+	 // 프론트에서 선택한 발주 개수와 DB에서 조회된 발주 개수가 다르면 문제 있음
+	 // 예: 이미 결제된 발주가 포함됐거나, 다른 거래처의 발주가 섞인 경우
+	 if (orders.size() != dto.getOrderSeqList().size()) {
+	     result.put("success", false);
+	     result.put("message", "이미 결제된 발주가 포함되어 있거나 결제할 수 없는 발주입니다.");
+	     return result;
+	 }
+
+	 // 총 결제 금액 계산
+	 // orders의 totalAmount를 전부 더해서 결제 금액을 만든다.
+	 int totalAmount = orders.stream()
+	         .mapToInt(order -> ((Number) order.get("totalAmount")).intValue())
+	         .sum();
+
+	 // 확인용 로그
+	 System.out.println("결제 대상 발주 조회 성공: " + orders);
+	 System.out.println("총 결제 금액: " + totalAmount);
+
+
+	// 포트원 빌링키 결제 요청
+	// card.getBillingKey() = payment_cards 테이블에 저장된 포트원 빌링키
+	// totalAmount = 위에서 계산한 실제 결제 금액
+	String paymentId = callPortOneBillingPayment(
+	        card.getBillingKey(),
+	        totalAmount
+	);
+
+	// 포트원 결제가 성공했으므로 payments 테이블에 결제 내역 저장
+	Integer paymentSeq = dao.insertPayment(
+	        dto.getStoreSeq(),      // 돈을 낸 사업자 매장 번호
+	        dto.getPartnerSeq(),    // 돈을 받은 거래처 매장 번호
+	        dto.getCardSeq(),       // 결제에 사용한 카드 번호
+	        paymentId,              // 포트원 결제 ID
+	        totalAmount             // 총 결제 금액
+	);
+
+	// 결제한 발주들을 payment_order_map 테이블에 저장
+	dao.insertPaymentOrderMap(
+	        paymentSeq,             // 방금 생성된 payments.payment_seq
+	        dto.getOrderSeqList()   // 결제한 발주 번호 목록
+	);
+
+	// 발주 결제 금액을 expenses 테이블에 식자재비로 자동 등록
+	dao.insertExpensesForPaidOrders(
+	        dto.getStoreSeq(),      // 지출이 발생한 사업자 매장 번호
+	        dto.getOrderSeqList()   // 지출로 등록할 발주 번호 목록
+	);
+
+	// 최종 성공 응답
+	result.put("success", true);
+	result.put("message", "결제 및 DB 저장까지 완료되었습니다.");
+	result.put("paymentId", paymentId);
+	result.put("paymentSeq", paymentSeq);
+	result.put("storeSeq", dto.getStoreSeq());
+	result.put("partnerSeq", dto.getPartnerSeq());
+	result.put("cardSeq", dto.getCardSeq());
+	result.put("orderSeqList", dto.getOrderSeqList());
+	result.put("totalAmount", totalAmount);
+
+	return result;
+	}
+	
+	
+	/**
+	 * 포트원 빌링키 결제 요청
+	 *
+	 * billingKey:
+	 * payment_cards 테이블에 저장된 포트원 빌링키
+	 *
+	 * totalAmount:
+	 * 결제할 총 금액
+	 *
+	 * 성공하면 우리 DB에 저장할 paymentId를 반환한다.
+	 * 실패하면 RuntimeException을 발생시켜 결제 실패로 처리한다.
+	 */
+	private String callPortOneBillingPayment(String billingKey, int totalAmount) {
+
+	    try {
+	        // 포트원 결제 ID
+	        // 결제 건마다 고유해야 해서 현재 시간 기준으로 생성
+	        String paymentId = "soso-order-" + System.currentTimeMillis();
+
+	        // Map 데이터를 JSON 문자열로 바꾸기 위한 객체
+	        ObjectMapper objectMapper = new ObjectMapper();
+
+	        // 포트원 amount 형식
+	        // total에 실제 결제할 금액을 넣는다.
+	        Map<String, Object> amount = new HashMap<>();
+	        amount.put("total", totalAmount);
+
+	     // 고객 이름 정보
+	     // 포트원 V2에서 customer.name은 문자열이 아니라 객체 형태여야 함
+	     // name: { full: "SOSO 사업자" } 형태로 전달
+	     Map<String, Object> customerName = new HashMap<>();
+	     customerName.put("full", "SOSO 사업자");
+
+	     // 고객 정보
+	     // 포트원 결제 요청에서 email, phoneNumber가 필수라서 같이 넣어야 함
+	     Map<String, Object> customer = new HashMap<>();
+
+	     // 고객 구분용 ID
+	     customer.put("id", "soso-customer");
+
+	     // 고객 이름
+	     customer.put("name", customerName);
+
+	     // 고객 이메일
+	     // 테스트용이면 임시 이메일 사용 가능
+	     customer.put("email", "soso@test.com");
+
+	     // 고객 전화번호
+	     // 테스트용이면 임시 번호 사용 가능
+	     customer.put("phoneNumber", "01012345678");
+
+	        // 포트원으로 보낼 요청 바디
+	        Map<String, Object> body = new HashMap<>();
+	        body.put("storeId", portoneStoreId);
+	        body.put("channelKey", portoneChannelKey);
+	        body.put("billingKey", billingKey);
+	        body.put("orderName", "SOSO 발주 결제");
+	        body.put("amount", amount);
+	        body.put("currency", "KRW");
+	        body.put("customer", customer);
+
+	        // 요청 바디를 JSON 문자열로 변환
+	        String jsonBody = objectMapper.writeValueAsString(body);
+
+	        // 포트원 빌링키 결제 API 요청 생성
+	        HttpRequest request = HttpRequest.newBuilder()
+	                .uri(URI.create("https://api.portone.io/payments/" + paymentId + "/billing-key"))
+	                .header("Authorization", "PortOne " + portoneApiSecret)
+	                // 한글이 포함되어 있으므로 charset도 명시
+	                .header("Content-Type", "application/json; charset=utf-8")
+	                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+	                .build();
+
+	        // HTTP 요청을 보내기 위한 클라이언트 생성
+	        HttpClient client = HttpClient.newHttpClient();
+
+	        // 포트원 API 호출
+	        HttpResponse<String> response =
+	                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+	        // 포트원 응답 확인용 로그
+	        System.out.println("포트원 결제 응답 status: " + response.statusCode());
+	        System.out.println("포트원 결제 응답 body: " + response.body());
+
+	        // 응답 코드가 200번대가 아니면 결제 실패로 처리
+	        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+	            throw new RuntimeException("포트원 결제 실패: " + response.body());
+	        }
+
+	        // 결제 성공 시 paymentId 반환
+	        return paymentId;
+
+	    } catch (Exception e) {
+	        throw new RuntimeException("포트원 결제 요청 중 오류: " + e.getMessage(), e);
+	    }
+	}
+	
+	
+	
+	 // 이체관리 최근 결제 내역 조회
+	 // 현재 매장에서 카드로 결제한 최근 내역을 가져온다.
+	public List<Map<String, Object>> selectRecentPayments(Integer storeSeq) {
+
+	    // 매장 번호가 없으면 조회 불가
+	    if (storeSeq == null || storeSeq == 0) {
+	        throw new RuntimeException("사업장 정보가 없습니다.");
+	    }
+	    return dao.selectRecentPayments(storeSeq);
+	}
+	
 }
