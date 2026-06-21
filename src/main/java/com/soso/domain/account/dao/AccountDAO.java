@@ -79,4 +79,9 @@ public class AccountDAO {
     public Integer getFirstStoreSeqByUserSeq(int userSeq) {
         return mybatis.selectOne(NAMESPACE + ".getFirstStoreSeqByUserSeq", userSeq);
     }
+    
+ // 내가 등록한 거래처 목록 조회
+    public List<AccountSearchResponseDto> myPartners(Long storeSeq) {
+        return mybatis.selectList(NAMESPACE + ".myPartners", storeSeq);
+    }
 }

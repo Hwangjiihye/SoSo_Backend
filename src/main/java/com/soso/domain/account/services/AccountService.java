@@ -90,4 +90,9 @@ public class AccountService {
     public Integer getFirstStoreSeqByUserSeq(int userSeq) {
         return accountDAO.getFirstStoreSeqByUserSeq(userSeq);
     }
+    
+ // 내가 등록한 거래처 목록 조회
+    public List<AccountSearchResponseDto> myPartners(Long storeSeq) {
+        return accountDAO.myPartners(storeSeq);
+    }
 }

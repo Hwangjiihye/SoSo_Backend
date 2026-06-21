@@ -164,4 +164,13 @@ public class AccountController {
         
         return ResponseEntity.ok(response);
     }
+    
+ // 내가 등록한 거래처 목록 조회
+    @GetMapping("/my-partners")
+    public ResponseEntity<List<AccountSearchResponseDto>> myPartners(
+            @RequestParam Long storeSeq
+    ) {
+        List<AccountSearchResponseDto> list = accountService.myPartners(storeSeq);
+        return ResponseEntity.ok(list);
+    }
 }
