@@ -29,10 +29,6 @@ public class OrderService {
 	public List<OrderRecommendDTO> recommendStock(String itemName, Long storeSeq) {
 	    return dao.recommendStock(itemName, storeSeq);
 	}
-//	public List<OrderRecommendDTO> recommendStock(String itemName, Long user_seq) {
-//		
-//		return dao.recommendStock(itemName, user_seq);
-//	}
 	
 	// 거래처 품목 목록
 	public List<OrderItemDTO> compareItem(OrderItemDTO dto) {
@@ -44,9 +40,6 @@ public class OrderService {
 	public Map<String, Object> identityCheck(Long storeSeq) {
 	    return dao.identityCheck(storeSeq);
 	}
-//	public Map<String, Object> identityCheck(Long user_seq) {
-//		return dao.identityCheck(user_seq);
-//	}
 	
 	// 발주 신청시 공급업체 목록 조회
 	public List<OrderItemDTO> suppliers() {
@@ -84,16 +77,6 @@ public class OrderService {
 
 	    return result;
 	}
-	
-
-	// 발주 신청시 공급업체 목록 조회
-//	public List<OrderItemDTO> suppliers() {
-//	    return dao.suppliers();
-
-	// 발주서 목록으로 출력 + 검색 및 필터링 기능
-//	public List<OrderListDTO> orderList(Long userSeq, Integer storeSeq, String keyword, String status, String startDate, String endDate) {
-//		return dao.orderList(userSeq, storeSeq, keyword, status, startDate, endDate);
-//	}
 
 	// 발주서 상세 내역 조회
 	public Map<String, Object> getOrderDetail(Long orderSeq) {
@@ -126,13 +109,6 @@ public class OrderService {
 	    return dao.orderList(storeSeq, offset, keyword, status, startDate, endDate);
 	}
 	
-	// 발주서 목록으로 출력 + 검색 기능
-//	public List<OrderListDTO> orderList(Long storeSeq, String keyword) {
-//	    return dao.orderList(storeSeq, keyword);
-//	}
-//	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
-//		return dao.orderList(userSeq, keyword);
-//	}
 	
 	// 웹소켓
 	// 발주 상태 변경 + 사업자 화면에 웹소켓 알림 전송
@@ -171,5 +147,10 @@ public class OrderService {
 	        default:
 	            return "발주 상태가 변경되었습니다.";
 	    }
+	}
+	
+	// 발주 미결제
+	public List<Map<String, Object>> unpaidOrders(Long storeSeq, Long partnerSeq) {
+	    return dao.unpaidOrders(storeSeq, partnerSeq);
 	}
 }

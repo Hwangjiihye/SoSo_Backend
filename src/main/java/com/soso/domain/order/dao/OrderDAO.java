@@ -29,14 +29,6 @@ public class OrderDAO {
 
 	    return mybatis.selectList("order.stockCheck", params);
 	}
-//	public List<OrderRecommendDTO> recommendStock(String itemName, Object user_seq) {
-//
-//		Map<String, Object> params = new HashMap<>();
-//		params.put("itemName", itemName);
-//		params.put("user_seq", user_seq);
-//
-//		return mybatis.selectList("order.stockCheck", params);
-//	}
 
 	// 거래처 품목 목록
 	public List<OrderItemDTO> compareItem(OrderItemDTO dto) {
@@ -68,27 +60,6 @@ public class OrderDAO {
 		return mybatis.update("order.updateOrderNo", dto);
 	}
 
-	// 발주서 목록으로 출력 + 검색 기능
-//	public List<OrderListDTO> orderList(Long storeSeq, String keyword) {
-//
-//	    Map<String, Object> params = new HashMap<>();
-//	    params.put("storeSeq", storeSeq);
-//	    params.put("keyword", keyword);
-		
-	// 발주서 목록으로 출력 + 검색 및 필터링 기능
-//	public List<OrderListDTO> orderList(Long userSeq, Integer storeSeq, String keyword, String status, String startDate, String endDate) {
-//
-//		Map<String, Object> params = new HashMap<>();
-//		params.put("userSeq", userSeq);
-//		params.put("storeSeq", storeSeq);
-//		params.put("keyword", keyword);
-//		params.put("status", status);
-//		params.put("startDate", startDate);
-//		params.put("endDate", endDate);
-//
-//
-//	    return mybatis.selectList("order.orderList", params);
-//	}
 	
 	// 발주서 목록으로 출력 + 검색 및 필터링 기능
 	public List<OrderListDTO> orderList(
@@ -111,14 +82,6 @@ public class OrderDAO {
 	    return mybatis.selectList("order.orderList", params);
 	}
 	
-//	public List<OrderListDTO> orderList(Long userSeq, String keyword) {
-//
-//		Map<String, Object> params = new HashMap<>();
-//		params.put("userSeq", userSeq);
-//		params.put("keyword", keyword);
-//
-//		return mybatis.selectList("order.orderList", params);
-//	}
 
 	// 웹소켓
 	// 발주 상태 변경
@@ -143,6 +106,15 @@ public class OrderDAO {
 	// 발주 상세 - 품목 리스트
 	public List<Map<String, Object>> findOrderItemsBySeq(Long orderSeq) {
 		return mybatis.selectList("order.findOrderItemsBySeq", orderSeq);
+	}
+	
+	// 발주 미결제
+	public List<Map<String, Object>> unpaidOrders(Long storeSeq, Long partnerSeq) {
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("storeSeq", storeSeq);
+	    params.put("partnerSeq", partnerSeq);
+
+	    return mybatis.selectList("order.unpaidOrders", params);
 	}
 	
 }

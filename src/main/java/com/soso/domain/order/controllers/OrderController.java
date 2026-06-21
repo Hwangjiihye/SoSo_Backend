@@ -41,18 +41,6 @@ public class OrderController {
 
 	    return ResponseEntity.ok(recommendList);
 	}
-//	@GetMapping("/check")
-//	public ResponseEntity <List<OrderRecommendDTO>> recommendStock(@RequestParam("itemName") String itemName, HttpServletRequest request) {
-//		
-//		Long user_seq = (Long)request.getAttribute("user_seq");
-//		
-//		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, user_seq);
-//		
-//		System.out.println("userSeq = " + user_seq);
-//	    System.out.println("itemName = " + itemName);
-//		
-//		return ResponseEntity.ok(recommendList);
-//	}
 	
 	// 거래처 품목 목록
 	@GetMapping("/items")
@@ -71,15 +59,6 @@ public class OrderController {
 
 	    return ResponseEntity.ok(identity);
 	}
-//	@GetMapping("/identity")
-//	public ResponseEntity<Map<String, Object>> identityCheck(HttpServletRequest request) {
-//		
-//		Long user_seq = (Long) request.getAttribute("user_seq");
-//		
-//		Map<String, Object> identity = OrderServ.identityCheck(user_seq);
-//		
-//		return ResponseEntity.ok(identity);
-//	}
 	
 	// 발주서 작성
 	@PostMapping("/form")
@@ -99,20 +78,6 @@ public class OrderController {
 
 	    return ResponseEntity.ok(result);
 	}
-//	@PostMapping("/form")
-//	public ResponseEntity<Integer> orderForm(@RequestBody OrderDTO dto, HttpServletRequest request) {
-//		
-//		Long buyerSeq = (Long) request.getAttribute("user_seq");
-//		
-//		// 발주자는 프론트에서 받는 게 아니라 로그인한 사용자로 고정
-//		dto.setBuyerSeq(buyerSeq);
-//		
-//		// Service로 발주 저장 요청
-//	    // Service 안에서 orders 먼저 저장하고, order_items를 품목 개수만큼 저장함
-//		int result = OrderServ.orderForm(dto);
-//		
-//		return ResponseEntity.ok(result);
-//	}
 	
 	// 발주 신청시 공급업체 목록 조회
 	@GetMapping("/suppliers")
@@ -144,18 +109,6 @@ public class OrderController {
 	    return ResponseEntity.ok(orderList);
 	}
 	
-//	@GetMapping("/list")
-//	public ResponseEntity<List<OrderListDTO>> orderList(HttpServletRequest request, @RequestParam(value = "keyword", required = false) String keyword) {
-//		
-//		Long userSeq = (Long) request.getAttribute("user_seq");
-//		
-//		System.out.println("검색어 확인 : " + keyword);
-//		
-//		List<OrderListDTO> orderList = OrderServ.orderList(userSeq, keyword);
-//		
-//		return ResponseEntity.ok(orderList);
-//	}
-	
 	// 발주서 상세 내역 조회
 	@GetMapping("/list/{orderSeq}")
 	public ResponseEntity<Map<String, Object>> getOrderDetail(@PathVariable Long orderSeq) {
@@ -180,6 +133,15 @@ public class OrderController {
 	    OrderServ.updateOrderStatus(orderSeq, status);
 
 	    return ResponseEntity.ok("발주 상태 변경 및 웹소켓 알림 전송 완료");
+	}
+	
+	@GetMapping("/unpaid")
+	public ResponseEntity<List<Map<String, Object>>> unpaidOrders(
+	        @RequestParam Long storeSeq,
+	        @RequestParam Long partnerSeq) {
+
+	    List<Map<String, Object>> result = OrderServ.unpaidOrders(storeSeq, partnerSeq);
+	    return ResponseEntity.ok(result);
 	}
 
 }
