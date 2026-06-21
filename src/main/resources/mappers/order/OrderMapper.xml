@@ -257,7 +257,24 @@
 	</select>
     
     <!-- 8. 발주 상세 - 기본 정보 -->
-    <select id="findOrderInfoBySeq" parameterType="long" resultType="map">
+<select id="findOrderInfoBySeq" parameterType="long" resultType="map">
+    SELECT 
+        o.order_seq AS orderSeq,
+        o.order_no AS orderNo,
+        o.status AS status,
+        o.created_at AS createdAt,
+        o.total_amount AS totalAmount,
+        o.order_memo AS orderMemo,
+        o.zonecode,
+        o.address1,
+        o.address2,
+        st.company_name AS companyName
+    FROM orders o
+    JOIN stores st 
+        ON o.seller_seq = st.store_seq
+    WHERE o.order_seq = #{orderSeq}
+</select>
+    <!--<select id="findOrderInfoBySeq" parameterType="long" resultType="map">
         SELECT 
             o.order_seq AS orderSeq,
             o.order_no AS orderNo,
@@ -272,7 +289,7 @@
         FROM orders o
         JOIN stores st ON o.seller_seq = st.user_seq
         WHERE o.order_seq = #{orderSeq}
-    </select>
+    </select>-->
 
     <!-- 9. 발주 상세 - 품목 리스트 -->
     <select id="findOrderItemsBySeq" parameterType="long" resultType="map">
