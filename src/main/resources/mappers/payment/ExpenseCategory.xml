@@ -51,4 +51,60 @@
 	    ORDER BY expense_date DESC, expense_seq DESC
 	</select>
 	
+	
+	<!-- 비용 카테고리 - 거래처별 일반 발주 내역 전체 조회 -->
+	<select id="generalOrdersForExpense" parameterType="map" resultType="map">
+	    SELECT
+	        o.order_seq AS orderSeq,
+	        o.order_no AS orderCode,
+	        DATE_FORMAT(o.created_at, '%Y-%m-%d') AS orderDate,
+	
+	        buyer_store.store_seq AS storeSeq,
+	        partner_store.store_seq AS partnerStoreSeq,
+	        partner_store.company_name AS partnerName,
+	
+	        COALESCE(
+		    (
+		        SELECT
+		            CONCAT(
+		                MIN(oi.item_name),
+		                CASE
+		                    WHEN COUNT(*) > 1 THEN CONCAT(' 외 ', COUNT(*) - 1, '개 품목')
+		                    ELSE ''
+		                END
+		            )
+		        FROM order_items oi
+		        WHERE oi.order_seq = o.order_seq
+		    ),
+		    CONCAT('발주서 ', o.order_no)
+		) AS itemSummary,
+	        o.total_amount AS totalAmount,
+	        o.status AS status,
+	
+	        CASE
+	            WHEN EXISTS (
+	                SELECT 1
+	                FROM payment_order_map pom
+	                JOIN payments p
+	                    ON pom.payment_seq = p.payment_seq
+	                WHERE pom.order_seq = o.order_seq
+	                  AND p.status = 'PAID'
+	            )
+	            THEN '결제완료'
+	            ELSE '미결제'
+	        END AS paymentStatus
+	
+	    FROM orders o
+	    JOIN stores buyer_store
+	        ON buyer_store.user_seq = o.buyer_seq
+	    JOIN stores partner_store
+	        ON partner_store.user_seq = o.seller_seq
+	
+	    WHERE buyer_store.store_seq = #{storeSeq}
+	      AND partner_store.store_seq = #{partnerStoreSeq}
+	      AND IFNULL(o.status, '') != '취소'
+	
+	    ORDER BY o.created_at DESC, o.order_seq DESC
+	</select>
+	
 </mapper>

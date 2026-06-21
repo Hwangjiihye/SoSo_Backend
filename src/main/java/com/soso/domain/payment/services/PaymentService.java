@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -361,17 +362,122 @@ public class PaymentService {
 	    }
 	}
 	
-	
-	
-	 // 이체관리 최근 결제 내역 조회
-	 // 현재 매장에서 카드로 결제한 최근 내역을 가져온다.
-	public List<Map<String, Object>> selectRecentPayments(Integer storeSeq) {
+	// 이체관리 최근 결제 내역 조회
+	// 현재 매장에서 카드로 결제한 내역을 검색 조건에 맞게 가져온다.
+	public List<Map<String, Object>> selectRecentPayments(
+	        Integer storeSeq,
+	        String period,
+	        String startDate,
+	        String endDate,
+	        String keyword) {
 
 	    // 매장 번호가 없으면 조회 불가
 	    if (storeSeq == null || storeSeq == 0) {
 	        throw new RuntimeException("사업장 정보가 없습니다.");
 	    }
-	    return dao.selectRecentPayments(storeSeq);
+
+	    // period가 비어 있으면 기본값으로 이번 주 사용
+	    if (period == null || period.isBlank()) {
+	        period = "week";
+	    }
+
+	    // DAO에 검색 조건 전달
+	    return dao.selectRecentPayments(
+	            storeSeq,
+	            period,
+	            startDate,
+	            endDate,
+	            keyword
+	    );
+	}
+	
+	
+	/**
+	 * 거래처 로그인 기준 수금관리 대시보드 조회
+	 *
+	 * storeSeq:
+	 * 현재 로그인한 거래처의 매장 번호
+	 *
+	 * 반환 데이터:
+	 * 1. 사업자 기본 정보
+	 * 2. 상단 수금 요약 카드
+	 * 3. 최근 입금 내역
+	 * 4. 거래처별 수금 이력
+	 */
+	public Map<String, Object> selectCollectionDashboard(Long storeSeq) {
+
+	    // 매장 번호가 없으면 조회 불가
+	    if (storeSeq == null || storeSeq == 0) {
+	        throw new RuntimeException("사업장 정보가 없습니다.");
+	    }
+
+	    // 프론트로 반환할 전체 결과 Map 생성
+	    Map<String, Object> result = new HashMap<>();
+
+	    // 거래처 사업자 기본 정보 조회
+	    Map<String, Object> businessInfo = dao.selectCollectionBusinessInfo(storeSeq);
+
+	    // 상단 요약 카드 데이터 조회
+	    Map<String, Object> summary = dao.selectCollectionSummary(storeSeq);
+
+	    // 최근 입금 내역 조회
+	    List<Map<String, Object>> depositAccounts = dao.selectCollectionDepositAccounts(storeSeq);
+
+	    // 거래처별 수금 이력 조회
+	    List<Map<String, Object>> collectionRows = dao.selectCollectionRows(storeSeq);
+
+	    // 사업자 정보가 없으면 프론트 오류 방지를 위해 빈 Map으로 처리
+	    if (businessInfo == null) {
+	        businessInfo = new HashMap<>();
+	    }
+
+	    // 요약 정보가 없으면 프론트 오류 방지를 위해 기본값 세팅
+	    if (summary == null) {
+	        summary = new HashMap<>();
+
+	        // 이번 달 입금 완료 금액
+	        summary.put("paidAmount", 0);
+
+	        // 이번 달 입금 완료 건수
+	        summary.put("paidCount", 0);
+
+	        // 월 입금 예정 금액
+	        summary.put("scheduledAmount", 0);
+
+	        // 월 입금 예정 건수
+	        summary.put("scheduledCount", 0);
+
+	        // 미수금 금액
+	        summary.put("unpaidAmount", 0);
+
+	        // 미수금 건수
+	        summary.put("unpaidCount", 0);
+	    }
+
+	    // 최근 입금 내역이 null이면 빈 리스트로 처리
+	    if (depositAccounts == null) {
+	        depositAccounts = new ArrayList<>();
+	    }
+
+	    // 수금 이력이 null이면 빈 리스트로 처리
+	    if (collectionRows == null) {
+	        collectionRows = new ArrayList<>();
+	    }
+
+	    // 전체 결과에 사업자 기본 정보 추가
+	    result.put("businessInfo", businessInfo);
+
+	    // 전체 결과에 요약 카드 데이터 추가
+	    result.put("summary", summary);
+
+	    // 전체 결과에 최근 입금 내역 추가
+	    result.put("depositAccounts", depositAccounts);
+
+	    // 전체 결과에 거래처별 수금 이력 추가
+	    result.put("collectionRows", collectionRows);
+
+	    // 프론트로 반환
+	    return result;
 	}
 	
 }

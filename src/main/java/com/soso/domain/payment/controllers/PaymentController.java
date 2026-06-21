@@ -90,14 +90,40 @@ public class PaymentController {
 	}
 	
 
-	 // 이체관리 최근 결제 내역 조회
-	 // 카드 결제 성공 후 payments 테이블에 저장된 내역을
-	 // 이체관리 화면 아래에 보여주기 위한 API
+	// 이체관리 최근 결제 내역 조회
+	// 카드 결제 성공 후 payments 테이블에 저장된 내역을
+	// 검색 조건에 맞게 조회해서 화면에 보여주기 위한 API
 	@GetMapping("/recent-payments")
 	public ResponseEntity<List<Map<String, Object>>> selectRecentPayments(
-	        @RequestParam Integer storeSeq) {
+	        @RequestParam Integer storeSeq,
+	        @RequestParam(required = false, defaultValue = "week") String period,
+	        @RequestParam(required = false) String startDate,
+	        @RequestParam(required = false) String endDate,
+	        @RequestParam(required = false) String keyword) {
 
-	    return ResponseEntity.ok(accountServ.selectRecentPayments(storeSeq));
+	    // Service에 검색 조건을 전달해서 결제 내역 조회
+	    List<Map<String, Object>> list = accountServ.selectRecentPayments(
+	            storeSeq,
+	            period,
+	            startDate,
+	            endDate,
+	            keyword
+	    );
+
+	    // 조회 결과를 프론트로 반환
+	    return ResponseEntity.ok(list);
 	}
+	
+	// 거래처 로그인 기준 수금관리 대시보드 조회
+	@GetMapping("/collection")
+	public ResponseEntity<Map<String, Object>> selectCollectionDashboard(
+	        @RequestParam Long storeSeq) {
+
+	    Map<String, Object> result = accountServ.selectCollectionDashboard(storeSeq);
+
+	    return ResponseEntity.ok(result);
+	}
+	
+	
 
 }

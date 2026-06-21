@@ -117,7 +117,9 @@
 	
 	<!-- 이체관리 최근 결제 내역 조회 -->
 	<!-- 이 화면은 "내가 결제한 내역"을 보여주는 화면이므로 payments.store_seq = 현재 로그인한 사업자 매장 번호 기준으로 조회한다. -->
-	<select id="selectRecentPayments" parameterType="int" resultType="map">
+	<!-- keyword로 카드사명, 카드번호, 보낸 사람, 받는 사람을 검색할 수 있다. -->
+	<!-- period로 이번 주/week, 한 달/month, 날짜 지정/custom을 구분한다. -->
+	<select id="selectRecentPayments" parameterType="map" resultType="map">
 	    SELECT
 	        p.payment_seq AS paymentSeq,
 	        p.payment_id AS paymentId,
@@ -125,10 +127,10 @@
 	        -- 결제 일시
 	        DATE_FORMAT(p.paid_at, '%Y-%m-%d %H:%i') AS paidAt,
 	
-	        -- 카드사명: 기존 화면의 '은행' 칸에 임시로 표시
+	        -- 카드사명
 	        pc.card_company AS cardCompany,
 	
-	        -- 카드번호 마스킹: 기존 화면의 '계좌번호' 칸에 임시로 표시
+	        -- 카드번호 마스킹
 	        pc.card_number_masked AS cardNumberMasked,
 	
 	        -- 돈을 낸 내 매장명
@@ -150,8 +152,35 @@
 	    JOIN stores partner
 	        ON p.partner_seq = partner.store_seq
 	    WHERE p.store_seq = #{storeSeq}
+	
+	    <!-- 날짜 직접 지정 검색 -->
+	    <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
+	        AND DATE(p.paid_at) BETWEEN #{startDate} AND #{endDate}
+	    </if>
+	
+	    <!-- 날짜 직접 지정이 아닐 때 빠른 기간 필터 적용 -->
+	    <if test="(startDate == null or startDate == '') and (endDate == null or endDate == '')">
+	        <if test="period == 'week'">
+	            AND p.paid_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+	        </if>
+	
+	        <if test="period == 'month'">
+	            AND p.paid_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+	        </if>
+	    </if>
+	
+	    <!-- 검색어 필터 -->
+	    <if test="keyword != null and keyword != ''">
+	        AND (
+	            pc.card_company LIKE CONCAT('%', #{keyword}, '%')
+	            OR pc.card_number_masked LIKE CONCAT('%', #{keyword}, '%')
+	            OR payer.company_name LIKE CONCAT('%', #{keyword}, '%')
+	            OR partner.company_name LIKE CONCAT('%', #{keyword}, '%')
+	        )
+	    </if>
+	
 	    ORDER BY p.paid_at DESC
-	    LIMIT 10
+	    LIMIT 50
 	</select>
 	
 	
@@ -258,4 +287,266 @@
               #{orderSeq}
           </foreach>
     </insert>
+    
+    
+        <!-- 거래처 로그인 기준 사업자 기본 정보 조회 -->
+    <!-- storeSeq = 현재 로그인한 거래처의 매장 번호 -->
+    <select id="selectCollectionBusinessInfo" parameterType="long" resultType="map">
+        SELECT
+            -- users.user_type을 화면에 보여줄 사업자 유형으로 변환
+            CASE
+                WHEN u.user_type = 'PARTNER' THEN '거래처'
+                WHEN u.user_type = 'BUSINESS' THEN '사업자'
+                WHEN u.user_type = 'ADMIN' THEN '관리자'
+                ELSE '-'
+            END AS businessType,
+
+            -- stores.biz_number를 사업자번호로 사용
+            IFNULL(s.biz_number, '-') AS businessNumber,
+
+            -- stores.ceo_name을 대표자명으로 사용
+            IFNULL(s.ceo_name, '-') AS ownerName,
+
+            -- 현재 stores 테이블에는 업태/종목 컬럼이 없으므로 임시 표시
+            '-' AS businessItem
+        FROM stores s
+        JOIN users u
+            ON s.user_seq = u.user_seq
+        WHERE s.store_seq = #{storeSeq}
+    </select>
+
+
+    <!-- 거래처 로그인 기준 수금 요약 조회 -->
+    <!-- 입금완료는 payments.partner_seq 기준, 입금예정/미수금은 orders.seller_seq 기준 -->
+    <select id="selectCollectionSummary" parameterType="long" resultType="map">
+        SELECT
+            -- 이번 달 입금 완료 금액
+            IFNULL((
+                SELECT SUM(p.total_amount)
+                FROM payments p
+                WHERE p.partner_seq = #{storeSeq}
+                  AND p.status = 'PAID'
+                  AND DATE_FORMAT(p.paid_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            ), 0) AS paidAmount,
+
+            -- 이번 달 입금 완료 건수
+            IFNULL((
+                SELECT COUNT(*)
+                FROM payments p
+                WHERE p.partner_seq = #{storeSeq}
+                  AND p.status = 'PAID'
+                  AND DATE_FORMAT(p.paid_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+            ), 0) AS paidCount,
+
+            -- 입금 예정 금액: 아직 결제되지 않았고 배송완료 전인 발주
+            IFNULL((
+                SELECT SUM(o.total_amount)
+                FROM orders o
+                JOIN stores seller_store
+                    ON seller_store.user_seq = o.seller_seq
+                WHERE seller_store.store_seq = #{storeSeq}
+                  AND o.status != 'DELIVERED'
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM payment_order_map pom
+                      JOIN payments p
+                          ON pom.payment_seq = p.payment_seq
+                      WHERE pom.order_seq = o.order_seq
+                        AND p.status = 'PAID'
+                  )
+            ), 0) AS scheduledAmount,
+
+            -- 입금 예정 건수
+            IFNULL((
+                SELECT COUNT(*)
+                FROM orders o
+                JOIN stores seller_store
+                    ON seller_store.user_seq = o.seller_seq
+                WHERE seller_store.store_seq = #{storeSeq}
+                  AND o.status != 'DELIVERED'
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM payment_order_map pom
+                      JOIN payments p
+                          ON pom.payment_seq = p.payment_seq
+                      WHERE pom.order_seq = o.order_seq
+                        AND p.status = 'PAID'
+                  )
+            ), 0) AS scheduledCount,
+
+            -- 미수금 금액: 배송완료됐지만 아직 결제되지 않은 발주
+            IFNULL((
+                SELECT SUM(o.total_amount)
+                FROM orders o
+                JOIN stores seller_store
+                    ON seller_store.user_seq = o.seller_seq
+                WHERE seller_store.store_seq = #{storeSeq}
+                  AND o.status = 'DELIVERED'
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM payment_order_map pom
+                      JOIN payments p
+                          ON pom.payment_seq = p.payment_seq
+                      WHERE pom.order_seq = o.order_seq
+                        AND p.status = 'PAID'
+                  )
+            ), 0) AS unpaidAmount,
+
+            -- 미수금 건수
+            IFNULL((
+                SELECT COUNT(*)
+                FROM orders o
+                JOIN stores seller_store
+                    ON seller_store.user_seq = o.seller_seq
+                WHERE seller_store.store_seq = #{storeSeq}
+                  AND o.status = 'DELIVERED'
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM payment_order_map pom
+                      JOIN payments p
+                          ON pom.payment_seq = p.payment_seq
+                      WHERE pom.order_seq = o.order_seq
+                        AND p.status = 'PAID'
+                  )
+            ), 0) AS unpaidCount
+    </select>
+
+
+    <!-- 거래처 로그인 기준 최근 입금 내역 조회 -->
+    <!-- partner_seq = 돈을 받은 거래처 매장 번호 -->
+    <select id="selectCollectionDepositAccounts" parameterType="long" resultType="map">
+        SELECT
+            -- 카드사를 입금 수단처럼 표시
+            IFNULL(pc.card_company, '-') AS bank,
+
+            -- 카드번호 마스킹 표시
+            IFNULL(pc.card_number_masked, '-') AS account,
+
+            -- 입금 금액
+            p.total_amount AS amount,
+
+            -- 입금일 표시
+            DATE_FORMAT(p.paid_at, '%c월 %e일 입금') AS date
+        FROM payments p
+        LEFT JOIN payment_cards pc
+            ON p.card_seq = pc.card_seq
+        WHERE p.partner_seq = #{storeSeq}
+          AND p.status = 'PAID'
+        ORDER BY p.paid_at DESC
+        LIMIT 5
+    </select>
+
+
+    <!-- 거래처 로그인 기준 거래처별 수금 이력 조회 -->
+    <!-- 입금완료는 payments 기준, 입금예정/미수금은 orders 기준으로 합쳐서 조회 -->
+    <select id="selectCollectionRows" parameterType="long" resultType="map">
+        SELECT
+            result.id,
+            result.client,
+            result.type,
+            result.date,
+            result.expected,
+            result.paid,
+            result.account,
+            result.status
+        FROM (
+            -- 입금완료 수금 이력
+            SELECT
+                -- 결제 번호
+                p.payment_seq AS id,
+
+                -- 돈을 보낸 사업자명
+                IFNULL(payer.company_name, '-') AS client,
+
+                -- 돈을 보낸 회원 유형
+                CASE
+                    WHEN payer_user.user_type = 'BUSINESS' THEN '사업자'
+                    WHEN payer_user.user_type = 'PARTNER' THEN '거래처'
+                    ELSE '-'
+                END AS type,
+
+                -- 실제 입금일
+                DATE_FORMAT(p.paid_at, '%c월 %e일') AS date,
+
+                -- 예정 금액
+                p.total_amount AS expected,
+
+                -- 실제 입금된 금액
+                p.total_amount AS paid,
+
+                -- 결제 수단 표시
+                CONCAT(IFNULL(pc.card_company, '-'), ' ', IFNULL(pc.card_number_masked, '-')) AS account,
+
+                -- 수금 상태
+                '입금완료' AS status,
+
+                -- 정렬용 날짜
+                p.paid_at AS sortDate
+            FROM payments p
+            JOIN stores payer
+                ON p.store_seq = payer.store_seq
+            JOIN users payer_user
+                ON payer.user_seq = payer_user.user_seq
+            LEFT JOIN payment_cards pc
+                ON p.card_seq = pc.card_seq
+            WHERE p.partner_seq = #{storeSeq}
+              AND p.status = 'PAID'
+
+            UNION ALL
+
+            -- 입금예정 또는 미수금 수금 이력
+            SELECT
+                -- 발주 번호
+                o.order_seq AS id,
+
+                -- 발주한 사업자명
+                IFNULL(buyer_store.company_name, '-') AS client,
+
+                -- 발주한 회원 유형
+                CASE
+                    WHEN buyer_user.user_type = 'BUSINESS' THEN '사업자'
+                    WHEN buyer_user.user_type = 'PARTNER' THEN '거래처'
+                    ELSE '-'
+                END AS type,
+
+                -- 결제 예정일 컬럼이 없어서 발주일을 임시 표시
+                IFNULL(DATE_FORMAT(o.created_at, '%c월 %e일'), '-') AS date,
+
+                -- 예정 금액
+                o.total_amount AS expected,
+
+                -- 아직 입금되지 않았으므로 0원
+                0 AS paid,
+
+                -- 아직 결제 전이므로 결제 수단 없음
+                '-' AS account,
+
+                -- 배송완료인데 미결제면 미수금, 아니면 입금예정
+                CASE
+                    WHEN o.status = 'DELIVERED' THEN '미수금'
+                    ELSE '입금예정'
+                END AS status,
+
+                -- 정렬용 날짜
+                o.created_at AS sortDate
+            FROM orders o
+            JOIN stores seller_store
+                ON seller_store.user_seq = o.seller_seq
+            JOIN stores buyer_store
+                ON buyer_store.user_seq = o.buyer_seq
+            JOIN users buyer_user
+                ON buyer_store.user_seq = buyer_user.user_seq
+            WHERE seller_store.store_seq = #{storeSeq}
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM payment_order_map pom
+                  JOIN payments p
+                      ON pom.payment_seq = p.payment_seq
+                  WHERE pom.order_seq = o.order_seq
+                    AND p.status = 'PAID'
+              )
+        ) result
+        ORDER BY result.sortDate DESC
+    </select>
+    
 </mapper>

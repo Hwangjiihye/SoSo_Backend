@@ -50,5 +50,14 @@ public class ExpenseCategoryDAO {
 
 	    return mybatis.selectList("expense.expenseDetails", params);
 	}
+	
+	// 비용 카테고리 - 식자재비 - 일반 발주 목록 조회
+	public List<Map<String, Object>> generalOrdersForExpense(int storeSeq, int partnerStoreSeq) {
+	    Map<String, Object> param = new HashMap<>();
+	    param.put("storeSeq", storeSeq);
+	    param.put("partnerStoreSeq", partnerStoreSeq);
+
+	    return mybatis.selectList("expense.generalOrdersForExpense", param);
+	}
 
 }

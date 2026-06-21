@@ -34,5 +34,10 @@ public class ExpenseCategoryService {
 	public List<ExpensesDTO> expenseDetails(int storeSeq, String month, int categorySeq) {
 	    return dao.expenseDetails(storeSeq, month, categorySeq);
 	}
+	
+	// 비용 카테고리 - 식자재비 - 일반 발주 목록 조회
+	public List<Map<String, Object>> generalOrdersForExpense(int storeSeq, int partnerStoreSeq) {
+	    return dao.generalOrdersForExpense(storeSeq, partnerStoreSeq);
+	}
 
 }

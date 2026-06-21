@@ -94,11 +94,38 @@ public class PaymentDAO {
 	}
 	
 	
-	 // 결제관리 최근 결제 내역 조회
-	 // storeSeq = 현재 로그인한 사업자 매장 번호
-	 // 이 화면은 내가 결제한 내역을 보여주는 곳이므로 payments.store_seq 기준으로 조회한다.
-	public List<Map<String, Object>> selectRecentPayments(Integer storeSeq) {
-	    return mybatis.selectList("payment.selectRecentPayments", storeSeq);
+	// 결제관리 최근 결제 내역 조회
+	// storeSeq = 현재 로그인한 사업자 매장 번호
+	// period = 이번 주 / 한 달 / 날짜 지정 구분
+	// startDate, endDate = 날짜 지정 검색용
+	// keyword = 카드사명, 카드번호, 보낸 사람, 받는 사람 검색어
+	public List<Map<String, Object>> selectRecentPayments(
+	        Integer storeSeq,
+	        String period,
+	        String startDate,
+	        String endDate,
+	        String keyword) {
+
+	    // MyBatis에 여러 검색 조건을 넘기기 위해 Map 사용
+	    Map<String, Object> params = new HashMap<>();
+
+	    // 현재 로그인한 사업자 매장 번호
+	    params.put("storeSeq", storeSeq);
+
+	    // 기간 필터 값
+	    params.put("period", period);
+
+	    // 시작일
+	    params.put("startDate", startDate);
+
+	    // 종료일
+	    params.put("endDate", endDate);
+
+	    // 검색어
+	    params.put("keyword", keyword);
+
+	    // payment.xml의 selectRecentPayments 쿼리 실행
+	    return mybatis.selectList("payment.selectRecentPayments", params);
 	}
 	
 	
@@ -164,6 +191,57 @@ public class PaymentDAO {
 
 	    // payment.xml의 insertExpensesForPaidOrders 실행
 	    return mybatis.insert("payment.insertExpensesForPaidOrders", params);
+	}
+	
+	/**
+	 * 거래처 로그인 기준 사업자 기본 정보 조회
+	 *
+	 * storeSeq:
+	 * 현재 로그인한 거래처의 매장 번호
+	 */
+	public Map<String, Object> selectCollectionBusinessInfo(Long storeSeq) {
+
+	    // payment.xml의 selectCollectionBusinessInfo 쿼리 실행
+	    return mybatis.selectOne("payment.selectCollectionBusinessInfo", storeSeq);
+	}
+
+
+	/**
+	 * 거래처 로그인 기준 수금 요약 조회
+	 *
+	 * storeSeq:
+	 * 현재 로그인한 거래처의 매장 번호
+	 */
+	public Map<String, Object> selectCollectionSummary(Long storeSeq) {
+
+	    // payment.xml의 selectCollectionSummary 쿼리 실행
+	    return mybatis.selectOne("payment.selectCollectionSummary", storeSeq);
+	}
+
+
+	/**
+	 * 거래처 로그인 기준 최근 입금 내역 조회
+	 *
+	 * storeSeq:
+	 * 현재 로그인한 거래처의 매장 번호
+	 */
+	public List<Map<String, Object>> selectCollectionDepositAccounts(Long storeSeq) {
+
+	    // payment.xml의 selectCollectionDepositAccounts 쿼리 실행
+	    return mybatis.selectList("payment.selectCollectionDepositAccounts", storeSeq);
+	}
+
+
+	/**
+	 * 거래처 로그인 기준 수금 이력 조회
+	 *
+	 * storeSeq:
+	 * 현재 로그인한 거래처의 매장 번호
+	 */
+	public List<Map<String, Object>> selectCollectionRows(Long storeSeq) {
+
+	    // payment.xml의 selectCollectionRows 쿼리 실행
+	    return mybatis.selectList("payment.selectCollectionRows", storeSeq);
 	}
 
 }

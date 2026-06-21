@@ -75,4 +75,16 @@ public class ExpenseCategoryController {
 
 	    return ResponseEntity.ok(result);
 	}
+	
+	// 비용 등록 모달 - 거래처별 일반 발주 내역 전체 조회
+	@GetMapping("/{storeSeq}/general-orders")
+	public ResponseEntity<List<Map<String, Object>>> generalOrdersForExpense(
+	        @PathVariable int storeSeq,
+	        @RequestParam int partnerStoreSeq) {
+
+	    List<Map<String, Object>> result =
+	            ExpenseServ.generalOrdersForExpense(storeSeq, partnerStoreSeq);
+
+	    return ResponseEntity.ok(result);
+	}
 }
