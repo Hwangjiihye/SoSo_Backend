@@ -6,18 +6,18 @@ import java.time.LocalDate;
 public class GroupBuyDTO {
     private Integer groupBuySeq;
     private Integer userSeq;
-    private Integer partnerSeq; // 추가: 거래처
-    private Integer itemSeq;    // 품목명
-    private String category;    // 추가: 카테고리
-    private Integer quantity;   // 수량
-    private Integer targetParticipants; // 모집인원
+    private String partnerName; // 변경: 거래처명 (직접 입력)
+    private String itemName;    // 변경: 품목명 (직접 입력)
+    private String category;    
+    private Integer quantity;   
+    private Integer targetParticipants; 
     private Integer currentParticipants;
-    private Integer unitPrice;  // 추가: 단가
-    private Integer totalAmount;// 총 결제금액
-    private LocalDateTime endDate; // 마감기한
-    private String pickupLocation; // 추가(변경): 픽업장소
-    private String pickupTime;     // 추가(변경): 픽업가능시간
-    private String notice;         // 추가(변경): 유의사항
+    private Integer unitPrice;  
+    private Integer totalAmount;
+    private LocalDateTime endDate; 
+    private String pickupLocation; 
+    private String pickupTime;     
+    private String notice;         
     private String status;
     private LocalDateTime createdAt;
     
@@ -33,11 +33,11 @@ public class GroupBuyDTO {
     public Integer getUserSeq() { return userSeq; }
     public void setUserSeq(Integer userSeq) { this.userSeq = userSeq; }
 
-    public Integer getPartnerSeq() { return partnerSeq; }
-    public void setPartnerSeq(Integer partnerSeq) { this.partnerSeq = partnerSeq; }
+    public String getPartnerName() { return partnerName; }
+    public void setPartnerName(String partnerName) { this.partnerName = partnerName; }
 
-    public Integer getItemSeq() { return itemSeq; }
-    public void setItemSeq(Integer itemSeq) { this.itemSeq = itemSeq; }
+    public String getItemName() { return itemName; }
+    public void setItemName(String itemName) { this.itemName = itemName; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }

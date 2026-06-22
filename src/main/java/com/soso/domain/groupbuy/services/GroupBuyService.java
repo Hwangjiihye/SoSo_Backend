@@ -18,8 +18,17 @@ public class GroupBuyService {
     private GroupBuyDAO groupBuyDAO;
 
     // B. 공동구매 생성
+    @Transactional
     public void createGroupBuy(GroupBuyDTO groupBuyDTO) {
+        // 1. 공동구매 그룹 생성 (생성된 PK가 groupBuyDTO에 세팅됨)
         groupBuyDAO.insertGroupBuy(groupBuyDTO);
+        
+        // 2. 개설자를 참여자 테이블에 자동 등록
+        GroupBuyParticipantDTO participantDTO = new GroupBuyParticipantDTO();
+        participantDTO.setGroupBuySeq(groupBuyDTO.getGroupBuySeq());
+        participantDTO.setUserSeq(groupBuyDTO.getUserSeq());
+        
+        groupBuyDAO.insertParticipant(participantDTO);
     }
 
     // C. 공동구매 목록 조회

@@ -8,10 +8,10 @@
     <!-- 공동구매 생성 -->
     <insert id="insertGroupBuy" parameterType="com.soso.domain.groupbuy.dto.GroupBuyDTO" useGeneratedKeys="true" keyProperty="groupBuySeq">
         INSERT INTO group_buys (
-            user_seq, partner_seq, item_seq, category, group_name, description, target_participants, current_participants, 
+            user_seq, partner_name, item_name, category, group_name, description, target_participants, current_participants, 
             quantity, unit_price, total_amount, end_date, pickup_location, pickup_time, notice, status, created_at
         ) VALUES (
-            #{userSeq}, #{partnerSeq}, #{itemSeq}, #{category}, #{groupName}, #{description}, #{targetParticipants}, 0,
+            #{userSeq}, #{partnerName}, #{itemName}, #{category}, #{groupName}, #{description}, #{targetParticipants}, #{currentParticipants},
             #{quantity}, #{unitPrice}, #{totalAmount}, #{endDate}, #{pickupLocation}, #{pickupTime}, #{notice}, 'RECRUITING', CURRENT_TIMESTAMP
         )
     </insert>
@@ -21,8 +21,8 @@
         SELECT 
             group_buy_seq AS groupBuySeq,
             user_seq AS userSeq,
-            partner_seq AS partnerSeq,
-            item_seq AS itemSeq,
+            partner_name AS partnerName,
+            item_name AS itemName,
             category,
             group_name AS groupName,
             description,
@@ -63,8 +63,8 @@
         SELECT 
             group_buy_seq AS groupBuySeq,
             user_seq AS userSeq,
-            partner_seq AS partnerSeq,
-            item_seq AS itemSeq,
+            partner_name AS partnerName,
+            item_name AS itemName,
             category,
             group_name AS groupName,
             description,
