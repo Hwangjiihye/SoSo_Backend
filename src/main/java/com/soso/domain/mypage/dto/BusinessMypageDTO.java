@@ -24,6 +24,11 @@ public class BusinessMypageDTO {
     // Image URL
     private String profileImageUrl;
 
+    // Smart Notification settings
+    private String alertStockYn;
+    private String alertExpiryYn;
+    private String alertOrderYn;
+
     public BusinessMypageDTO() {}
     
     public String getCeoName() {
@@ -144,5 +149,29 @@ public class BusinessMypageDTO {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getAlertStockYn() {
+        return alertStockYn;
+    }
+
+    public void setAlertStockYn(String alertStockYn) {
+        this.alertStockYn = alertStockYn;
+    }
+
+    public String getAlertExpiryYn() {
+        return alertExpiryYn;
+    }
+
+    public void setAlertExpiryYn(String alertExpiryYn) {
+        this.alertExpiryYn = alertExpiryYn;
+    }
+
+    public String getAlertOrderYn() {
+        return alertOrderYn;
+    }
+
+    public void setAlertOrderYn(String alertOrderYn) {
+        this.alertOrderYn = alertOrderYn;
     }
 }

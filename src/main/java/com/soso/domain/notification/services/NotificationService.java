@@ -63,7 +63,17 @@ public class NotificationService {
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleNotificationEvent(NotificationEvent event) {
-        // 1. 이벤트 객체로부터 데이터 전달받아 저장용 DTO 바구니 조립
+        // 1. 알림 유형 매핑 및 수신 동의 여부 체크
+        String configType = mapEventToConfigType(event.getType());
+        String isEnabled = notificationDAO.checkNotificationEnabled(event.getStoreSeq(), configType);
+        
+        // 수신 비동의(N) 상태라면 알림 저장 및 실시간 전송 건너뜀 (Skip)
+        if ("N".equals(isEnabled)) {
+            System.out.println("[NotificationService] 알림 발송 생략 (수신 비동의): " + event.getTitle());
+            return;
+        }
+
+        // 2. 이벤트 객체로부터 데이터 전달받아 저장용 DTO 바구니 조립
         NotificationDTO notification = new NotificationDTO(
             event.getStoreSeq(),
             event.getType(),
@@ -73,14 +83,39 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
         notification.setIsRead("N"); // 기본 안읽음으로 설정
 
-        // 2. DB에 안전하게 인서트 저장
+        // 3. DB에 안전하게 인서트 저장
         notificationDAO.insertNotification(notification);
 
-        // 3. 실시간 웹소켓(STOMP Broker)을 통한 화면 전송
-        // - 대상 토픽 주소: "/sub/store/{storeSeq}/notifications"
-        // - 이 주소를 리액트 프론트엔드가 구독(Subscribe)하고 있으므로 실시간 토스트 팝업이 작동하게 됩니다.
+        // 4. 실시간 웹소켓(STOMP Broker)을 통한 화면 전송
         String destination = "/sub/store/" + event.getStoreSeq() + "/notifications";
         messagingTemplate.convertAndSend(destination, notification);
+    }
+
+    /**
+     * 비즈니스 알림 코드를 알림 설정 카테고리 대분류 코드로 맵핑합니다.
+     */
+    private String mapEventToConfigType(String eventType) {
+        if (eventType == null) return "COMMON";
+        switch (eventType) {
+            case "SAFETY_LACK":
+            case "STOCK_LACK":
+            case "STOCK":
+                return "STOCK_SHORTAGE";
+            case "EXPIRY":
+            case "EXPIRY_LACK":
+                return "EXPIRY_IMMINENT";
+            case "ORDER":
+            case "ORDER_STATUS":
+                return "ORDER_STATUS";
+            case "CHAT":
+                return "CHAT";
+            case "MARKETING":
+                return "MARKETING";
+            case "NIGHT":
+                return "NIGHT_RESTRICTION";
+            default:
+                return "COMMON";
+        }
     }
 
     /**
