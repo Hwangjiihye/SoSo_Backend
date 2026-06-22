@@ -18,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.soso.domain.mypage.dto.BusinessMultiProfileDTO;
 import com.soso.domain.mypage.dto.BusinessMypageDTO;
 import com.soso.domain.mypage.dto.BusinessUpdateDTO;
+import com.soso.domain.mypage.dto.BusinessNotificationSettingsDTO;
 import com.soso.domain.mypage.services.BusinessMypageService;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -129,6 +132,43 @@ public class BusinessMypageController {
             e.printStackTrace();
             response.put("status", "error");
             response.put("message", "등록 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * 스마트 알림 설정 조회 API
+     * GET /api/member/business/notification-settings
+     */
+    @GetMapping("/notification-settings")
+    public ResponseEntity<BusinessNotificationSettingsDTO> getNotificationSettings(
+            @RequestAttribute("user_seq") Long userSeq,
+            @RequestParam Long storeSeq) {
+        
+        BusinessNotificationSettingsDTO settings = businessMypageService.getNotificationSettings(userSeq, storeSeq);
+        return ResponseEntity.ok(settings);
+    }
+
+    /**
+     * 스마트 알림 설정 저장 API
+     * PUT /api/member/business/notification-settings
+     */
+    @PutMapping("/notification-settings")
+    public ResponseEntity<Map<String, String>> updateNotificationSettings(
+            @RequestAttribute("user_seq") Long userSeq,
+            @RequestParam Long storeSeq,
+            @RequestBody BusinessNotificationSettingsDTO settingsDto) {
+        
+        Map<String, String> response = new HashMap<>();
+        try {
+            businessMypageService.updateNotificationSettings(userSeq, storeSeq, settingsDto);
+            response.put("status", "success");
+            response.put("message", "알림 설정이 성공적으로 저장되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("status", "error");
+            response.put("message", "알림 설정 저장 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }

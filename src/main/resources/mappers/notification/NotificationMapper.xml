@@ -87,4 +87,23 @@
         WHERE s.store_seq = #{storeSeq}
     </select>
 
+    <!-- 알림 유형별 수신 동의 체크 쿼리 -->
+    <select id="checkNotificationEnabled" parameterType="map" resultType="string">
+        SELECT 
+            CASE 
+                WHEN (uns.is_enabled = 'N' 
+                      OR (#{notificationType} = 'STOCK_SHORTAGE' AND u.alert_stock_yn = 'N') 
+                      OR (#{notificationType} = 'ORDER_STATUS' AND u.alert_order_yn = 'N')) THEN 'N' 
+                ELSE 'Y' 
+            END
+        FROM stores s
+        JOIN users u ON s.user_seq = u.user_seq
+        LEFT JOIN user_notification_settings uns 
+            ON s.store_seq = uns.store_seq 
+           AND uns.notification_type = #{notificationType} 
+           AND uns.channel_type = 'WEB'
+        WHERE s.store_seq = #{storeSeq}
+        LIMIT 1
+    </select>
+
 </mapper>

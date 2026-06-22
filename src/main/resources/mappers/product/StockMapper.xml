@@ -4,6 +4,7 @@
 
     <select id="selectStockList" parameterType="map" resultType="com.soso.domain.product.dto.StockDTO">
 		SELECT
+        s.stock_seq as stockSeq,
         s.store_seq as storeSeq,
 		s.stock_name as stockName,
 		s.category,

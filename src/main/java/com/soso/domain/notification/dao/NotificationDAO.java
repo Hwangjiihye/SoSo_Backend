@@ -71,4 +71,14 @@ public class NotificationDAO {
     public java.util.Map<String, Object> selectStoreOwnerInfo(int storeSeq) {
         return sqlSession.selectOne(NAMESPACE + "selectStoreOwnerInfo", storeSeq);
     }
+
+    /**
+     * 알림 수신 동의 여부 체크
+     */
+    public String checkNotificationEnabled(int storeSeq, String notificationType) {
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("storeSeq", storeSeq);
+        params.put("notificationType", notificationType);
+        return sqlSession.selectOne(NAMESPACE + "checkNotificationEnabled", params);
+    }
 }
