@@ -111,7 +111,24 @@
     </select>
 
     <!-- 특정 거래처의 품목 목록 조회 -->
-    <select id="getItemsByPartnerSeq" parameterType="int" resultType="com.soso.domain.account.dto.ItemResponseDto">
+<select id="getItemsByPartnerSeq" parameterType="int" resultType="com.soso.domain.account.dto.ItemResponseDto">
+    SELECT 
+        i.item_seq AS itemSeq,
+        i.store_seq AS storeSeq,
+        i.category_seq AS categorySeq,
+        c.category_name AS categoryName,
+        i.item_code AS itemCode,
+        i.item_name AS itemName,
+        i.spec,
+        i.unit_price AS unitPrice,
+        i.item_image AS itemImage
+    FROM items i
+    JOIN categories c 
+        ON i.category_seq = c.category_seq
+    WHERE i.store_seq = #{partnerSeq}
+    ORDER BY i.item_name ASC
+</select>
+    <!--<select id="getItemsByPartnerSeq" parameterType="int" resultType="com.soso.domain.account.dto.ItemResponseDto">
         SELECT 
             i.item_seq AS itemSeq,
             i.category_seq AS categorySeq,
@@ -126,7 +143,7 @@
         JOIN stores s ON i.user_seq = s.user_seq
         WHERE s.store_seq = #{partnerSeq}
         ORDER BY i.item_name ASC
-    </select>
+    </select>-->
 
     <!-- 거래처 관계 삭제 -->
     <delete id="deletePartnerRelation" parameterType="int">
@@ -141,6 +158,31 @@
         ORDER BY store_seq ASC 
         LIMIT 1
     </select>
+    
+    <!-- 내가 등록한 거래처 목록 조회 -->
+<select id="myPartners" resultType="com.soso.domain.account.dto.AccountSearchResponseDto">
+    SELECT
+        pr.relation_seq AS relationSeq,
+        pr.business_seq AS businessSeq,
+        pr.partner_seq AS storeSeq,
+
+        ps.user_seq AS userSeq,
+        ps.biz_number AS bizNumber,
+        ps.company_name AS companyName,
+        ps.ceo_name AS ceoName,
+        ps.opening_date AS openingDate,
+        ps.zonecode AS zonecode,
+        ps.address1 AS address1,
+        ps.address2 AS address2,
+
+        pr.memo AS memo,
+        pr.created_at AS createdAt
+    FROM partner_relations pr
+    JOIN stores ps
+        ON pr.partner_seq = ps.store_seq
+    WHERE pr.business_seq = #{storeSeq}
+    ORDER BY pr.created_at DESC
+</select>
 
     <!-- 특정 거래처 상세 정보 조회 -->
     <select id="getPartnerDetail" parameterType="int" resultType="com.soso.domain.account.dto.AccountSearchResponseDto">

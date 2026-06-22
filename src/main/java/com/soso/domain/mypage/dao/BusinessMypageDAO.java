@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.soso.domain.mypage.dto.BusinessMultiProfileDTO;
 import com.soso.domain.mypage.dto.BusinessMypageDTO;
 import com.soso.domain.mypage.dto.BusinessUpdateDTO;
+import com.soso.domain.mypage.dto.UserNotificationSettingDTO;
 
 @Repository
 public class BusinessMypageDAO {
@@ -48,5 +49,21 @@ public class BusinessMypageDAO {
         // "NAMESPACE"는 SQL 문이 저장된 XML 파일의 위치를 가리킵니다.
         // ".insertStore"는 해당 XML 안에서 실행할 특정 SQL ID입니다.
         return sqlSession.insert(NAMESPACE + ".insertStore", registerDto);
+    }
+
+    public java.util.List<UserNotificationSettingDTO> getUserNotificationSettings(Long storeSeq) {
+        return sqlSession.selectList(NAMESPACE + ".getUserNotificationSettings", storeSeq);
+    }
+
+    public int updateUserAlertSettings(java.util.Map<String, Object> params) {
+        return sqlSession.update(NAMESPACE + ".updateUserAlertSettings", params);
+    }
+
+    public int deleteUserNotificationSettings(Long storeSeq) {
+        return sqlSession.delete(NAMESPACE + ".deleteUserNotificationSettings", storeSeq);
+    }
+
+    public int insertUserNotificationSetting(UserNotificationSettingDTO setting) {
+        return sqlSession.insert(NAMESPACE + ".insertUserNotificationSetting", setting);
     }
 }

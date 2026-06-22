@@ -78,10 +78,17 @@ public class AccountService {
         return accountDAO.getFirstStoreSeqByUserSeq(userSeq);
     }
 
+    
+ // 내가 등록한 거래처 목록 조회
+    public List<AccountSearchResponseDto> myPartners(Long storeSeq) {
+        return accountDAO.myPartners(storeSeq);
+    }
+
     /**
      * 특정 거래처(파트너사) 상세 정보 조회
      */
     public AccountSearchResponseDto getPartnerDetail(int partnerSeq) {
         return accountDAO.getPartnerDetail(partnerSeq);
+
     }
 }
