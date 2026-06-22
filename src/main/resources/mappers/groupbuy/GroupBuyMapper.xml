@@ -89,6 +89,13 @@
         ORDER BY p.created_at DESC
     </select>
 
+    <!-- 내가 참여한 공동구매 개수 조회 -->
+    <select id="countMyParticipatedGroups" resultType="int">
+        SELECT COUNT(*) 
+        FROM group_buy_participants 
+        WHERE user_seq = #{userSeq}
+    </select>
+
     <!-- 공구 단건 상세 조회 -->
     <select id="selectGroupBuyBySeq" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
         SELECT 

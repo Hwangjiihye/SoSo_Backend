@@ -52,6 +52,15 @@ public class GroupBuyController {
         return ResponseEntity.ok(list);
     }
 
+    // 내가 참여한 공동구매 개수 조회 API
+    @GetMapping("/participated/count")
+    public ResponseEntity<Map<String, Integer>> getMyParticipatedGroupsCount(
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        int count = groupBuyService.getMyParticipatedGroupsCount(userSeq);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
     // D. 공동구매 참여 API
     @PostMapping("/{groupBuySeq}/join")
     public ResponseEntity<?> joinGroupBuy(@PathVariable("groupBuySeq") int groupBuySeq,
