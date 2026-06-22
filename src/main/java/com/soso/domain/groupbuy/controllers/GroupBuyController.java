@@ -77,11 +77,7 @@ public class GroupBuyController {
     @PatchMapping("/{groupBuySeq}/status")
     public ResponseEntity<?> updateGroupBuyStatus(@PathVariable("groupBuySeq") int groupBuySeq,
                                                   @RequestBody Map<String, String> requestBody,
-                                                  @RequestAttribute("userSeq") Integer userSeq,
-                                                  @RequestAttribute("userType") String userType) {
-        if (!"PARTNER".equals(userType)) {
-            return ResponseEntity.status(403).body(Map.of("error", "거래처 권한이 필요합니다."));
-        }
+                                                  @RequestAttribute("userSeq") Integer userSeq) {
 
         String status = requestBody.get("status");
         try {
