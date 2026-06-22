@@ -1,36 +1,90 @@
 package com.soso.domain.groupbuy.dto;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class GroupBuyDTO {
-    private int groupBuySeq;
-    private int itemSeq;
-    private Integer storeSeq;
-    private String itemName;
-    private int targetQuantity;
-    private int currentQuantity;
-    private Timestamp endDate;
+    private Integer groupBuySeq;
+    private Integer userSeq;
+    private String creatorType; // 추가: 개설자 타입
+    private String partnerName; // 변경: 거래처명 (직접 입력)
+    private String itemName;    // 변경: 품목명 (직접 입력)
+    private String category;    
+    private Integer quantity;   
+    private Integer targetParticipants; 
+    private Integer currentParticipants;
+    private Integer unitPrice;  
+    private Integer totalAmount;
+    private LocalDateTime endDate; 
+    private String pickupLocation; 
+    private String pickupTime;     
+    private String notice;         
     private String status;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
+    
+    // (선택) 기존 필드 유지
+    private String groupName;
+    private String description;
 
     public GroupBuyDTO() {}
 
-    public int getGroupBuySeq() { return groupBuySeq; }
-    public void setGroupBuySeq(int groupBuySeq) { this.groupBuySeq = groupBuySeq; }
-    public int getItemSeq() { return itemSeq; }
-    public void setItemSeq(int itemSeq) { this.itemSeq = itemSeq; }
-    public Integer getStoreSeq() { return storeSeq; }
-    public void setStoreSeq(Integer storeSeq) { this.storeSeq = storeSeq; }
+    public Integer getGroupBuySeq() { return groupBuySeq; }
+    public void setGroupBuySeq(Integer groupBuySeq) { this.groupBuySeq = groupBuySeq; }
+
+    public Integer getUserSeq() { return userSeq; }
+    public void setUserSeq(Integer userSeq) { this.userSeq = userSeq; }
+
+    public String getCreatorType() { return creatorType; }
+    public void setCreatorType(String creatorType) { this.creatorType = creatorType; }
+
+    public String getPartnerName() { return partnerName; }
+    public void setPartnerName(String partnerName) { this.partnerName = partnerName; }
+
     public String getItemName() { return itemName; }
     public void setItemName(String itemName) { this.itemName = itemName; }
-    public int getTargetQuantity() { return targetQuantity; }
-    public void setTargetQuantity(int targetQuantity) { this.targetQuantity = targetQuantity; }
-    public int getCurrentQuantity() { return currentQuantity; }
-    public void setCurrentQuantity(int currentQuantity) { this.currentQuantity = currentQuantity; }
-    public Timestamp getEndDate() { return endDate; }
-    public void setEndDate(Timestamp endDate) { this.endDate = endDate; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getGroupName() { return groupName; }
+    public void setGroupName(String groupName) { this.groupName = groupName; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Integer getTargetParticipants() { return targetParticipants; }
+    public void setTargetParticipants(Integer targetParticipants) { this.targetParticipants = targetParticipants; }
+
+    public Integer getCurrentParticipants() { return currentParticipants; }
+    public void setCurrentParticipants(Integer currentParticipants) { this.currentParticipants = currentParticipants; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public Integer getUnitPrice() { return unitPrice; }
+    public void setUnitPrice(Integer unitPrice) { this.unitPrice = unitPrice; }
+
+    public Integer getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Integer totalAmount) { this.totalAmount = totalAmount; }
+
+    public LocalDateTime getEndDate() { return endDate; }
+    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+
+    public String getPickupLocation() { return pickupLocation; }
+    public void setPickupLocation(String pickupLocation) { this.pickupLocation = pickupLocation; }
+
+    public String getPickupTime() { return pickupTime; }
+    public void setPickupTime(String pickupTime) { this.pickupTime = pickupTime; }
+
+    public String getNotice() { return notice; }
+    public void setNotice(String notice) { this.notice = notice; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+
+
 }
