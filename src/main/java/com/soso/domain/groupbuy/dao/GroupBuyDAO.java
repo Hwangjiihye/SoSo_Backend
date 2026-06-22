@@ -33,6 +33,11 @@ public class GroupBuyDAO {
         return sqlSession.selectList(NAMESPACE + "selectGroupBuys", params);
     }
 
+    // 내가 참여한 공동구매 목록 조회
+    public List<GroupBuyDTO> selectMyParticipatedGroups(int userSeq) {
+        return sqlSession.selectList(NAMESPACE + "selectMyParticipatedGroups", userSeq);
+    }
+
     // 단건 상세 조회 (참여 시 검증용)
     public GroupBuyDTO selectGroupBuyBySeq(int groupBuySeq) {
         return sqlSession.selectOne(NAMESPACE + "selectGroupBuyBySeq", groupBuySeq);

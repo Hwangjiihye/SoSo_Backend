@@ -43,6 +43,15 @@ public class GroupBuyController {
         return ResponseEntity.ok(list);
     }
 
+    // 내가 참여한 공동구매 목록 조회 API
+    @GetMapping("/participated")
+    public ResponseEntity<List<GroupBuyDTO>> getMyParticipatedGroups(
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        List<GroupBuyDTO> list = groupBuyService.getMyParticipatedGroups(userSeq);
+        return ResponseEntity.ok(list);
+    }
+
     // D. 공동구매 참여 API
     @PostMapping("/{groupBuySeq}/join")
     public ResponseEntity<?> joinGroupBuy(@PathVariable("groupBuySeq") int groupBuySeq,
