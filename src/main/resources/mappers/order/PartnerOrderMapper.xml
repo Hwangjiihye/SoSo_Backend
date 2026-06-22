@@ -72,4 +72,93 @@
         WHERE order_seq = #{orderSeq}
     </select>
 
+    <!-- [Dashboard API] 5. 오늘 신규 발주 건수 조회 -->
+    <select id="selectTodayNewOrdersCount" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE seller_seq = #{sellerSeq}
+          AND DATE(created_at) = CURDATE()
+          AND status = 'REQUESTED'
+    </select>
+
+    <!-- [Dashboard API] 6. 배송 중인 발주 건수 조회 -->
+    <select id="selectShippingOrdersCount" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM orders
+        WHERE seller_seq = #{sellerSeq}
+          AND status = 'SHIPPING'
+    </select>
+
+    <!-- [Dashboard API] 7. 입금 대기(미수) 금액 합계 조회 (이번 달 기준) -->
+    <select id="selectWaitingPaymentsAmount" parameterType="long" resultType="int">
+        SELECT IFNULL(SUM(total_amount), 0)
+        FROM orders
+        WHERE seller_seq = #{sellerSeq}
+          AND status IN ('ACCEPTED', 'PREPARING', 'SHIPPING', 'DELIVERED')
+          AND order_seq NOT IN (
+              SELECT order_seq 
+              FROM payment_order_map pom 
+              JOIN payments p ON pom.payment_seq = p.payment_seq 
+              WHERE p.status = 'PAID'
+          )
+    </select>
+
+    <!-- [Dashboard API] 8. 최근 6개월 매출 통계 -->
+    <select id="selectMonthlySales" parameterType="long" resultType="map">
+        SELECT 
+            DATE_FORMAT(created_at, '%c월') AS month,
+            SUM(total_amount) AS amount
+        FROM orders
+        WHERE seller_seq = #{sellerSeq}
+          AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(created_at, '%c월'), MONTH(created_at)
+        ORDER BY MONTH(created_at) ASC
+    </select>
+
+    <!-- [Dashboard API] 9. 최근 6개월 수금 통계 -->
+    <select id="selectMonthlyCollections" parameterType="long" resultType="map">
+        SELECT 
+            DATE_FORMAT(p.paid_at, '%c월') AS month,
+            SUM(p.total_amount) AS amount
+        FROM payments p
+        JOIN stores s ON p.partner_seq = s.store_seq
+        WHERE s.user_seq = #{sellerSeq}
+          AND p.status = 'PAID'
+          AND p.paid_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(p.paid_at, '%c월'), MONTH(p.paid_at)
+        ORDER BY MONTH(p.paid_at) ASC
+    </select>
+
+    <!-- [Dashboard API] 10. 사업자(가맹점)별 매출 및 미수금 요약 -->
+    <select id="selectBusinessSalesSummary" parameterType="long" resultType="map">
+        SELECT 
+            bs.company_name AS companyName,
+            COUNT(o.order_seq) AS orderCount,
+            IFNULL(SUM(o.total_amount), 0) AS totalSales,
+            IFNULL(SUM(CASE WHEN p.payment_seq IS NULL THEN o.total_amount ELSE 0 END), 0) AS receivableAmount
+        FROM partner_relations pr
+        JOIN stores ps ON pr.partner_seq = ps.store_seq
+        JOIN stores bs ON pr.business_seq = bs.store_seq
+        LEFT JOIN orders o ON o.buyer_seq = bs.user_seq AND o.seller_seq = ps.user_seq
+        LEFT JOIN payment_order_map pom ON o.order_seq = pom.order_seq
+        LEFT JOIN payments p ON pom.payment_seq = p.payment_seq AND p.status = 'PAID'
+        WHERE ps.user_seq = #{sellerSeq}
+        GROUP BY bs.store_seq, bs.company_name
+    </select>
+
+    <!-- [Dashboard API] 11. 공동구매 발주 현황 -->
+    <select id="selectGroupOrders" parameterType="long" resultType="map">
+        SELECT 
+            group_buy_seq AS id,
+            group_name AS title,
+            status,
+            target_participants AS targetParticipants,
+            current_participants AS currentParticipants,
+            end_date AS endDate
+        FROM group_buys
+        WHERE user_seq = #{sellerSeq}
+        ORDER BY created_at DESC
+        LIMIT 5
+    </select>
+
 </mapper>

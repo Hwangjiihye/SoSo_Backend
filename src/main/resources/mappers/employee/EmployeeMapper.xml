@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soso.mappers.employee.EmployeeMapper">
+
+    <select id="selectEmployeeList" parameterType="int" resultType="com.soso.domain.employee.dto.EmployeeDTO">
+        SELECT 
+            employee_seq AS employeeSeq,
+            business_seq AS businessSeq,
+            emp_name AS empName,
+            phone,
+            work_start_time AS workStartTime,
+            work_end_time AS workEndTime,
+            status
+        FROM employees
+        WHERE business_seq = #{businessSeq}
+        ORDER BY employee_seq DESC
+    </select>
+
+    <insert id="insertEmployee" parameterType="com.soso.domain.employee.dto.EmployeeDTO">
+        <selectKey keyProperty="employeeSeq" resultType="int" order="BEFORE">
+            SELECT COALESCE(MAX(employee_seq), 0) + 1 FROM employees
+        </selectKey>
+        INSERT INTO employees (employee_seq, business_seq, emp_name, phone, work_start_time, work_end_time, status)
+        VALUES (#{employeeSeq}, #{businessSeq}, #{empName}, #{phone}, #{workStartTime}, #{workEndTime}, 'LEAVE')
+    </insert>
+
+    <select id="selectEmployeeBySeq" parameterType="int" resultType="com.soso.domain.employee.dto.EmployeeDTO">
+        SELECT 
+            employee_seq AS employeeSeq,
+            business_seq AS businessSeq,
+            emp_name AS empName,
+            phone,
+            work_start_time AS workStartTime,
+            work_end_time AS workEndTime,
+            status
+        FROM employees
+        WHERE employee_seq = #{employeeSeq}
+    </select>
+
+    <update id="updateEmployeeStatus" parameterType="map">
+        UPDATE employees
+        SET status = #{status}
+        WHERE employee_seq = #{employeeSeq}
+    </update>
+
+    <select id="selectAttendanceHistoryList" parameterType="map" resultType="com.soso.domain.employee.dto.AttendanceHistoryDTO">
+        SELECT 
+            ah.attendance_seq AS attendanceSeq,
+            ah.employee_seq AS employeeSeq,
+            ah.work_date AS workDate,
+            ah.actual_start_time AS actualStartTime,
+            ah.actual_end_time AS actualEndTime,
+            ah.attendance_status AS attendanceStatus,
+            ah.memo,
+            ah.created_at AS createdAt,
+            e.emp_name AS empName
+        FROM attendance_history ah
+        JOIN employees e ON ah.employee_seq = e.employee_seq
+        WHERE ah.employee_seq = #{employeeSeq}
+          AND ah.work_date LIKE CONCAT(#{yearMonth}, '%')
+        ORDER BY ah.work_date DESC
+    </select>
+
+    <select id="selectTodayAttendance" parameterType="map" resultType="com.soso.domain.employee.dto.AttendanceHistoryDTO">
+        SELECT 
+            attendance_seq AS attendanceSeq,
+            employee_seq AS employeeSeq,
+            work_date AS workDate,
+            actual_start_time AS actualStartTime,
+            actual_end_time AS actualEndTime,
+            attendance_status AS attendanceStatus,
+            memo,
+            created_at AS createdAt
+        FROM attendance_history
+        WHERE employee_seq = #{employeeSeq}
+          AND work_date = #{workDate}
+    </select>
+
+    <insert id="insertAttendance" parameterType="com.soso.domain.employee.dto.AttendanceHistoryDTO" useGeneratedKeys="true" keyProperty="attendanceSeq">
+        INSERT INTO attendance_history (employee_seq, work_date, actual_start_time, attendance_status, memo)
+        VALUES (#{employeeSeq}, #{workDate}, #{actualStartTime}, #{attendanceStatus}, #{memo})
+    </insert>
+
+    <update id="updateAttendanceCheckOut" parameterType="com.soso.domain.employee.dto.AttendanceHistoryDTO">
+        UPDATE attendance_history
+        SET actual_end_time = #{actualEndTime},
+            attendance_status = #{attendanceStatus},
+            memo = #{memo}
+        WHERE attendance_seq = #{attendanceSeq}
+    </update>
+
+</mapper>

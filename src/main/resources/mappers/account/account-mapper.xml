@@ -40,6 +40,7 @@
         JOIN users u ON s.user_seq = u.user_seq
         WHERE u.user_type = 'PARTNER'
         AND u.status = 'ACTIVE'
+
         <if test="searchTerm != null and searchTerm != ''">
             AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%') OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%'))
         </if>
@@ -48,6 +49,11 @@
         </if>
         <if test="district != null and district != ''">
             AND s.address1 LIKE CONCAT('%', #{district}, '%')
+        </if>
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%')
+                 OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%')
+                 OR s.biz_number LIKE CONCAT('%', #{searchTerm}, '%'))
         </if>
         ORDER BY s.company_name ASC
     </select>
@@ -83,15 +89,24 @@
         FROM partner_relations pr
         JOIN stores s ON pr.partner_seq = s.store_seq
         WHERE pr.business_seq = #{businessSeq}
+
         <if test="searchTerm != null and searchTerm != ''">
             AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%') OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%'))
         </if>
+
         <if test="city != null and city != ''">
             AND s.address1 LIKE CONCAT(#{city}, '%')
         </if>
         <if test="district != null and district != ''">
             AND s.address1 LIKE CONCAT('%', #{district}, '%')
         </if>
+
+        <if test="searchTerm != null and searchTerm != ''">
+            AND (s.company_name LIKE CONCAT('%', #{searchTerm}, '%')
+                 OR s.ceo_name LIKE CONCAT('%', #{searchTerm}, '%')
+                 OR s.biz_number LIKE CONCAT('%', #{searchTerm}, '%'))
+        </if>
+
         ORDER BY pr.created_at DESC
     </select>
 
@@ -113,22 +128,6 @@
         ORDER BY i.item_name ASC
     </select>
 
-    <!-- 특정 거래처 상세 정보 조회 -->
-    <select id="getPartnerDetail" parameterType="int" resultType="com.soso.domain.account.dto.PartnerDetailDto">
-        SELECT 
-            s.store_seq AS storeSeq,
-            s.company_name AS companyName,
-            s.ceo_name AS ceoName,
-            s.biz_number AS bizNumber,
-            s.address1,
-            s.address2,
-            u.phone,
-            u.email
-        FROM stores s
-        JOIN users u ON s.user_seq = u.user_seq
-        WHERE s.store_seq = #{partnerSeq}
-    </select>
-
     <!-- 거래처 관계 삭제 -->
     <delete id="deletePartnerRelation" parameterType="int">
         DELETE FROM partner_relations WHERE relation_seq = #{relationSeq}
@@ -143,4 +142,22 @@
         LIMIT 1
     </select>
 
+    <!-- 특정 거래처 상세 정보 조회 -->
+    <select id="getPartnerDetail" parameterType="int" resultType="com.soso.domain.account.dto.AccountSearchResponseDto">
+        SELECT 
+            s.store_seq AS storeSeq,
+            s.user_seq AS userSeq,
+            s.biz_number AS bizNumber,
+            s.company_name AS companyName,
+            s.ceo_name AS ceoName,
+            s.opening_date AS openingDate,
+            s.zonecode,
+            s.address1,
+            s.address2,
+            u.phone AS phone,
+            u.email AS email
+        FROM stores s
+        JOIN users u ON s.user_seq = u.user_seq
+        WHERE s.store_seq = #{partnerSeq}
+    </select>
 </mapper>
