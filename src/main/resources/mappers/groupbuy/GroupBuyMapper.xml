@@ -143,10 +143,15 @@
         )
     </insert>
 
-    <!-- 인원수 원자적 증가 (동시성 고려, 정원이 다 차지 않은 경우에만 증가) -->
+    <!-- 인원수 원자적 증가 (동시성 고려, 정원이 다 차지 않은 경우에만 증가 + 다 차면 RECRUITED로 자동 상태 변경) -->
     <update id="updateCurrentParticipantsCount" parameterType="int">
         UPDATE group_buys
-        SET current_participants = current_participants + 1
+        SET 
+            current_participants = current_participants + 1,
+            status = CASE 
+                        WHEN current_participants + 1 >= target_participants THEN 'RECRUITED'
+                        ELSE status
+                     END
         WHERE group_buy_seq = #{groupBuySeq}
           AND current_participants &lt; target_participants
           AND status = 'RECRUITING'
