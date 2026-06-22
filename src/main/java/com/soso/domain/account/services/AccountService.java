@@ -35,11 +35,8 @@ public class AccountService {
      * 모든 파트너사(거래처) 조회 (필터 적용)
      */
     public List<AccountSearchResponseDto> getAllPartnerStores(String searchTerm, String city, String district) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("searchTerm", searchTerm);
-        params.put("city", city);
-        params.put("district", district);
-        return accountDAO.getAllPartnerStores(params);
+
+        return accountDAO.getAllPartnerStores(searchTerm, city, district);
     }
 
     /**
@@ -54,12 +51,9 @@ public class AccountService {
      * 등록된 거래처 목록 조회 (필터 적용)
      */
     public List<AccountRelationResponseDto> getRegisteredAccounts(int businessSeq, String searchTerm, String city, String district) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("businessSeq", businessSeq);
-        params.put("searchTerm", searchTerm);
-        params.put("city", city);
-        params.put("district", district);
-        return accountDAO.getPartnerRelationsByBusinessSeq(params);
+
+        return accountDAO.getPartnerRelationsByBusinessSeq(businessSeq, searchTerm, city, district);
+
     }
 
     /**
@@ -67,13 +61,6 @@ public class AccountService {
      */
     public List<ItemResponseDto> getPartnerItems(int partnerSeq) {
         return accountDAO.getItemsByPartnerSeq(partnerSeq);
-    }
-
-    /**
-     * 특정 거래처 상세 정보 조회
-     */
-    public PartnerDetailDto getPartnerDetail(int partnerSeq) {
-        return accountDAO.getPartnerDetail(partnerSeq);
     }
 
     /**
@@ -90,9 +77,18 @@ public class AccountService {
     public Integer getFirstStoreSeqByUserSeq(int userSeq) {
         return accountDAO.getFirstStoreSeqByUserSeq(userSeq);
     }
+
     
  // 내가 등록한 거래처 목록 조회
     public List<AccountSearchResponseDto> myPartners(Long storeSeq) {
         return accountDAO.myPartners(storeSeq);
+    }
+
+    /**
+     * 특정 거래처(파트너사) 상세 정보 조회
+     */
+    public AccountSearchResponseDto getPartnerDetail(int partnerSeq) {
+        return accountDAO.getPartnerDetail(partnerSeq);
+
     }
 }

@@ -4,7 +4,6 @@ import com.soso.domain.account.dto.AccountRelationRequestDto;
 import com.soso.domain.account.dto.AccountRelationResponseDto;
 import com.soso.domain.account.dto.AccountSearchResponseDto;
 import com.soso.domain.account.dto.ItemResponseDto;
-import com.soso.domain.account.dto.PartnerDetailDto;
 import com.soso.domain.account.services.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +90,8 @@ public class AccountController {
             @RequestParam(value = "searchTerm", required = false) String searchTerm,
             @RequestParam(value = "city", required = false) String city,
             @RequestParam(value = "district", required = false) String district) {
-        logger.info("등록된 거래처 목록 조회 요청: businessSeq={}, searchTerm={}, city={}, district={}", businessSeq, searchTerm, city, district);
+        logger.info("등록된 거래처 목록 조회 요청: businessSeq={}, searchTerm={}, city={}, district={}", 
+                businessSeq, searchTerm, city, district);
         
         List<AccountRelationResponseDto> results = accountService.getRegisteredAccounts(businessSeq, searchTerm, city, district);
         
@@ -116,22 +116,6 @@ public class AccountController {
         response.put("count", results.size());
         
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 특정 거래처 상세 정보 조회 API
-     */
-    @GetMapping("/partner/{partnerSeq}")
-    public ResponseEntity<PartnerDetailDto> getPartnerDetail(@PathVariable("partnerSeq") int partnerSeq) {
-        logger.info("거래처 상세 정보 조회 요청: partnerSeq={}", partnerSeq);
-        
-        PartnerDetailDto detail = accountService.getPartnerDetail(partnerSeq);
-        
-        if (detail == null) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        return ResponseEntity.ok(detail);
     }
 
     /**
@@ -164,6 +148,7 @@ public class AccountController {
         
         return ResponseEntity.ok(response);
     }
+
     
  // 내가 등록한 거래처 목록 조회
     @GetMapping("/my-partners")
@@ -172,5 +157,20 @@ public class AccountController {
     ) {
         List<AccountSearchResponseDto> list = accountService.myPartners(storeSeq);
         return ResponseEntity.ok(list);
+    }
+     
+    /**
+     * 특정 거래처(파트너사) 상세 정보 조회 API
+     */
+    @GetMapping("/partner/{partnerSeq}")
+    public ResponseEntity<AccountSearchResponseDto> getPartnerDetail(@PathVariable("partnerSeq") int partnerSeq) {
+        logger.info("거래처 상세 정보 조회 요청: partnerSeq={}", partnerSeq);
+        
+        AccountSearchResponseDto result = accountService.getPartnerDetail(partnerSeq);
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
+
     }
 }

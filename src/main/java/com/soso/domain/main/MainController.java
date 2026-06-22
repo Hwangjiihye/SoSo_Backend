@@ -3,12 +3,17 @@ package com.soso.domain.main;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MainController {
+
+    @Autowired
+    private BusinessMainService businessMainService;
 
     @GetMapping("/api/test")
     public ResponseEntity<Map<String, String>> testConnection() {
@@ -16,5 +21,17 @@ public class MainController {
         response.put("status", "success");
         response.put("message", "스프링 부트와 리액트가 성공적으로 연결되었습니다!");
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * [API] 소상공인 대시보드 데이터 조회 (실제 데이터 기반)
+     * 요청 예: GET /api/business/dashboard?storeSeq=9&userSeq=3
+     */
+    @GetMapping("/api/business/dashboard")
+    public ResponseEntity<Map<String, Object>> getBusinessDashboard(
+            @RequestParam int storeSeq,
+            @RequestParam long userSeq) {
+        Map<String, Object> data = businessMainService.getDashboardData(storeSeq, userSeq);
+        return ResponseEntity.ok(data);
     }
 }
