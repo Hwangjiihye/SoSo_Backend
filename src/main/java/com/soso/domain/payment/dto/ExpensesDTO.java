@@ -14,11 +14,13 @@ public class ExpensesDTO {
 	private String refType;
 	private Integer refSeq;
 	private String createdAt;
+	private String itemSummary;
+	private String quantitySummary;
 	
 	public ExpensesDTO() {}
 	public ExpensesDTO(Integer expenseSeq, Integer storeSeq, Integer categorySeq, String expenseDate, String title,
 			Integer amount, String memo, String paymentMethod, String supplierName, String refType, Integer refSeq,
-			String createdAt) {
+			String createdAt, String itemSummary, String quantitySummary) {
 		super();
 		this.expenseSeq = expenseSeq;
 		this.storeSeq = storeSeq;
@@ -32,6 +34,8 @@ public class ExpensesDTO {
 		this.refType = refType;
 		this.refSeq = refSeq;
 		this.createdAt = createdAt;
+		this.itemSummary = itemSummary;
+		this.quantitySummary = quantitySummary;
 	}
 	
 	public Integer getExpenseSeq() {
@@ -105,5 +109,17 @@ public class ExpensesDTO {
 	}
 	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
+	}
+	public String getItemSummary() {
+		return itemSummary;
+	}
+	public void setItemSummary(String itemSummary) {
+		this.itemSummary = itemSummary;
+	}
+	public String getQuantitySummary() {
+		return quantitySummary;
+	}
+	public void setQuantitySummary(String quantitySummary) {
+		this.quantitySummary = quantitySummary;
 	}
 }
