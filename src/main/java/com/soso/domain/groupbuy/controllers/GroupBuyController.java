@@ -61,6 +61,16 @@ public class GroupBuyController {
         return ResponseEntity.ok(Map.of("count", count));
     }
 
+    // 공동구매 단건 상세 조회 API
+    @GetMapping("/{groupBuySeq}")
+    public ResponseEntity<GroupBuyDTO> getGroupBuyDetail(@PathVariable("groupBuySeq") int groupBuySeq) {
+        GroupBuyDTO detail = groupBuyService.getGroupBuyDetail(groupBuySeq);
+        if (detail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(detail);
+    }
+
     // D. 공동구매 참여 API
     @PostMapping("/{groupBuySeq}/join")
     public ResponseEntity<?> joinGroupBuy(@PathVariable("groupBuySeq") int groupBuySeq,

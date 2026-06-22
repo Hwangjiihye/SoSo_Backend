@@ -46,6 +46,11 @@ public class GroupBuyService {
         return groupBuyDAO.countMyParticipatedGroups(userSeq);
     }
 
+    // 공동구매 단건 상세 조회
+    public GroupBuyDTO getGroupBuyDetail(int groupBuySeq) {
+        return groupBuyDAO.selectGroupBuyBySeq(groupBuySeq);
+    }
+
     // D. 공동구매 참여 (더블 밸리데이션 핵심, Transaction 처리)
     @Transactional
     public void joinGroupBuy(int groupBuySeq, int userSeq) {
