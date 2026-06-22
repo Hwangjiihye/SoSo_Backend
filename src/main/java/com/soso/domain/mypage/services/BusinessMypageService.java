@@ -16,6 +16,10 @@ import com.soso.domain.mypage.dao.BusinessMypageDAO;
 import com.soso.domain.mypage.dto.BusinessMultiProfileDTO;
 import com.soso.domain.mypage.dto.BusinessMypageDTO;
 import com.soso.domain.mypage.dto.BusinessUpdateDTO;
+import com.soso.domain.mypage.dto.BusinessNotificationSettingsDTO;
+import com.soso.domain.mypage.dto.UserNotificationSettingDTO;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class BusinessMypageService {
@@ -147,5 +151,48 @@ public class BusinessMypageService {
         
         // 저장이 실패한 경우 (MyBatis result가 0인 경우)
         return "fail";
+    }
+
+    /**
+     * 스마트 알림 설정 조회
+     */
+    public BusinessNotificationSettingsDTO getNotificationSettings(Long userSeq, Long storeSeq) {
+        BusinessMypageDTO profile = businessMypageDAO.getBusinessInfo(userSeq, storeSeq);
+        String alertStockYn = "N";
+        String alertExpiryYn = "N";
+        String alertOrderYn = "N";
+        
+        if (profile != null) {
+            alertStockYn = profile.getAlertStockYn() != null ? profile.getAlertStockYn() : "N";
+            alertExpiryYn = profile.getAlertExpiryYn() != null ? profile.getAlertExpiryYn() : "N";
+            alertOrderYn = profile.getAlertOrderYn() != null ? profile.getAlertOrderYn() : "N";
+        }
+        
+        List<UserNotificationSettingDTO> settings = businessMypageDAO.getUserNotificationSettings(storeSeq);
+        return new BusinessNotificationSettingsDTO(alertStockYn, alertExpiryYn, alertOrderYn, settings);
+    }
+
+    /**
+     * 스마트 알림 설정 저장 (트랜잭션 적용)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateNotificationSettings(Long userSeq, Long storeSeq, BusinessNotificationSettingsDTO settingsDto) throws Exception {
+        // 1. users 테이블의 전역 알림 설정 업데이트
+        Map<String, Object> userParams = new HashMap<>();
+        userParams.put("userSeq", userSeq);
+        userParams.put("alertStockYn", settingsDto.getAlertStockYn());
+        userParams.put("alertExpiryYn", settingsDto.getAlertExpiryYn());
+        userParams.put("alertOrderYn", settingsDto.getAlertOrderYn());
+        businessMypageDAO.updateUserAlertSettings(userParams);
+
+        // 2. user_notification_settings 매장 상세 알림 설정 업데이트 (기존 설정 DELETE 후 INSERT)
+        businessMypageDAO.deleteUserNotificationSettings(storeSeq);
+        
+        if (settingsDto.getSettings() != null) {
+            for (UserNotificationSettingDTO setting : settingsDto.getSettings()) {
+                setting.setStoreSeq(storeSeq);
+                businessMypageDAO.insertUserNotificationSetting(setting);
+            }
+        }
     }
 }

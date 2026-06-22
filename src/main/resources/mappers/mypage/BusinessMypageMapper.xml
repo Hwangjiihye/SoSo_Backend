@@ -13,6 +13,9 @@
         u.email,
         u.phone,
         u.created_at AS createdAt,
+        u.alert_stock_yn AS alertStockYn,
+        u.alert_expiry_yn AS alertExpiryYn,
+        u.alert_order_yn AS alertOrderYn,
         s.store_seq AS storeSeq,
         s.biz_number AS bizNumber,
         s.company_name AS companyName,
@@ -117,5 +120,44 @@
         )
     </insert>
 
-    </mapper>
+    <!-- 알림 설정 조회 및 갱신 쿼리들 -->
+    <select id="getUserNotificationSettings" parameterType="long" resultType="com.soso.domain.mypage.dto.UserNotificationSettingDTO">
+        SELECT 
+            setting_seq AS settingSeq,
+            store_seq AS storeSeq,
+            notification_type AS notificationType,
+            channel_type AS channelType,
+            is_enabled AS isEnabled
+        FROM user_notification_settings
+        WHERE store_seq = #{storeSeq}
+    </select>
+
+    <update id="updateUserAlertSettings" parameterType="map">
+        UPDATE users
+        SET alert_stock_yn = #{alertStockYn},
+            alert_expiry_yn = #{alertExpiryYn},
+            alert_order_yn = #{alertOrderYn}
+        WHERE user_seq = #{userSeq}
+    </update>
+
+    <delete id="deleteUserNotificationSettings" parameterType="long">
+        DELETE FROM user_notification_settings
+        WHERE store_seq = #{storeSeq}
+    </delete>
+
+    <insert id="insertUserNotificationSetting" parameterType="com.soso.domain.mypage.dto.UserNotificationSettingDTO">
+        INSERT INTO user_notification_settings (
+            store_seq,
+            notification_type,
+            channel_type,
+            is_enabled
+        ) VALUES (
+            #{storeSeq},
+            #{notificationType},
+            #{channelType},
+            #{isEnabled}
+        )
+    </insert>
+
+</mapper>
 
