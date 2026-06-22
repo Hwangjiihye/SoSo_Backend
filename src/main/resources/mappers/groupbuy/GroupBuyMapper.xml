@@ -189,5 +189,24 @@
             SELECT 1 FROM group_buy_participants WHERE group_buy_seq = #{groupBuySeq} AND user_seq = #{userSeq}
         ) AS access_check
     </select>
+    
+    <select id="getGroupBuyListByUser" parameterType="map" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
+        SELECT 
+            gb.group_buy_seq AS groupBuySeq,
+            gb.item_seq AS itemSeq,
+            i.item_name AS itemName,
+            gb.target_quantity AS targetQuantity,
+            gb.current_quantity AS currentQuantity,
+            gb.end_date AS endDate,
+            gb.status,
+            gb.created_at AS createdAt
+        FROM group_buys gb
+        JOIN items i ON gb.item_seq = i.item_seq
+        JOIN group_buy_participants gbp ON gb.group_buy_seq = gbp.group_buy_seq
+        JOIN stores s ON gbp.user_seq = s.user_seq
+        WHERE s.user_seq = #{userSeq}
+        ORDER BY gb.created_at DESC
+    </select>
+
 
 </mapper>

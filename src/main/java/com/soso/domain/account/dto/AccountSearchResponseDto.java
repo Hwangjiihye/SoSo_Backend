@@ -17,12 +17,14 @@ public class AccountSearchResponseDto {
     private Integer zonecode;
     private String address1;
     private String address2;
+    private String phone;  // 전화번호 추가
+    private String email;  // 이메일 추가
 
     // 기본 생성자
     public AccountSearchResponseDto() {
     }
 
-    // 모든 필드를 포함한 생성자
+    // 기존 필드를 포함한 생성자
     public AccountSearchResponseDto(int storeSeq, int userSeq, String bizNumber, String companyName, 
                                    String ceoName, LocalDate openingDate, Integer zonecode, 
                                    String address1, String address2) {
@@ -35,6 +37,23 @@ public class AccountSearchResponseDto {
         this.zonecode = zonecode;
         this.address1 = address1;
         this.address2 = address2;
+    }
+
+    // 모든 필드를 포함한 생성자
+    public AccountSearchResponseDto(int storeSeq, int userSeq, String bizNumber, String companyName, 
+                                   String ceoName, LocalDate openingDate, Integer zonecode, 
+                                   String address1, String address2, String phone, String email) {
+        this.storeSeq = storeSeq;
+        this.userSeq = userSeq;
+        this.bizNumber = bizNumber;
+        this.companyName = companyName;
+        this.ceoName = ceoName;
+        this.openingDate = openingDate;
+        this.zonecode = zonecode;
+        this.address1 = address1;
+        this.address2 = address2;
+        this.phone = phone;
+        this.email = email;
     }
 
     // Getter 및 Setter
@@ -110,6 +129,22 @@ public class AccountSearchResponseDto {
         this.address2 = address2;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public String toString() {
         return "AccountSearchResponseDto{" +
@@ -122,6 +157,8 @@ public class AccountSearchResponseDto {
                 ", zonecode=" + zonecode +
                 ", address1='" + address1 + '\'' +
                 ", address2='" + address2 + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }

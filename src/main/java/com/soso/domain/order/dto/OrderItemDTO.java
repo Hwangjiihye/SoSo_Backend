@@ -4,6 +4,7 @@ public class OrderItemDTO { // 공급업체 품목 선택할 때 뜨는 목록
 	
 	private int itemSeq;
 	private int userSeq;
+	private int storeSeq;
 	private String partnerId;
 	private String partnerName;
 	private int categorySeq;
@@ -15,11 +16,12 @@ public class OrderItemDTO { // 공급업체 품목 선택할 때 뜨는 목록
 	private String itemImage;
 	
 	public OrderItemDTO() {}
-	public OrderItemDTO(int itemSeq, int userSeq, String partnerId, String partnerName, int categorySeq,
+	public OrderItemDTO(int itemSeq, int userSeq, int storeSeq, String partnerId, String partnerName, int categorySeq,
 			String categoryName, String itemCode, String itemName, String spec, int unitPrice, String itemImage) {
 		super();
 		this.itemSeq = itemSeq;
 		this.userSeq = userSeq;
+		this.storeSeq = storeSeq;
 		this.partnerId = partnerId;
 		this.partnerName = partnerName;
 		this.categorySeq = categorySeq;
@@ -42,6 +44,12 @@ public class OrderItemDTO { // 공급업체 품목 선택할 때 뜨는 목록
 	}
 	public void setUserSeq(int userSeq) {
 		this.userSeq = userSeq;
+	}
+	public int getStoreSeq() {
+		return storeSeq;
+	}
+	public void setStoreSeq(int storeSeq) {
+		this.storeSeq = storeSeq;
 	}
 	public String getPartnerId() {
 		return partnerId;

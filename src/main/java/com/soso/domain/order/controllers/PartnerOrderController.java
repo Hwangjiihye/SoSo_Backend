@@ -66,4 +66,14 @@ public class PartnerOrderController {
         partnerOrderService.updateOrderStatus(orderSeq, cleanStatus);
         return ResponseEntity.ok("상태가 변경되었습니다.");
     }
+
+    /**
+     * [API 4] 거래처 대시보드 데이터 조회 (실제 데이터 기반)
+     * 요청 예: GET /api/partner/orders/dashboard?sellerSeq=10
+     */
+    @GetMapping("/dashboard")
+    public ResponseEntity<java.util.Map<String, Object>> getDashboardData(@RequestParam Long sellerSeq) {
+        java.util.Map<String, Object> data = partnerOrderService.getDashboardData(sellerSeq);
+        return ResponseEntity.ok(data);
+    }
 }

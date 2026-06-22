@@ -54,4 +54,32 @@ public class PartnerOrderDAO {
     public Long selectBuyerSeq(Long orderSeq) {
         return session.selectOne("partnerOrder.selectBuyerSeq", orderSeq);
     }
+
+    public int selectTodayNewOrdersCount(Long sellerSeq) {
+        return session.selectOne("partnerOrder.selectTodayNewOrdersCount", sellerSeq);
+    }
+
+    public int selectShippingOrdersCount(Long sellerSeq) {
+        return session.selectOne("partnerOrder.selectShippingOrdersCount", sellerSeq);
+    }
+
+    public int selectWaitingPaymentsAmount(Long sellerSeq) {
+        return session.selectOne("partnerOrder.selectWaitingPaymentsAmount", sellerSeq);
+    }
+
+    public List<java.util.Map<String, Object>> selectMonthlySales(Long sellerSeq) {
+        return session.selectList("partnerOrder.selectMonthlySales", sellerSeq);
+    }
+
+    public List<java.util.Map<String, Object>> selectMonthlyCollections(Long sellerSeq) {
+        return session.selectList("partnerOrder.selectMonthlyCollections", sellerSeq);
+    }
+
+    public List<java.util.Map<String, Object>> selectBusinessSalesSummary(Long sellerSeq) {
+        return session.selectList("partnerOrder.selectBusinessSalesSummary", sellerSeq);
+    }
+
+    public List<java.util.Map<String, Object>> selectGroupOrders(Long sellerSeq) {
+        return session.selectList("partnerOrder.selectGroupOrders", sellerSeq);
+    }
 }

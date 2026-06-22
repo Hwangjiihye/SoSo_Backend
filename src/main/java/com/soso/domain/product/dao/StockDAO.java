@@ -94,7 +94,9 @@ public class StockDAO {
         params.put("storeSeq", storeSeq);
         sqlSession.delete(NAMESPACE + "deleteHistoryByStockSeq", params);
     }
-
+    public int getcountExpiringSoon(Map<String, Object> filters) {
+        return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon", filters);
+    }
     public int selectgetcountExpiringSoon(int storeSeq) {
         return sqlSession.selectOne(NAMESPACE + "selectgetcountExpiringSoon", storeSeq);
     }

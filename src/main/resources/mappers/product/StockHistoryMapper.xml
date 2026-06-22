@@ -34,7 +34,7 @@
     </insert>
 
     <!-- 대시보드 메인용 최신 5건 고정 조회 -->
-    <select id="getTop5StockHistory" parameterType="int" resultType="com.soso.domain.product.dto.StockHistoryDTO">
+    <select id="getTop5StockHistory" parameterType="map" resultType="com.soso.domain.product.dto.StockHistoryDTO">
         SELECT 
             history_seq AS historySeq,
             stock_seq AS stockSeq,
@@ -50,7 +50,11 @@
             memo,
             created_at AS createdAt
         FROM stock_history
-        WHERE store_seq = #{storeSeq}
+        WHERE store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
         ORDER BY history_seq DESC
         LIMIT 5
     </select>
@@ -58,29 +62,68 @@
     <!-- 팝업 모달창용 페이징 쿼리 -->
     <select id="getStockHistoryWithPaging" parameterType="map" resultType="com.soso.domain.product.dto.StockHistoryDTO">
         SELECT 
-            history_seq AS historySeq,
-            stock_seq AS stockSeq,
-            store_seq AS storeSeq,
-            batch_seq AS batchSeq,
-            transaction_type AS transactionType,
-            change_quantity AS changeQuantity,
-            current_total_stock AS currentTotalStock,
-            detail_stock_name AS detailStockName,
-            price,
-            expiration_date AS expirationDate,
-            reason,
-            memo,
-            created_at AS createdAt
-        FROM stock_history
-        WHERE store_seq = #{storeSeq}
-        ORDER BY history_seq DESC
+            sh.history_seq AS historySeq,
+            sh.stock_seq AS stockSeq,
+            sh.batch_seq AS batchSeq,
+            sh.transaction_type AS transactionType,
+            sh.change_quantity AS changeQuantity,
+            sh.current_total_stock AS currentTotalStock,
+            sh.detail_stock_name AS detailStockName,
+            sh.price,
+            sh.expiration_date AS expirationDate,
+            sh.reason,
+            sh.memo,
+            sh.created_at AS createdAt
+        FROM stock_history sh
+        JOIN stocks s ON sh.stock_seq = s.stock_seq
+        WHERE s.store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
+        <if test="stockSeq != null">
+            AND sh.stock_seq = #{stockSeq}
+        </if>
+        <if test="transactionType != null and transactionType != '' and transactionType != 'ALL'">
+            AND sh.transaction_type = #{transactionType}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND sh.created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND sh.created_at &lt;= CONCAT(#{endDate}, ' 23:59:59')
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (sh.detail_stock_name LIKE CONCAT('%', #{keyword}, '%') OR sh.reason LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY sh.history_seq DESC
         LIMIT #{offset}, #{size}
     </select>
 
     <!-- 전체 이력 개수 조회 -->
-    <select id="getTotalHistoryCount" parameterType="int" resultType="int">
-        SELECT COUNT(*) FROM stock_history
-        WHERE store_seq = #{storeSeq}
+    <select id="getTotalHistoryCount" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM stock_history sh
+        JOIN stocks s ON sh.stock_seq = s.stock_seq
+        WHERE s.store_seq = (
+            CASE WHEN #{storeSeq} IS NOT NULL AND #{storeSeq} != 0 THEN #{storeSeq}
+            ELSE (SELECT store_seq FROM stores WHERE user_seq = #{userSeq} ORDER BY store_seq ASC LIMIT 1)
+            END
+        )
+        <if test="stockSeq != null">
+            AND sh.stock_seq = #{stockSeq}
+        </if>
+        <if test="transactionType != null and transactionType != '' and transactionType != 'ALL'">
+            AND sh.transaction_type = #{transactionType}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND sh.created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND sh.created_at &lt;= CONCAT(#{endDate}, ' 23:59:59')
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (sh.detail_stock_name LIKE CONCAT('%', #{keyword}, '%') OR sh.reason LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
     </select>
 
 </mapper>

@@ -1,0 +1,90 @@
+package com.soso.domain.payment.controllers;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.soso.domain.payment.dto.ExpensesDTO;
+import com.soso.domain.payment.services.ExpenseCategoryService;
+
+@RestController
+@RequestMapping("/expense")
+public class ExpenseCategoryController {
+	
+	@Autowired
+	private ExpenseCategoryService ExpenseServ;
+	
+	// 지출 비용 등록
+	@PostMapping("/{storeSeq}")
+	public ResponseEntity<Map<String, Object>> insertCategory(@PathVariable Integer storeSeq, @RequestBody ExpensesDTO dto) {
+		
+		dto.setStoreSeq(storeSeq);
+		
+		int result = ExpenseServ.insertCategory(dto);
+		
+		Map<String, Object> response = new HashMap<>();
+		
+		if(result > 0) {
+			response.put("success", true);
+			response.put("message", "등록 완료");
+			return ResponseEntity.ok(response);
+		}
+			response.put("success", false);
+			response.put("message", "등록 실패");
+			return ResponseEntity.badRequest().body(response);
+	}
+	
+	// 월별 총 지출 비용 출력
+	@GetMapping("/{storeSeq}/total")
+	public ResponseEntity<Map<String, Object>> monthlyTotal(@PathVariable Integer storeSeq, @RequestParam String month) {
+		
+		Long totalAmount = ExpenseServ.monthlyTotal(storeSeq, month);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("totalAmount", totalAmount);
+		
+		return ResponseEntity.ok(response);
+	}
+	
+	// 월별 카테고리별 비용 출력
+	@GetMapping("/{storeSeq}/categoryCost")
+	public ResponseEntity<List<Map<String, Object>>> categoryCost(@PathVariable int storeSeq, @RequestParam String month) {
+
+	    List<Map<String, Object>> result = ExpenseServ.categoryCost(storeSeq, month);
+	    return ResponseEntity.ok(result);
+	}
+	
+	// 카테고리별 월 지출 세부내역 출력
+	@GetMapping("/{storeSeq}/details")
+	public ResponseEntity<List<ExpensesDTO>> expenseDetails(
+	        @PathVariable int storeSeq,
+	        @RequestParam String month,
+	        @RequestParam int categorySeq) {
+
+	    List<ExpensesDTO> result = ExpenseServ.expenseDetails(storeSeq, month, categorySeq);
+
+	    return ResponseEntity.ok(result);
+	}
+	
+	// 비용 등록 모달 - 거래처별 일반 발주 내역 전체 조회
+	@GetMapping("/{storeSeq}/general-orders")
+	public ResponseEntity<List<Map<String, Object>>> generalOrdersForExpense(
+	        @PathVariable int storeSeq,
+	        @RequestParam int partnerStoreSeq) {
+
+	    List<Map<String, Object>> result =
+	            ExpenseServ.generalOrdersForExpense(storeSeq, partnerStoreSeq);
+
+	    return ResponseEntity.ok(result);
+	}
+}

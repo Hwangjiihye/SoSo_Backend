@@ -5,21 +5,15 @@ public class OrderListDTO {
 	private Long orderSeq;
 	private String orderNo;
 	private Long sellerSeq;
+	private Integer buyerStoreSeq;
 	private String companyName;
 	private String itemName;
 	private String itemSummary;
+	private String status;
+	private String createdAt;
+	private Integer totalAmount;
 	
 	public OrderListDTO() {}
-	public OrderListDTO(Long orderSeq, String orderNo, Long sellerSeq, String companyName, String itemName,
-			String itemSummary) {
-		super();
-		this.orderSeq = orderSeq;
-		this.orderNo = orderNo;
-		this.sellerSeq = sellerSeq;
-		this.companyName = companyName;
-		this.itemName = itemName;
-		this.itemSummary = itemSummary;
-	}
 	
 	public Long getOrderSeq() {
 		return orderSeq;
@@ -39,6 +33,12 @@ public class OrderListDTO {
 	public void setSellerSeq(Long sellerSeq) {
 		this.sellerSeq = sellerSeq;
 	}
+	public Integer getBuyerStoreSeq() {
+		return buyerStoreSeq;
+	}
+	public void setBuyerStoreSeq(Integer buyerStoreSeq) {
+		this.buyerStoreSeq = buyerStoreSeq;
+	}
 	public String getCompanyName() {
 		return companyName;
 	}
@@ -56,5 +56,23 @@ public class OrderListDTO {
 	}
 	public void setItemSummary(String itemSummary) {
 		this.itemSummary = itemSummary;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
+	}
+	public Integer getTotalAmount() {
+		return totalAmount;
+	}
+	public void setTotalAmount(Integer totalAmount) {
+		this.totalAmount = totalAmount;
 	}
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
 
 @Service
@@ -104,5 +105,8 @@ public class GroupBuyService {
     public boolean validateChatAccess(int groupBuySeq, int userSeq) {
         int count = groupBuyDAO.checkChatAccess(groupBuySeq, userSeq);
         return count > 0;
+    }
+    public List<GroupBuyDTO> getGroupBuyListByUser(int userSeq, Integer storeSeq) {
+        return groupBuyDAO.getGroupBuyListByUser(userSeq, storeSeq);
     }
 }

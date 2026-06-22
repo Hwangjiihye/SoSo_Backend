@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/group-buys")
@@ -108,5 +115,15 @@ public class GroupBuyController {
         
         List<ParticipantInfoDTO> participants = groupBuyService.getParticipants(groupBuySeq);
         return ResponseEntity.ok(participants);
+    }
+    @GetMapping("/history")
+    public ResponseEntity<List<GroupBuyDTO>> getGroupBuyHistory(
+            HttpServletRequest request,
+            @RequestParam(required = false) Integer storeSeq) {
+        Long userSeqLong = (Long) request.getAttribute("user_seq");
+        int userSeq = userSeqLong.intValue();
+        
+        List<GroupBuyDTO> list = groupBuyService.getGroupBuyListByUser(userSeq, storeSeq);
+        return ResponseEntity.ok(list);
     }
 }

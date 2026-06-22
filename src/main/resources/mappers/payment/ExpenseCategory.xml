@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="expense">
+	
+	<!-- 지출 비용 등록 -->
+<!-- 
+    useGeneratedKeys="true"
+    - expenses 테이블에 INSERT 된 후 자동 생성된 expense_seq 값을 DTO에 다시 넣어준다.
+
+    keyProperty="expenseSeq"
+    - ExpensesDTO의 expenseSeq 필드에 생성된 PK 값을 넣겠다는 뜻.
+    - 이 값이 있어야 RAG 문서 ID를 expense:15 이런 식으로 만들 수 있다.
+-->
+<insert id="insert"
+        parameterType="com.soso.domain.payment.dto.ExpensesDTO"
+        useGeneratedKeys="true"
+        keyProperty="expenseSeq">
+
+    insert into expenses (
+        store_seq,
+        category_seq,
+        expense_date,
+        title,
+        amount,
+        memo,
+        payment_method,
+        supplier_name,
+        ref_type,
+        ref_seq,
+        created_at
+    )
+    values (
+        #{storeSeq},
+        #{categorySeq},
+        #{expenseDate},
+        #{title},
+        #{amount},
+        #{memo},
+        #{paymentMethod},
+        #{supplierName},
+        #{refType},
+        #{refSeq},
+        Now()
+    )
+</insert>
+	<!--<insert id="insert">
+		insert into expenses (store_seq, category_seq, expense_date, title, amount, memo, payment_method, supplier_name, ref_type, ref_seq, created_at)
+		values ( #{storeSeq}, #{categorySeq}, #{expenseDate}, #{title}, #{amount}, #{memo}, #{paymentMethod}, #{supplierName}, #{refType}, #{refSeq}, Now() )
+	</insert>-->
+	
+	<!-- 특정 매장의 특정 월 지출 합계 금액 전체를 가져오는 쿼리 -->
+	<select id="monthlyTotal" parameterType="map" resultType="long">
+	    SELECT COALESCE(SUM(amount), 0)
+	    FROM expenses
+	    WHERE store_seq = #{storeSeq}
+	      AND DATE_FORMAT(expense_date, '%Y-%m') = #{month}
+	</select>
+	
+	<!-- 카테고리별로 지출 내역 출력 -->
+	<select id="monthlyTotalByCategory" parameterType="map" resultType="map">
+	    SELECT
+	        category_seq AS categorySeq,
+	        COALESCE(SUM(amount), 0) AS totalAmount,
+	        COUNT(*) AS count
+	    FROM expenses
+	    WHERE store_seq = #{storeSeq}
+	      AND DATE_FORMAT(expense_date, '%Y-%m') = #{month}
+	    GROUP BY category_seq
+	</select>
+	
+	<!-- 카테고리별 월 지출 세부내역 출력 -->
+	<select id="expenseDetails" parameterType="map" resultType="com.soso.domain.payment.dto.ExpensesDTO">
+    SELECT
+        e.expense_seq AS expenseSeq,
+        e.store_seq AS storeSeq,
+        e.category_seq AS categorySeq,
+        DATE_FORMAT(e.expense_date, '%Y-%m-%d') AS expenseDate,
+        e.title AS title,
+        e.amount AS amount,
+        e.memo AS memo,
+        e.payment_method AS paymentMethod,
+        e.supplier_name AS supplierName,
+        e.ref_type AS refType,
+        e.ref_seq AS refSeq,
+        e.created_at AS createdAt,
+
+        CASE
+            WHEN e.ref_type = 'ORDER' THEN (
+                SELECT GROUP_CONCAT(oi.item_name SEPARATOR ', ')
+                FROM order_items oi
+                WHERE oi.order_seq = e.ref_seq
+            )
+            ELSE e.title
+        END AS itemSummary,
+
+        CASE
+            WHEN e.ref_type = 'ORDER' THEN (
+                SELECT GROUP_CONCAT(CONCAT(oi.quantity, '개') SEPARATOR ', ')
+                FROM order_items oi
+                WHERE oi.order_seq = e.ref_seq
+            )
+            ELSE '-'
+        END AS quantitySummary
+
+    FROM expenses e
+    WHERE e.store_seq = #{storeSeq}
+      AND e.category_seq = #{categorySeq}
+      AND DATE_FORMAT(e.expense_date, '%Y-%m') = #{month}
+    ORDER BY e.expense_date DESC, e.expense_seq DESC
+	</select>
+	
+	<!-- 비용 카테고리 - 거래처별 일반 발주 내역 전체 조회 -->
+	<select id="generalOrdersForExpense" parameterType="map" resultType="map">
+	    SELECT
+	        o.order_seq AS orderSeq,
+	        o.order_no AS orderCode,
+	        DATE_FORMAT(o.created_at, '%Y-%m-%d') AS orderDate,
+	
+	        buyer_store.store_seq AS storeSeq,
+	        partner_store.store_seq AS partnerStoreSeq,
+	        partner_store.company_name AS partnerName,
+	
+	        COALESCE(
+		    (
+		        SELECT
+		            CONCAT(
+		                MIN(oi.item_name),
+		                CASE
+		                    WHEN COUNT(*) > 1 THEN CONCAT(' 외 ', COUNT(*) - 1, '개 품목')
+		                    ELSE ''
+		                END
+		            )
+		        FROM order_items oi
+		        WHERE oi.order_seq = o.order_seq
+		    ),
+		    CONCAT('발주서 ', o.order_no)
+		) AS itemSummary,
+	        o.total_amount AS totalAmount,
+	        o.status AS status,
+	
+	        CASE
+	            WHEN EXISTS (
+	                SELECT 1
+	                FROM payment_order_map pom
+	                JOIN payments p
+	                    ON pom.payment_seq = p.payment_seq
+	                WHERE pom.order_seq = o.order_seq
+	                  AND p.status = 'PAID'
+	            )
+	            THEN '결제완료'
+	            ELSE '미결제'
+	        END AS paymentStatus
+	
+	    FROM orders o
+	    JOIN stores buyer_store
+	        ON buyer_store.user_seq = o.buyer_seq
+	    JOIN stores partner_store
+	        ON partner_store.user_seq = o.seller_seq
+	
+	    WHERE buyer_store.store_seq = #{storeSeq}
+	      AND partner_store.store_seq = #{partnerStoreSeq}
+	      AND IFNULL(o.status, '') != '취소'
+	
+	    ORDER BY o.created_at DESC, o.order_seq DESC
+	</select>
+	
+</mapper>

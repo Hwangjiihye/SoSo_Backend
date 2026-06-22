@@ -5,7 +5,9 @@ import com.soso.domain.product.dao.StockHistoryDAO;
 import com.soso.domain.product.dto.StockBatchDTO;
 import com.soso.domain.product.dto.StockDTO;
 import com.soso.domain.product.dto.StockHistoryDTO;
+import com.soso.domain.notification.events.NotificationEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,9 @@ public class StockAlertScheduler {
 
     @Autowired
     private StockHistoryDAO stockHistoryDAO;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * 매일 오전 9시에 유통기한 임박 품목을 체크하여 ALERT 이력을 생성합니다.
@@ -52,6 +57,16 @@ public class StockAlertScheduler {
                 alertHistory.setMemo("만료 예정일: " + batch.getExpirationDate() + " 확인 필요");
                 
                 stockHistoryDAO.insertStockHistory(alertHistory);
+
+                // 유통기한 임박 실시간 알림 이벤트 발행
+                eventPublisher.publishEvent(new NotificationEvent(
+                    this, 
+                    batch.getStoreSeq(), 
+                    "EXPIRY_IMMINENT", 
+                    "유통기한 임박 알림", 
+                    String.format("[%s] 품목의 배치(유통기한: %s)가 만료 예정입니다.", 
+                        batch.getDetailStockName(), batch.getExpirationDate())
+                ));
             }
         }
     }
