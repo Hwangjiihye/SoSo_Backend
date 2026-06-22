@@ -92,6 +92,8 @@
 	        o.order_seq AS orderSeq,
 	        o.order_no AS orderNo,
 	        buyer_store.store_seq AS storeSeq,
+	        buyer_store.company_name AS payerName,
+			partner_store.company_name AS partnerName,
 	        partner_store.store_seq AS partnerSeq,
 	        o.total_amount AS totalAmount
 	    FROM orders o
@@ -548,5 +550,12 @@
         ) result
         ORDER BY result.sortDate DESC
     </select>
+    
+    <!-- 카드 삭제 처리 -->
+	<update id="deleteCard" parameterType="long">
+	    update payment_cards
+	    set is_active = 'N'
+	    where card_seq = #{cardSeq}
+	</update>
     
 </mapper>

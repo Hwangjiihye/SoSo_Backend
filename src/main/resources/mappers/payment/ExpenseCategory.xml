@@ -4,10 +4,50 @@
 <mapper namespace="expense">
 	
 	<!-- 지출 비용 등록 -->
-	<insert id="insert">
+<!-- 
+    useGeneratedKeys="true"
+    - expenses 테이블에 INSERT 된 후 자동 생성된 expense_seq 값을 DTO에 다시 넣어준다.
+
+    keyProperty="expenseSeq"
+    - ExpensesDTO의 expenseSeq 필드에 생성된 PK 값을 넣겠다는 뜻.
+    - 이 값이 있어야 RAG 문서 ID를 expense:15 이런 식으로 만들 수 있다.
+-->
+<insert id="insert"
+        parameterType="com.soso.domain.payment.dto.ExpensesDTO"
+        useGeneratedKeys="true"
+        keyProperty="expenseSeq">
+
+    insert into expenses (
+        store_seq,
+        category_seq,
+        expense_date,
+        title,
+        amount,
+        memo,
+        payment_method,
+        supplier_name,
+        ref_type,
+        ref_seq,
+        created_at
+    )
+    values (
+        #{storeSeq},
+        #{categorySeq},
+        #{expenseDate},
+        #{title},
+        #{amount},
+        #{memo},
+        #{paymentMethod},
+        #{supplierName},
+        #{refType},
+        #{refSeq},
+        Now()
+    )
+</insert>
+	<!--<insert id="insert">
 		insert into expenses (store_seq, category_seq, expense_date, title, amount, memo, payment_method, supplier_name, ref_type, ref_seq, created_at)
 		values ( #{storeSeq}, #{categorySeq}, #{expenseDate}, #{title}, #{amount}, #{memo}, #{paymentMethod}, #{supplierName}, #{refType}, #{refSeq}, Now() )
-	</insert>
+	</insert>-->
 	
 	<!-- 특정 매장의 특정 월 지출 합계 금액 전체를 가져오는 쿼리 -->
 	<select id="monthlyTotal" parameterType="map" resultType="long">

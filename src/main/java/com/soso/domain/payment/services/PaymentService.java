@@ -26,12 +26,18 @@ import com.soso.domain.payment.dto.PaymentDTO;
 
 import tools.jackson.databind.ObjectMapper;
 
+import com.soso.domain.RAG.RagClient;
+
 
 @Service
 public class PaymentService {
 	
 	@Autowired
 	private PaymentDAO dao;
+	
+	// FastAPI RAG 서버에 결제 내역을 upsert하기 위한 클라이언트
+	@Autowired
+	private RagClient ragClient;
 	
 	
     // application.properties에 작성한 포트원 상점 ID
@@ -249,6 +255,17 @@ public class PaymentService {
 	        dto.getStoreSeq(),      // 지출이 발생한 사업자 매장 번호
 	        dto.getOrderSeqList()   // 지출로 등록할 발주 번호 목록
 	);
+	
+	// 결제 내역을 RAG에 저장 또는 갱신
+	// payments 기준으로 "카드 결제 내역"을 챗봇이 답변할 수 있게 만든다.
+	upsertPaymentRag(
+	        paymentSeq,
+	        paymentId,
+	        dto,
+	        card,
+	        orders,
+	        totalAmount
+	);
 
 	// 최종 성공 응답
 	result.put("success", true);
@@ -359,6 +376,107 @@ public class PaymentService {
 
 	    } catch (Exception e) {
 	        throw new RuntimeException("포트원 결제 요청 중 오류: " + e.getMessage(), e);
+	    }
+	}
+	
+	
+	/**
+	 * 카드 결제 데이터를 RAG 문서로 만들어 Qdrant에 저장 또는 갱신하는 메소드
+	 *
+	 * 이 메소드는 결제 성공 후에만 호출된다.
+	 * RAG 저장에 실패해도 실제 결제/DB 저장이 실패하면 안 되기 때문에 try-catch로 감싼다.
+	 */
+	private void upsertPaymentRag(
+	        Integer paymentSeq,
+	        String paymentId,
+	        OrderPaymentRequestDTO dto,
+	        PaymentCardDTO card,
+	        List<Map<String, Object>> orders,
+	        int totalAmount
+	) {
+	    try {
+	        // 결제한 발주 목록을 챗봇이 읽기 좋은 문장으로 만든다.
+	        StringBuilder orderSummary = new StringBuilder();
+
+	        for (Map<String, Object> order : orders) {
+	            orderSummary.append("발주번호: ")
+	                    .append(order.get("orderSeq"))
+	                    .append(", 발주코드: ")
+	                    .append(order.get("orderNo"))
+	                    .append(", 결제금액: ")
+	                    .append(order.get("totalAmount"))
+	                    .append("원. ");
+	        }
+
+	        // 첫 번째 발주 기준으로 결제한 매장명과 받은 거래처명을 가져온다.
+	        // 같은 결제 건은 같은 storeSeq, partnerSeq 기준이라 첫 번째 값만 써도 된다.
+	        String payerName = "정보 없음";
+	        String partnerName = "정보 없음";
+
+	        if (orders != null && !orders.isEmpty()) {
+	            Object payerNameObj = orders.get(0).get("payerName");
+	            Object partnerNameObj = orders.get(0).get("partnerName");
+
+	            if (payerNameObj != null) {
+	                payerName = String.valueOf(payerNameObj);
+	            }
+
+	            if (partnerNameObj != null) {
+	                partnerName = String.valueOf(partnerNameObj);
+	            }
+	        }
+
+	        // Qdrant payload에 같이 저장할 부가 정보
+	        Map<String, Object> metadata = new HashMap<>();
+	        metadata.put("paymentSeq", paymentSeq);
+	        metadata.put("paymentId", paymentId);
+	        metadata.put("storeSeq", dto.getStoreSeq());
+	        metadata.put("partnerSeq", dto.getPartnerSeq());
+	        metadata.put("payerName", payerName);
+	        metadata.put("partnerName", partnerName);
+	        metadata.put("cardSeq", dto.getCardSeq());
+	        metadata.put("cardCompany", card.getCardCompany());
+	        metadata.put("cardName", card.getCardName());
+	        metadata.put("cardNumberMasked", card.getCardNumberMasked());
+	        metadata.put("totalAmount", totalAmount);
+	        metadata.put("status", "PAID");
+	        metadata.put("orderSeqList", dto.getOrderSeqList().toString());
+
+	        // 챗봇이 검색해서 읽을 실제 결제 문장
+	        String text = String.format(
+	                "[카드 결제 상세 정보] 결제번호: %s, 포트원 결제ID: %s, 결제상태: PAID, 결제한 매장번호: %s, 결제한 매장명: %s, 받은 거래처번호: %s, 받은 거래처명: %s, 결제 카드번호: %s, 카드사: %s, 카드명: %s, 마스킹 카드번호: %s, 총 결제금액: %s원, 결제한 발주 목록: %s",
+	                paymentSeq,
+	                paymentId,
+	                dto.getStoreSeq(),
+	                payerName,
+	                dto.getPartnerSeq(),
+	                partnerName,
+	                dto.getCardSeq(),
+	                card.getCardCompany(),
+	                card.getCardName(),
+	                card.getCardNumberMasked(),
+	                totalAmount,
+	                orderSummary.toString()
+	        );
+
+	        // 확인용 로그
+	        System.out.println("========== 결제 RAG 문서 확인 ==========");
+	        System.out.println(text);
+	        System.out.println("metadata = " + metadata);
+
+	        // FastAPI /rag/upsert 호출
+	        // type = payment
+	        // refId = paymentSeq
+	        ragClient.upsert(
+	                "payment",
+	                paymentSeq,
+	                text,
+	                metadata
+	        );
+
+	    } catch (Exception e) {
+	        // RAG 실패 때문에 결제 성공 흐름이 막히면 안 된다.
+	        System.out.println("결제 RAG upsert 처리 중 오류: " + e.getMessage());
 	    }
 	}
 	
@@ -478,6 +596,11 @@ public class PaymentService {
 
 	    // 프론트로 반환
 	    return result;
+	}
+	
+	// 카드 삭제
+	public int deleteCard(Long cardSeq) {
+	    return dao.deleteCard(cardSeq);
 	}
 	
 }

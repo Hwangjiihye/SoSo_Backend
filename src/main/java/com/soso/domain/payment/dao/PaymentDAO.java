@@ -243,5 +243,10 @@ public class PaymentDAO {
 	    // payment.xml의 selectCollectionRows 쿼리 실행
 	    return mybatis.selectList("payment.selectCollectionRows", storeSeq);
 	}
+	
+	// 카드 삭제
+	public int deleteCard(Long cardSeq) {
+	    return mybatis.update("payment.deleteCard", cardSeq);
+	}
 
 }

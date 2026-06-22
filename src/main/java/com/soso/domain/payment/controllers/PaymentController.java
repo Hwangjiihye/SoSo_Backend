@@ -124,6 +124,17 @@ public class PaymentController {
 	    return ResponseEntity.ok(result);
 	}
 	
-	
+	// 카드 삭제 X -> is_active = 'N' 처리
+	@DeleteMapping("/cards/{cardSeq}")
+	public ResponseEntity<String> deleteCard(@PathVariable Long cardSeq) {
+
+	    int result = accountServ.deleteCard(cardSeq);
+
+	    if (result == 0) {
+	        return ResponseEntity.badRequest().body("삭제할 카드가 없습니다.");
+	    }
+
+	    return ResponseEntity.ok("카드가 삭제되었습니다.");
+	}
 
 }
