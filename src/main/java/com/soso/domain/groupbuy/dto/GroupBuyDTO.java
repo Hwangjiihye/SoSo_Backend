@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public class GroupBuyDTO {
     private Integer groupBuySeq;
     private Integer userSeq;
+    private String creatorType; // 추가: 개설자 타입
     private String partnerName; // 변경: 거래처명 (직접 입력)
     private String itemName;    // 변경: 품목명 (직접 입력)
     private String category;    
@@ -32,6 +33,9 @@ public class GroupBuyDTO {
 
     public Integer getUserSeq() { return userSeq; }
     public void setUserSeq(Integer userSeq) { this.userSeq = userSeq; }
+
+    public String getCreatorType() { return creatorType; }
+    public void setCreatorType(String creatorType) { this.creatorType = creatorType; }
 
     public String getPartnerName() { return partnerName; }
     public void setPartnerName(String partnerName) { this.partnerName = partnerName; }

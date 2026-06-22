@@ -20,9 +20,13 @@ public class GroupBuyController {
     // B. 공동구매 생성 API
     @PostMapping
     public ResponseEntity<?> createGroupBuy(@RequestBody GroupBuyDTO groupBuyDTO,
-                                            @RequestAttribute("userSeq") Integer userSeq) {
+                                            @RequestAttribute("userSeq") Integer userSeq,
+                                            @RequestAttribute("userType") String userType) {
         // 보안: 세션(RequestAttribute)에서 뽑은 userSeq를 무조건 강제 세팅
         groupBuyDTO.setUserSeq(userSeq);
+        // 추가: 개설자 타입 세팅
+        groupBuyDTO.setCreatorType(userType);
+        
         groupBuyService.createGroupBuy(groupBuyDTO);
         
         return ResponseEntity.ok().body(Map.of("message", "공동구매가 성공적으로 등록되었습니다."));
