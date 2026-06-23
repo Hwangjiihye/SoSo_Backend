@@ -32,7 +32,8 @@ public class RagController {
         System.out.println("매장 번호: " + storeSeq);
 
         // 1. 파이썬 AI 서버 주소 설정
-        String pythonUrl = ragApiUrl + "/ai/query";
+//        String pythonUrl = ragApiUrl + "/ai/query";
+        String pythonUrl = ragApiUrl + "/rag/ask";
 
         // 2. 파이썬이 요구하는 JSON 규격 데이터 바구니(DTO) 만들기
         Map<String, Object> requestBody = Map.of(
