@@ -165,4 +165,20 @@
 	    ORDER BY o.created_at DESC, o.order_seq DESC
 	</select>
 	
+	<!-- 지출 내역 메모 수정 -->
+	<update id="updateExpenseMemo" parameterType="map">
+	    UPDATE expenses
+	    SET memo = #{memo}
+	    WHERE store_seq = #{storeSeq}
+	      AND expense_seq = #{expenseSeq}
+	</update>
+
+
+	<!-- 지출 내역 삭제 -->
+	<delete id="deleteExpense" parameterType="map">
+	    DELETE FROM expenses
+	    WHERE store_seq = #{storeSeq}
+	      AND expense_seq = #{expenseSeq}
+	</delete>
+	
 </mapper>

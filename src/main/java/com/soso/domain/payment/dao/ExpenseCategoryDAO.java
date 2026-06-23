@@ -59,5 +59,24 @@ public class ExpenseCategoryDAO {
 
 	    return mybatis.selectList("expense.generalOrdersForExpense", param);
 	}
+	
+	// 지출 내역 메모 수정
+		public int updateExpenseMemo(Long storeSeq, Long expenseSeq, String memo) {
+		    Map<String, Object> params = new HashMap<>();
+		    params.put("storeSeq", storeSeq);
+		    params.put("expenseSeq", expenseSeq);
+		    params.put("memo", memo);
+
+		    return mybatis.update("expense.updateExpenseMemo", params);
+		}
+
+		// 지출 내역 삭제
+		public int deleteExpense(Long storeSeq, Long expenseSeq) {
+		    Map<String, Object> params = new HashMap<>();
+		    params.put("storeSeq", storeSeq);
+		    params.put("expenseSeq", expenseSeq);
+
+		    return mybatis.delete("expense.deleteExpense", params);
+		}
 
 }

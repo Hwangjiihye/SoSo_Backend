@@ -126,5 +126,32 @@ public class ExpenseCategoryService {
 	            metadata
 	    );
 	}
+	
+	// 지출 내역 메모 수정
+		public int updateExpenseMemo(Long storeSeq, Long expenseSeq, String memo) {
+		    if (storeSeq == null || storeSeq == 0) {
+		        throw new RuntimeException("사업장 정보가 없습니다.");
+		    }
+
+		    if (expenseSeq == null || expenseSeq == 0) {
+		        throw new RuntimeException("지출 번호가 없습니다.");
+		    }
+
+		    return dao.updateExpenseMemo(storeSeq, expenseSeq, memo);
+		}
+
+		
+		// 지출 내역 삭제
+		public int deleteExpense(Long storeSeq, Long expenseSeq) {
+		    if (storeSeq == null || storeSeq == 0) {
+		        throw new RuntimeException("사업장 정보가 없습니다.");
+		    }
+
+		    if (expenseSeq == null || expenseSeq == 0) {
+		        throw new RuntimeException("지출 번호가 없습니다.");
+		    }
+
+		    return dao.deleteExpense(storeSeq, expenseSeq);
+		}
 
 }
