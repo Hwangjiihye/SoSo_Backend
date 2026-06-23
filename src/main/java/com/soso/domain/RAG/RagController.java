@@ -8,10 +8,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/ai")
 public class RagController {
+	
+	@Value("${rag.api.url}")
+	private String ragApiUrl;
 	
 	// 외부(파이썬 AI 서버)와 통신하기 위한 스프링 전용 도구
     private final RestTemplate restTemplate = new RestTemplate();
@@ -28,7 +32,7 @@ public class RagController {
         System.out.println("매장 번호: " + storeSeq);
 
         // 1. 파이썬 AI 서버 주소 설정
-        String pythonUrl = "http://localhost:8000/ai/query";
+        String pythonUrl = ragApiUrl + "/ai/query";
 
         // 2. 파이썬이 요구하는 JSON 규격 데이터 바구니(DTO) 만들기
         Map<String, Object> requestBody = Map.of(

@@ -62,7 +62,7 @@
         </where>
         ORDER BY s.stock_seq DESC
     </select>
-    <insert id="insertStock" parameterType="map">
+    <insert id="insertStock" parameterType="map" useGeneratedKeys="true" keyProperty="stockSeq" keyColumn="stock_seq">
         INSERT INTO stocks (store_seq, stock_name, category, unit, safety_stock, default_expiry_days, current_stock)
         VALUES (#{storeSeq}, #{stockName}, #{category}, #{unit}, #{safetyStock}, #{defaultExpiryDays}, 0)
     </insert>
@@ -123,7 +123,7 @@
         WHERE batch_seq = #{batchSeq} AND store_seq = #{storeSeq}
     </update>
 
-    <insert id="insertHistory" parameterType="com.soso.domain.product.dto.StockHistoryDTO">
+    <insert id="insertHistory" parameterType="com.soso.domain.product.dto.StockHistoryDTO" useGeneratedKeys="true" keyProperty="historySeq" keyColumn="history_seq">
         INSERT INTO stock_history (
             stock_seq, store_seq, batch_seq, transaction_type, change_quantity, 
             current_total_stock, detail_stock_name, price, expiration_date, reason, memo, created_at

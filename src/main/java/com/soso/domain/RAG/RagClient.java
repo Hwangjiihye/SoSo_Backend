@@ -1,17 +1,21 @@
 	package com.soso.domain.RAG;
 
 	import java.util.HashMap;
-	import java.util.Map;
+import java.util.Map;
 
-	import org.springframework.stereotype.Service;
-	import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 	@Service
 	public class RagClient {
+		
+		@Value("${rag.api.url}")
+		private String ragApiUrl;
 
 	    private final RestTemplate restTemplate = new RestTemplate();
 
-	    private final String pythonUpsertUrl = "http://localhost:8000/rag/upsert";
+	    private final String pythonUpsertUrl = "/rag/upsert";
 
 	    public void upsert(String type, Object refId, String text, Map<String, Object> metadata) {
 	        try {
@@ -22,7 +26,7 @@
 	            requestBody.put("metadata", metadata);
 
 	            restTemplate.postForObject(
-	                    pythonUpsertUrl,
+	                    ragApiUrl + pythonUpsertUrl,
 	                    requestBody,
 	                    Map.class
 	            );

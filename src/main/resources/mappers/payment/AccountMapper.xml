@@ -95,7 +95,17 @@
 	        buyer_store.company_name AS payerName,
 			partner_store.company_name AS partnerName,
 	        partner_store.store_seq AS partnerSeq,
-	        o.total_amount AS totalAmount
+	        o.total_amount AS totalAmount,
+	        
+	        (
+            SELECT GROUP_CONCAT(
+                CONCAT(oi.item_name, ' ', oi.quantity, '개')
+                SEPARATOR ', '
+            )
+            FROM order_items oi
+            WHERE oi.order_seq = o.order_seq
+        ) AS itemSummary
+
 	    FROM orders o
 	    JOIN stores buyer_store
 	        ON buyer_store.user_seq = o.buyer_seq
