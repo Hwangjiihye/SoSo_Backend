@@ -19,6 +19,7 @@ public class PartnerProfileDTO {
     private Integer zonecode;
     private String address1;
     private String address2;
+    private String ceoName;
     
     //file 정보
     private String storeSysNames;
@@ -34,6 +35,14 @@ public class PartnerProfileDTO {
 	public PartnerProfileDTO() {}
 
     // Getters and Setters
+    
+    public String getCeoName() {
+        return ceoName;
+    }
+
+    public void setCeoName(String ceoName) {
+        this.ceoName = ceoName;
+    }
    
 	public String getRepName() {
 		return repName;

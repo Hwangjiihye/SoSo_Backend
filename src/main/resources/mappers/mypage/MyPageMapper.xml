@@ -19,6 +19,7 @@
         s.zonecode,
         s.address1,
         s.address2,
+        s.ceo_name AS ceoName,
         
         -- 🎯 [우주 치트키] 가게 사진 파일명들을 콤마(,)로 묶어서 하나의 문자열로 뽑아내네!
         -- 결과 예시: "uuid1.png,uuid2.png"
