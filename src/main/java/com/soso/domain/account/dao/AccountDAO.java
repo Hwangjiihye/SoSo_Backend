@@ -86,10 +86,17 @@ public class AccountDAO {
         return mybatis.selectOne(NAMESPACE + ".getFirstStoreSeqByUserSeq", userSeq);
     }
 
+    
+ // 내가 등록한 거래처 목록 조회
+    public List<AccountSearchResponseDto> myPartners(Long storeSeq) {
+        return mybatis.selectList(NAMESPACE + ".myPartners", storeSeq);
+    }
+
     /**
      * 특정 거래처(파트너사) 상세 정보를 조회합니다.
      */
     public AccountSearchResponseDto getPartnerDetail(int partnerSeq) {
         return mybatis.selectOne(NAMESPACE + ".getPartnerDetail", partnerSeq);
+
     }
 }

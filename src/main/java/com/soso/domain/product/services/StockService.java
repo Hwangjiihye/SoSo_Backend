@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.soso.domain.RAG.RagClient;
+
 @Service
 public class StockService {
 
@@ -30,6 +32,9 @@ public class StockService {
 
     @Autowired
     private com.soso.domain.notification.dao.NotificationDAO notificationDAO;
+    
+    @Autowired
+    private RagClient ragClient;
 
     public List<StockDTO> getStockList(Map<String, Object> filters) {
         return stockDAO.selectStockList(filters);
@@ -37,6 +42,9 @@ public class StockService {
 
     public void createStock(int storeSeq,StockDTO stock) {
         stockDAO.insertStock(storeSeq,stock);
+        
+        StockDTO savedStock = stockDAO.selectStockBySeq(stock.getStockSeq(), storeSeq);
+        upsertStockRag(savedStock, storeSeq);
     }
 
     @Transactional
@@ -86,6 +94,7 @@ public class StockService {
         history.setReason(incoming.getReason());
         history.setMemo(incoming.getMemo());
         stockDAO.insertHistory(history);
+        upsertStockRag(updatedMaster, storeSeq);
     }
 
     @Transactional
@@ -157,6 +166,7 @@ public class StockService {
             // 파트너(거래처)로도 알림 발행
             publishPartnerSafetyAlert(storeSeq, finalMaster);
         }
+        upsertStockRag(finalMaster, storeSeq);
     }
 
     @Transactional
@@ -210,6 +220,7 @@ public class StockService {
             // 파트너(거래처)로도 알림 발행
             publishPartnerSafetyAlert(storeSeq, currentMaster);
         }
+        upsertStockRag(currentMaster, storeSeq);
     }
 
     private void updateMasterStock(int stockSeq, int changeQty, int storeSeq) {
@@ -265,6 +276,9 @@ public class StockService {
 
     public void updateStockInfo(StockDTO stock) {
         stockDAO.updateStock(stock);
+        
+        StockDTO updatedStock = stockDAO.selectStockBySeq(stock.getStockSeq(), stock.getStoreSeq());
+        upsertStockRag(updatedStock, stock.getStoreSeq());
     }
 
     @Transactional
@@ -281,5 +295,35 @@ public class StockService {
     }
     public int getcountExpiringSoon(int storeSeq) {
         return stockDAO.selectgetcountExpiringSoon(storeSeq);
+    }
+    
+    // Rag upsert
+    private void upsertStockRag(StockDTO stock, int storeSeq) {
+        if (stock == null) {
+            return;
+        }
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("stockSeq", stock.getStockSeq());
+        metadata.put("storeSeq", storeSeq);
+        metadata.put("stockName", stock.getStockName());
+        metadata.put("currentStock", stock.getCurrentStock());
+        metadata.put("safetyStock", stock.getSafetyStock());
+
+        String text = String.format(
+                "재고 정보입니다. 매장번호는 %s, 재고번호는 %s, 재고명은 %s, 현재 재고는 %s개, 안전재고는 %s개입니다.",
+                storeSeq,
+                stock.getStockSeq(),
+                stock.getStockName(),
+                stock.getCurrentStock(),
+                stock.getSafetyStock()
+        );
+
+        ragClient.upsert(
+                "stock",
+                stock.getStockSeq(),
+                text,
+                metadata
+        );
     }
 }

@@ -50,7 +50,8 @@ public class AuthController {
 			// JWT 토큰 생성
 			// ⭕ member.get()이 Integer든 Long이든 상관없이 문자열로 바꾼 뒤 깔끔하게 Long으로 추출!
 			Long userSeq = Long.parseLong(String.valueOf(member.get("user_seq")));
-			String token = jwt.createToken(userSeq);
+			String userType = String.valueOf(member.get("user_type"));
+			String token = jwt.createToken(userSeq, userType);
 			
 			// 보안을 위해 프론트로 보내기 전 비밀번호 제거
 			member.remove("password");
@@ -64,7 +65,6 @@ public class AuthController {
 //			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
 			
 			List<Integer> storeList = LoginServ.getStoreListByUserSeq(userSeq);
-			System.out.println("storeseq : "+storeList.get(0));
 			result.put("selectedStoreSeq", storeList.get(0));
 			
 			

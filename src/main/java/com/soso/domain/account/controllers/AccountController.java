@@ -149,6 +149,16 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
+    
+ // 내가 등록한 거래처 목록 조회
+    @GetMapping("/my-partners")
+    public ResponseEntity<List<AccountSearchResponseDto>> myPartners(
+            @RequestParam Long storeSeq
+    ) {
+        List<AccountSearchResponseDto> list = accountService.myPartners(storeSeq);
+        return ResponseEntity.ok(list);
+    }
+     
     /**
      * 특정 거래처(파트너사) 상세 정보 조회 API
      */
@@ -161,5 +171,6 @@ public class AccountController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(result);
+
     }
 }
