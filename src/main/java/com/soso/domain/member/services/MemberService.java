@@ -99,22 +99,26 @@ public class MemberService {
             throw new RuntimeException("매장 정보 저장 실패");
         }
 
+        // MyBatis useGeneratedKeys를 통해 생성된 store_seq 확보
+        int generatedStoreSeq = signUpDto.getStoreSeq();
+        logger.info("확보된 store_seq: {}", generatedStoreSeq);
+
         // 6. [files] 이미지 처리 - 외관 사진
-        processImageUpload(exteriorImg, generatedUserSeq, "exterior_image");
+        processImageUpload(exteriorImg, generatedUserSeq, generatedStoreSeq, "exterior_image");
 
         // 7. [files] 이미지 처리 - 내부 사진
-        processImageUpload(interiorImg, generatedUserSeq, "interior_image");
+        processImageUpload(interiorImg, generatedUserSeq, generatedStoreSeq, "interior_image");
 
-        logger.info("회원가입 및 매장/파일 등록 완료: userSeq={}", generatedUserSeq);
+        logger.info("회원가입 및 매장/파일 등록 완료: userSeq={}, storeSeq={}", generatedUserSeq, generatedStoreSeq);
     }
 
     /**
      * 이미지 업로드 및 files 테이블 레코드 생성을 처리하는 공통 프라이빗 메서드
      */
-    private void processImageUpload(MultipartFile file, int userSeq, String typePrefix) throws Exception {
+    private void processImageUpload(MultipartFile file, int userSeq, int storeSeq, String typePrefix) throws Exception {
         if (file != null && !file.isEmpty()) {
-            // GCS 업로드 및 URL 반환
-            String gcsUrl = fileService.uploadToGcsAndGetUrl(file, userSeq, "STORE_IMAGE");
+            // GCS 업로드 및 URL 반환 (boardSeq 정보 포함)
+            String gcsUrl = fileService.uploadToGcsAndGetUrlWithBoardSeq(file, userSeq, "STORE_IMAGE", storeSeq);
 
             logger.info("파일 등록 완료: type={}, url={}", typePrefix, gcsUrl);
         }
