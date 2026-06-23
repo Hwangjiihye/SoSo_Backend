@@ -25,7 +25,7 @@
     </insert>
 
     <!-- 2. stores 테이블 인서트 (store_image 컬럼 및 파라미터 제거) -->
-    <insert id="insertStore" parameterType="com.soso.domain.member.dto.SignUpDto">
+    <insert id="insertStore" parameterType="com.soso.domain.member.dto.SignUpDto" useGeneratedKeys="true" keyProperty="storeSeq">
         INSERT INTO stores (
             user_seq,
             biz_number,
