@@ -117,4 +117,13 @@ public class OrderDAO {
 	    return mybatis.selectList("order.unpaidOrders", params);
 	}
 	
+	// RAG upsert용 발주 상세 조회
+	// 발주 등록 직후 orderSeq로 발주 기본정보 + 거래처명 + 품목 요약을 가져오기 위해 사용
+	// OrderService의 upsertOrderRag(orderSeq)에서 호출됨
+	public Map<String, Object> selectOrderRag(Long orderSeq) {
+
+	    // order.xml에 추가할 <select id="selectOrderRag"> SQL을 실행하는 코드
+	    // mapper namespace가 "order"라서 "order.selectOrderRag"로 작성
+	    return mybatis.selectOne("order.selectOrderRag", orderSeq);
+	}
 }

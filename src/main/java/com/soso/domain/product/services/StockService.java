@@ -94,6 +94,10 @@ public class StockService {
         history.setReason(incoming.getReason());
         history.setMemo(incoming.getMemo());
         stockDAO.insertHistory(history);
+        // 재고 이력 RAG upsert
+        upsertStockHistoryRag(history, updatedMaster, storeSeq);
+
+        // 현재 재고 RAG upsert
         upsertStockRag(updatedMaster, storeSeq);
     }
 
@@ -137,6 +141,8 @@ public class StockService {
             history.setExpirationDate(batch.getExpirationDate());
             history.setPrice(batch.getIncomingPrice());
             stockDAO.insertHistory(history);
+            // 재고 이력 RAG upsert
+            upsertStockHistoryRag(history, currentMaster, storeSeq);
         }
 
         // 5. 안전재고 미달 체크 (ALERT) 및 실시간 알림 발행
@@ -205,6 +211,8 @@ public class StockService {
         history.setReason(request.getReason());
         history.setMemo(request.getMemo());
         stockDAO.insertHistory(history);
+        // 재고 이력 RAG upsert
+        upsertStockHistoryRag(history, currentMaster, storeSeq);
 
         // 안전재고 미달 체크 및 실시간 알림 발행
         if (currentMaster != null && currentMaster.getCurrentStock() < currentMaster.getSafetyStock()) {
@@ -297,33 +305,200 @@ public class StockService {
         return stockDAO.selectgetcountExpiringSoon(storeSeq);
     }
     
-    // Rag upsert
+    // 재고 RAG upsert
     private void upsertStockRag(StockDTO stock, int storeSeq) {
-        if (stock == null) {
-            return;
+        try {
+            if (stock == null) {
+                System.out.println("재고 RAG upsert 생략: stock 정보 없음");
+                return;
+            }
+
+            String unit = stock.getUnit() == null || stock.getUnit().isBlank()
+                    ? "개"
+                    : stock.getUnit();
+
+            String displayUnit = "개";
+
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("stockSeq", stock.getStockSeq());
+            metadata.put("storeSeq", storeSeq);
+            metadata.put("stockName", stock.getStockName());
+            metadata.put("category", stock.getCategory());
+            metadata.put("unit", unit);
+            metadata.put("displayUnit", displayUnit);
+            metadata.put("currentStock", stock.getCurrentStock());
+            metadata.put("safetyStock", stock.getSafetyStock());
+            metadata.put("defaultExpiryDays", stock.getDefaultExpiryDays());
+
+            String text = String.format(
+                    "[재고 정보] 매장번호: %s, 재고번호: %s, 재고명: %s, 카테고리: %s, 현재 보유 재고: %s개, 안전재고 기준: %s개, 기본 유통기한: %s일.",
+                    storeSeq,
+                    stock.getStockSeq(),
+                    stock.getStockName(),
+                    stock.getCategory(),
+                    stock.getCurrentStock(),
+                    stock.getSafetyStock(),
+                    stock.getDefaultExpiryDays()
+            );
+
+            System.out.println("========== 재고 RAG 문서 확인 ==========");
+            System.out.println(text);
+            System.out.println("metadata = " + metadata);
+
+            ragClient.upsert(
+                    "stock",
+                    stock.getStockSeq(),
+                    text,
+                    metadata
+            );
+
+        } catch (Exception e) {
+            System.out.println("재고 RAG upsert 처리 중 오류: " + e.getMessage());
+        }
+    }
+    
+    // rag 단위 정리 메서드 
+    private String normalizeUnitForRag(String unit) {
+        if (unit == null || unit.isBlank()) {
+            return "개";
         }
 
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("stockSeq", stock.getStockSeq());
-        metadata.put("storeSeq", storeSeq);
-        metadata.put("stockName", stock.getStockName());
-        metadata.put("currentStock", stock.getCurrentStock());
-        metadata.put("safetyStock", stock.getSafetyStock());
+        String trimmed = unit.trim();
 
-        String text = String.format(
-                "재고 정보입니다. 매장번호는 %s, 재고번호는 %s, 재고명은 %s, 현재 재고는 %s개, 안전재고는 %s개입니다.",
-                storeSeq,
-                stock.getStockSeq(),
-                stock.getStockName(),
-                stock.getCurrentStock(),
-                stock.getSafetyStock()
-        );
+        // 1개, 1판, 1박스 같은 단위는 챗봇 문장에서는 개/판/박스로 표현
+        if (trimmed.startsWith("1") && trimmed.length() > 1) {
+            char secondChar = trimmed.charAt(1);
 
-        ragClient.upsert(
-                "stock",
-                stock.getStockSeq(),
-                text,
-                metadata
-        );
+            // 10kg, 100g 같은 단위는 자르면 안 되므로 두 번째 글자가 숫자면 그대로 사용
+            if (!Character.isDigit(secondChar)) {
+                return trimmed.substring(1);
+            }
+        }
+
+        return trimmed;
+    }
+    
+    
+    
+    // 재고 이력 RAG upsert
+    private void upsertStockHistoryRag(StockHistoryDTO history, StockDTO stock, int storeSeq) {
+        try {
+            if (history == null) {
+                System.out.println("재고 이력 RAG upsert 생략: history 정보 없음");
+                return;
+            }
+
+            if (history.getHistorySeq() == 0) {
+                System.out.println("재고 이력 RAG upsert 생략: historySeq 없음");
+                return;
+            }
+
+            String stockName = "정보 없음";
+            String category = "정보 없음";
+            String unit = "개";
+
+            if (stock != null) {
+                stockName = stock.getStockName() == null || stock.getStockName().isBlank()
+                        ? "정보 없음"
+                        : stock.getStockName();
+
+                category = stock.getCategory() == null || stock.getCategory().isBlank()
+                        ? "정보 없음"
+                        : stock.getCategory();
+
+                unit = stock.getUnit() == null || stock.getUnit().isBlank()
+                        ? "개"
+                        : stock.getUnit();
+            }
+
+            String displayUnit = "개";
+
+            String transactionTypeName = convertTransactionType(history.getTransactionType());
+
+            String reason = history.getReason() == null || history.getReason().isBlank()
+                    ? "없음"
+                    : history.getReason();
+
+            String memo = history.getMemo() == null || history.getMemo().isBlank()
+                    ? "없음"
+                    : history.getMemo();
+
+            String detailStockName = history.getDetailStockName() == null || history.getDetailStockName().isBlank()
+                    ? stockName
+                    : history.getDetailStockName();
+
+            Object priceObj = history.getPrice();
+            String price = priceObj == null ? "0" : String.valueOf(priceObj);
+
+            Object expirationDateObj = history.getExpirationDate();
+            String expirationDate = expirationDateObj == null ? "정보 없음" : String.valueOf(expirationDateObj);
+
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("historySeq", history.getHistorySeq());
+            metadata.put("stockSeq", history.getStockSeq());
+            metadata.put("storeSeq", storeSeq);
+            metadata.put("stockName", stockName);
+            metadata.put("category", category);
+            metadata.put("unit", unit);
+            metadata.put("displayUnit", displayUnit);
+            metadata.put("transactionType", history.getTransactionType());
+            metadata.put("transactionTypeName", transactionTypeName);
+            metadata.put("changeQuantity", history.getChangeQuantity());
+            metadata.put("currentTotalStock", history.getCurrentTotalStock());
+            metadata.put("detailStockName", detailStockName);
+            metadata.put("price", price);
+            metadata.put("expirationDate", expirationDate);
+            metadata.put("reason", reason);
+            metadata.put("memo", memo);
+
+            String text = String.format(
+                    "[재고 이력 정보] 이력번호: %s, 매장번호: %s, 재고번호: %s, 재고명: %s, 카테고리: %s, 처리유형: %s, 변경수량: %s개, 처리 후 총재고: %s개, 상세품목명: %s, 가격: %s원, 유통기한: %s, 사유: %s, 메모: %s.",
+                    history.getHistorySeq(),
+                    storeSeq,
+                    history.getStockSeq(),
+                    stockName,
+                    category,
+                    transactionTypeName,
+                    history.getChangeQuantity(),
+                    history.getCurrentTotalStock(),
+                    detailStockName,
+                    price,
+                    expirationDate,
+                    reason,
+                    memo
+            );
+
+            System.out.println("========== 재고 이력 RAG 문서 확인 ==========");
+            System.out.println(text);
+            System.out.println("metadata = " + metadata);
+
+            ragClient.upsert(
+                    "stock_history",
+                    history.getHistorySeq(),
+                    text,
+                    metadata
+            );
+
+        } catch (Exception e) {
+            System.out.println("재고 이력 RAG upsert 처리 중 오류: " + e.getMessage());
+        }
+    }
+    private String convertTransactionType(String transactionType) {
+        if (transactionType == null) {
+            return "정보 없음";
+        }
+
+        switch (transactionType) {
+            case "INCOMING":
+                return "입고";
+            case "OUTBOUND":
+                return "출고";
+            case "ADJUST":
+                return "재고 조정";
+            case "ALERT":
+                return "안전재고 알림";
+            default:
+                return transactionType;
+        }
     }
 }
