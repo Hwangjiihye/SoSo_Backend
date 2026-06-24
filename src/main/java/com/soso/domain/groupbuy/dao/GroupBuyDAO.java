@@ -50,6 +50,11 @@ public class GroupBuyDAO {
         return sqlSession.selectOne(NAMESPACE + "countMyParticipatedGroups", userSeq);
     }
 
+    // 내가 개설한 완료된 공동구매 개수 조회
+    public int countCompletedGroupBuys(int userSeq) {
+        return sqlSession.selectOne(NAMESPACE + "countCompletedGroupBuys", userSeq);
+    }
+
     // 단건 상세 조회 (참여 시 검증용)
     public GroupBuyDTO selectGroupBuyBySeq(int groupBuySeq) {
         return sqlSession.selectOne(NAMESPACE + "selectGroupBuyBySeq", groupBuySeq);
