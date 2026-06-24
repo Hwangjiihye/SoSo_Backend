@@ -280,7 +280,20 @@
             buyer_store.store_seq,
             1,
             CURDATE(),
-            CONCAT('발주 결제 - ', o.order_no),
+            CONCAT(
+			    '발주 결제 - ',
+			    IFNULL(
+			        (
+			            SELECT GROUP_CONCAT(
+			                CONCAT(oi.item_name, ' ', oi.quantity, '개')
+			                SEPARATOR ', '
+			            )
+			            FROM order_items oi
+			            WHERE oi.order_seq = o.order_seq
+			        ),
+			        o.order_no
+			    )
+			),
             o.total_amount,
             '포트원 카드 결제 자동 등록',
             'card',
