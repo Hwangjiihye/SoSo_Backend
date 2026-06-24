@@ -57,6 +57,11 @@ public class GroupBuyService {
         return groupBuyDAO.countMyParticipatedGroups(userSeq);
     }
 
+    // 내가 개설한 공동구매 개수 조회
+    public int getMyCreatedGroupsCount(int userSeq) {
+        return groupBuyDAO.countMyCreatedGroups(userSeq);
+    }
+
     // 내가 개설한 완료된 공동구매 개수 조회
     public int getCompletedGroupBuysCount(int userSeq) {
         return groupBuyDAO.countCompletedGroupBuys(userSeq);

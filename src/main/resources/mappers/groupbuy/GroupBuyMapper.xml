@@ -146,6 +146,13 @@
           AND g.user_seq != #{userSeq}
     </select>
 
+    <!-- 내가 개설한 공동구매 개수 조회 -->
+    <select id="countMyCreatedGroups" resultType="int">
+        SELECT COUNT(*)
+        FROM group_buys
+        WHERE user_seq = #{userSeq}
+    </select>
+
     <!-- 내가 개설한 공동구매 목록 조회 -->
     <select id="selectMyCreatedGroups" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
         SELECT 
