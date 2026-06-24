@@ -98,6 +98,7 @@
         FROM group_buys g
         JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
         WHERE p.user_seq = #{userSeq}
+          AND g.status != 'COMPLETED'
         ORDER BY p.created_at DESC
     </select>
 
