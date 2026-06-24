@@ -35,7 +35,7 @@ public class PartnerOrderController {
             @RequestParam Long sellerSeq,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status) {
-        
+
         List<PartnerOrderListDTO> list = partnerOrderService.getOrderList(sellerSeq, keyword, status);
         return ResponseEntity.ok(list);
     }
@@ -43,13 +43,14 @@ public class PartnerOrderController {
     /**
      * [API 2] 발주 상세 내역 조회
      * 요청 예: GET /api/partner/orders/5
+     * 
      * @param orderSeq 조회하고 싶은 발주서의 고유 번호 (URL 경로에서 가져옴)
      */
     @GetMapping("/{orderSeq}")
     public ResponseEntity<List<PartnerOrderDetailDTO>> getOrderDetail(@PathVariable Long orderSeq) {
         // 서비스에게 해당 발주서의 상세 내용을 가져오라고 시킵니다.
         List<PartnerOrderDetailDTO> details = partnerOrderService.getOrderDetail(orderSeq);
-        
+
         // 상세 리스트를 프론트엔드에게 돌려줍니다.
         return ResponseEntity.ok(details);
     }
