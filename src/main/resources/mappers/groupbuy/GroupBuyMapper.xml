@@ -144,6 +144,7 @@
         JOIN group_buys g ON p.group_buy_seq = g.group_buy_seq
         WHERE p.user_seq = #{userSeq}
           AND g.user_seq != #{userSeq}
+          AND g.status != 'COMPLETED'
     </select>
 
     <!-- 내가 개설한 공동구매 개수 조회 -->
@@ -151,6 +152,7 @@
         SELECT COUNT(*)
         FROM group_buys
         WHERE user_seq = #{userSeq}
+          AND status != 'COMPLETED'
     </select>
 
     <!-- 내가 개설한 공동구매 목록 조회 -->
