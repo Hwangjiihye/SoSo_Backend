@@ -67,6 +67,12 @@
         VALUES (#{storeSeq}, #{stockName}, #{category}, #{unit}, #{safetyStock}, #{defaultExpiryDays}, 0)
     </insert>
 
+    <select id="checkDuplicateStockName" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM stocks
+        WHERE store_seq = #{storeSeq} AND stock_name = #{stockName}
+    </select>
+
     <select id="selectStockBySeq" parameterType="map" resultType="com.soso.domain.product.dto.StockDTO">
         SELECT 
             stock_seq as stockSeq,
