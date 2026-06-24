@@ -68,12 +68,30 @@ public class GroupBuyController {
         return ResponseEntity.ok(list);
     }
 
+    // 내가 개설한 공동구매 목록 조회 API
+    @GetMapping("/created")
+    public ResponseEntity<List<GroupBuyDTO>> getMyCreatedGroups(
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        List<GroupBuyDTO> list = groupBuyService.getMyCreatedGroups(userSeq);
+        return ResponseEntity.ok(list);
+    }
+
     // 내가 참여한 공동구매 개수 조회 API
     @GetMapping("/participated/count")
     public ResponseEntity<Map<String, Integer>> getMyParticipatedGroupsCount(
             @RequestAttribute("userSeq") Integer userSeq) {
         
         int count = groupBuyService.getMyParticipatedGroupsCount(userSeq);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    // 내가 개설한 공동구매 개수 조회 API
+    @GetMapping("/created/count")
+    public ResponseEntity<Map<String, Integer>> getMyCreatedGroupsCount(
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        int count = groupBuyService.getMyCreatedGroupsCount(userSeq);
         return ResponseEntity.ok(Map.of("count", count));
     }
 

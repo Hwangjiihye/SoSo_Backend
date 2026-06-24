@@ -41,6 +41,12 @@ public class StockService {
     }
 
     public void createStock(int storeSeq,StockDTO stock) {
+        // 동일한 품목명(stock_name) 중복 검사 로직 추가
+        int count = stockDAO.checkDuplicateStockName(storeSeq, stock.getStockName());
+        if (count > 0) {
+            throw new IllegalArgumentException("이미 존재하는 품목명입니다.");
+        }
+
         stockDAO.insertStock(storeSeq,stock);
         
         StockDTO savedStock = stockDAO.selectStockBySeq(stock.getStockSeq(), storeSeq);

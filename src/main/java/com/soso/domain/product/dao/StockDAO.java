@@ -28,6 +28,13 @@ public class StockDAO {
         sqlSession.insert(NAMESPACE + "insertStock", stock);
     }
 
+    public int checkDuplicateStockName(int storeSeq, String stockName) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("storeSeq", storeSeq);
+        params.put("stockName", stockName);
+        return sqlSession.selectOne(NAMESPACE + "checkDuplicateStockName", params);
+    }
+
     public StockDTO selectStockBySeq(int stockSeq, int storeSeq) {
         Map<String, Object> params = new HashMap<>();
         params.put("stockSeq", stockSeq);
