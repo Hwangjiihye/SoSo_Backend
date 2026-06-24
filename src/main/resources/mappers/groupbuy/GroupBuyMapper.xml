@@ -202,19 +202,28 @@
     <select id="getGroupBuyListByUser" parameterType="map" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
         SELECT 
             gb.group_buy_seq AS groupBuySeq,
-            gb.item_seq AS itemSeq,
-            i.item_name AS itemName,
-            gb.target_quantity AS targetQuantity,
-            gb.current_quantity AS currentQuantity,
+            gb.user_seq AS userSeq,
+            gb.creator_type AS creatorType,
+            gb.partner_name AS partnerName,
+            gb.item_name AS itemName,
+            gb.category,
+            gb.group_name AS groupName,
+            gb.description,
+            gb.target_participants AS targetParticipants,
+            gb.current_participants AS currentParticipants,
+            gb.quantity,
+            gb.unit_price AS unitPrice,
+            gb.total_amount AS totalAmount,
             gb.end_date AS endDate,
+            gb.pickup_location AS pickupLocation,
+            gb.pickup_time AS pickupTime,
+            gb.notice,
             gb.status,
-            gb.created_at AS createdAt
+            gbp.created_at AS createdAt
         FROM group_buys gb
-        JOIN items i ON gb.item_seq = i.item_seq
         JOIN group_buy_participants gbp ON gb.group_buy_seq = gbp.group_buy_seq
-        JOIN stores s ON gbp.user_seq = s.user_seq
-        WHERE s.user_seq = #{userSeq}
-        ORDER BY gb.created_at DESC
+        WHERE gbp.user_seq = #{userSeq}
+        ORDER BY gbp.created_at DESC
     </select>
 
 

@@ -6,9 +6,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -87,4 +89,52 @@ public class ExpenseCategoryController {
 
 	    return ResponseEntity.ok(result);
 	}
+	
+	// 지출 내역 메모 수정
+			@PutMapping("/{storeSeq}/{expenseSeq}/memo")
+			public ResponseEntity<Map<String, Object>> updateExpenseMemo(
+			        @PathVariable Long storeSeq,
+			        @PathVariable Long expenseSeq,
+			        @RequestBody Map<String, String> body) {
+
+			    String memo = body.get("memo");
+
+			    int result = ExpenseServ.updateExpenseMemo(storeSeq, expenseSeq, memo);
+
+			    Map<String, Object> response = new HashMap<>();
+
+			    if (result == 0) {
+			        response.put("success", false);
+			        response.put("message", "수정할 지출 내역이 없습니다.");
+			        return ResponseEntity.badRequest().body(response);
+			    }
+
+			    response.put("success", true);
+			    response.put("message", "메모가 수정되었습니다.");
+
+			    return ResponseEntity.ok(response);
+			}
+			
+			
+			// 지출 내역 삭제
+			@DeleteMapping("/{storeSeq}/{expenseSeq}")
+			public ResponseEntity<Map<String, Object>> deleteExpense(
+			        @PathVariable Long storeSeq,
+			        @PathVariable Long expenseSeq) {
+
+			    int result = ExpenseServ.deleteExpense(storeSeq, expenseSeq);
+
+			    Map<String, Object> response = new HashMap<>();
+
+			    if (result == 0) {
+			        response.put("success", false);
+			        response.put("message", "삭제할 지출 내역이 없습니다.");
+			        return ResponseEntity.badRequest().body(response);
+			    }
+
+			    response.put("success", true);
+			    response.put("message", "지출 내역이 삭제되었습니다.");
+
+			    return ResponseEntity.ok(response);
+			}
 }

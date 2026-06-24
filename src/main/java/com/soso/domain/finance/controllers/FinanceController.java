@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +48,24 @@ public class FinanceController {
         
         List<Map<String, Object>> summary = financeService.getDailySummary(userSeq, storeSeq, yearMonth);
         return ResponseEntity.ok(summary);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> insertFinance(
+            HttpServletRequest request,
+            @RequestBody FinanceDTO dto) {
+        
+        Long userSeqLong = (Long) request.getAttribute("user_seq");
+        if (userSeqLong == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "로그인이 필요합니다."));
+        }
+        dto.setUserSeq(userSeqLong.intValue());
+        
+        int result = financeService.insertFinance(dto);
+        if (result > 0) {
+            return ResponseEntity.ok(Map.of("message", "영업 일지가 성공적으로 등록되었습니다."));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("error", "등록에 실패했습니다."));
+        }
     }
 }
