@@ -59,6 +59,15 @@ public class GroupBuyController {
         return ResponseEntity.ok(list);
     }
 
+    // 내가 참여한 공동구매 중 완료(COMPLETED)된 목록 조회 API
+    @GetMapping("/completed")
+    public ResponseEntity<List<GroupBuyDTO>> getMyCompletedGroups(
+            @RequestAttribute("userSeq") Integer userSeq) {
+        
+        List<GroupBuyDTO> list = groupBuyService.getMyCompletedGroups(userSeq);
+        return ResponseEntity.ok(list);
+    }
+
     // 내가 참여한 공동구매 개수 조회 API
     @GetMapping("/participated/count")
     public ResponseEntity<Map<String, Integer>> getMyParticipatedGroupsCount(
