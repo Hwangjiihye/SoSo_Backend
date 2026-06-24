@@ -208,27 +208,27 @@
         이 paymentSeq는 payment_order_map 저장할 때 사용한다.
     -->
     <insert id="insertPayment" parameterType="map" useGeneratedKeys="true" keyProperty="paymentSeq">
-        INSERT INTO payments (
-            store_seq,
-            partner_seq,
-            card_seq,
-            payment_id,
-            total_amount,
-            status,
-            paid_at,
-            created_at
-        )
-        VALUES (
-            #{storeSeq},
-            #{partnerSeq},
-            #{cardSeq},
-            #{paymentId},
-            #{totalAmount},
-            'PAID',
-            NOW(),
-            NOW()
-        )
-    </insert>
+	    INSERT INTO payments (
+	        store_seq,
+	        partner_seq,
+	        card_seq,
+	        payment_id,
+	        total_amount,
+	        status,
+	        paid_at,
+	        created_at
+	    )
+	    VALUES (
+	        #{storeSeq},
+	        #{partnerSeq},
+	        #{cardSeq},
+	        #{paymentId},
+	        #{totalAmount},
+	        'PAID',
+	        DATE_ADD(UTC_TIMESTAMP(), INTERVAL 9 HOUR),
+	        DATE_ADD(UTC_TIMESTAMP(), INTERVAL 9 HOUR)
+	    )
+	</insert>
 
 
     <!-- 결제한 발주들을 payment_order_map 테이블에 저장 -->

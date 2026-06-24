@@ -20,9 +20,18 @@
             o.zonecode AS zonecode,
             o.address1 AS address1,
             o.address2 AS address2,
-            o.order_memo AS orderMemo
+            o.order_memo AS orderMemo,
+            CONCAT(
+                MIN(oi.item_name),
+                CASE 
+                    WHEN COUNT(oi.order_item_seq) > 1 
+                    THEN CONCAT(' 외 ', COUNT(oi.order_item_seq) - 1, '건')
+                    ELSE ''
+                END
+            ) AS itemSummary
         FROM orders o
-        JOIN stores st ON o.buyer_seq = st.user_seq
+        JOIN stores st ON o.buyer_seq = st.store_seq
+        LEFT JOIN order_items oi ON o.order_seq = oi.order_seq
         WHERE o.seller_seq = #{sellerSeq}
         
         <!-- 상태 필터링 -->
@@ -38,6 +47,9 @@
             )
         </if>
         
+        GROUP BY 
+            o.order_seq, o.order_no, st.company_name, o.total_amount, o.status, o.created_at, 
+            o.zonecode, o.address1, o.address2, o.order_memo
         ORDER BY o.order_seq DESC
     </select>
 
