@@ -279,6 +279,23 @@ public class OrderService {
 	    System.out.println("전송 message = " + message);
 
 	    messagingTemplate.convertAndSend("/sub/order/" + buyerSeq, (Object) message);
+
+	    // 7. 알림 이벤트 발행
+	    try {
+	        Map<String, Object> orderInfo = dao.findOrderInfoBySeq(orderSeq);
+	        if (orderInfo != null && buyerSeq != null) {
+	            String orderNo = String.valueOf(orderInfo.get("orderNo"));
+	            eventPublisher.publishEvent(new com.soso.domain.notification.events.NotificationEvent(
+	                this,
+	                buyerSeq.intValue(),
+	                "ORDER_STATUS",
+	                "발주 상태 변경",
+	                String.format("발주번호 [%s]의 %s", orderNo, getStatusMessage(status))
+	            ));
+	        }
+	    } catch (Exception e) {
+	        System.err.println("[OrderService] 알림 이벤트 발행 실패: " + e.getMessage());
+	    }
 	}
 //	public void updateOrderStatus(Long orderSeq, String status) {
 //

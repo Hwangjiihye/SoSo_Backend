@@ -24,124 +24,121 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/order")
 public class OrderController {
-	
+
 	@Autowired
 	private OrderService OrderServ;
-	
+
 	// 사업자 재고 비교
 	@GetMapping("/check")
 	public ResponseEntity<List<OrderRecommendDTO>> recommendStock(
-	        @RequestParam("itemName") String itemName,
-	        @RequestParam("storeSeq") Long storeSeq) {
+			@RequestParam("itemName") String itemName,
+			@RequestParam("storeSeq") Long storeSeq) {
 
-	    List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, storeSeq);
+		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, storeSeq);
 
-	    System.out.println("storeSeq = " + storeSeq);
-	    System.out.println("itemName = " + itemName);
+		System.out.println("storeSeq = " + storeSeq);
+		System.out.println("itemName = " + itemName);
 
-	    return ResponseEntity.ok(recommendList);
+		return ResponseEntity.ok(recommendList);
 	}
-	
+
 	// 거래처 품목 목록
 	@GetMapping("/items")
-	public ResponseEntity <List<OrderItemDTO>> compareItem(OrderItemDTO dto) {
-		
+	public ResponseEntity<List<OrderItemDTO>> compareItem(OrderItemDTO dto) {
+
 		List<OrderItemDTO> list = OrderServ.compareItem(dto);
-		
+
 		return ResponseEntity.ok(list);
 	}
-	
+
 	// 사업자명과 주소
 	@GetMapping("/identity")
 	public ResponseEntity<Map<String, Object>> identityCheck(@RequestParam("storeSeq") Long storeSeq) {
 
-	    Map<String, Object> identity = OrderServ.identityCheck(storeSeq);
+		Map<String, Object> identity = OrderServ.identityCheck(storeSeq);
 
-	    return ResponseEntity.ok(identity);
+		return ResponseEntity.ok(identity);
 	}
-	
+
 	// 발주서 작성
 	@PostMapping("/form")
 	public ResponseEntity<Integer> orderForm(@RequestBody OrderDTO dto, HttpServletRequest request) {
 
-	    // buyerSeq는 프론트에서 보낸 현재 선택 매장의 storeSeq를 사용
-	    // 여기서 user_seq로 덮어쓰면 안 됨
-	    if (dto.getBuyerSeq() == null) {
-	        return ResponseEntity.badRequest().body(0);
-	    }
+		// buyerSeq는 프론트에서 보낸 현재 선택 매장의 storeSeq를 사용
+		// 여기서 user_seq로 덮어쓰면 안 됨
+		if (dto.getBuyerSeq() == null) {
+			return ResponseEntity.badRequest().body(0);
+		}
 
-	    if (dto.getSellerSeq() == null) {
-	        return ResponseEntity.badRequest().body(0);
-	    }
+		if (dto.getSellerSeq() == null) {
+			return ResponseEntity.badRequest().body(0);
+		}
 
-	    int result = OrderServ.orderForm(dto);
+		int result = OrderServ.orderForm(dto);
 
-	    return ResponseEntity.ok(result);
+		return ResponseEntity.ok(result);
 	}
-	
+
 	// 발주 신청시 공급업체 목록 조회
 	@GetMapping("/suppliers")
 	public ResponseEntity<List<OrderItemDTO>> suppliers() {
-	    List<OrderItemDTO> list = OrderServ.suppliers();
-	    return ResponseEntity.ok(list);
+		List<OrderItemDTO> list = OrderServ.suppliers();
+		return ResponseEntity.ok(list);
 	}
-	
-	
+
 	// 발주서 목록으로 출력 + 검색 및 필터링 기능
 	@GetMapping("/list")
 	public ResponseEntity<List<OrderListDTO>> orderList(
-	        @RequestParam("storeSeq") Long storeSeq,
-	        @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-	        @RequestParam(value = "keyword", required = false) String keyword,
-	        @RequestParam(value = "status", required = false) String status,
-	        @RequestParam(value = "startDate", required = false) String startDate,
-	        @RequestParam(value = "endDate", required = false) String endDate
-	) {
-	    List<OrderListDTO> orderList = OrderServ.orderList(
-	            storeSeq,
-	            offset,
-	            keyword,
-	            status,
-	            startDate,
-	            endDate
-	    );
+			@RequestParam("storeSeq") Long storeSeq,
+			@RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
+			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "startDate", required = false) String startDate,
+			@RequestParam(value = "endDate", required = false) String endDate) {
+		List<OrderListDTO> orderList = OrderServ.orderList(
+				storeSeq,
+				offset,
+				keyword,
+				status,
+				startDate,
+				endDate);
 
-	    return ResponseEntity.ok(orderList);
+		return ResponseEntity.ok(orderList);
 	}
-	
+
 	// 발주서 상세 내역 조회
 	@GetMapping("/list/{orderSeq}")
 	public ResponseEntity<Map<String, Object>> getOrderDetail(@PathVariable Long orderSeq) {
 		Map<String, Object> detail = OrderServ.getOrderDetail(orderSeq);
 		return ResponseEntity.ok(detail);
 	}
-	
+
 	// 웹소켓 사용자 확인
 	@GetMapping("/me")
 	public ResponseEntity<Long> webSocketMe(HttpServletRequest request) {
-		
+
 		Long webSocketMe = (Long) request.getAttribute("user_seq");
-		
+
 		return ResponseEntity.ok(webSocketMe);
 	}
-	
+
 	// 웹소켓 테스트 API
 	// 거래처가 상태 변경 버튼을 누른 것처럼 테스트하는 API
 	// 예: POST /order/test/status/1?status=ACCEPTED
 	@PostMapping("/test/status/{orderSeq}")
 	public ResponseEntity<String> testUpdateOrderStatus(@PathVariable Long orderSeq, @RequestParam String status) {
-	    OrderServ.updateOrderStatus(orderSeq, status);
+		OrderServ.updateOrderStatus(orderSeq, status);
 
-	    return ResponseEntity.ok("발주 상태 변경 및 웹소켓 알림 전송 완료");
+		return ResponseEntity.ok("발주 상태 변경 및 웹소켓 알림 전송 완료");
 	}
-	
+
 	@GetMapping("/unpaid")
 	public ResponseEntity<List<Map<String, Object>>> unpaidOrders(
-	        @RequestParam Long storeSeq,
-	        @RequestParam Long partnerSeq) {
+			@RequestParam Long storeSeq,
+			@RequestParam Long partnerSeq) {
 
-	    List<Map<String, Object>> result = OrderServ.unpaidOrders(storeSeq, partnerSeq);
-	    return ResponseEntity.ok(result);
+		List<Map<String, Object>> result = OrderServ.unpaidOrders(storeSeq, partnerSeq);
+		return ResponseEntity.ok(result);
 	}
 
 }
