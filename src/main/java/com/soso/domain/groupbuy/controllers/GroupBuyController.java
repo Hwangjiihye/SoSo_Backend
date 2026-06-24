@@ -121,6 +121,9 @@ public class GroupBuyController {
             HttpServletRequest request,
             @RequestParam(required = false) Integer storeSeq) {
         Long userSeqLong = (Long) request.getAttribute("user_seq");
+        if (userSeqLong == null) {
+            return ResponseEntity.status(401).build();
+        }
         int userSeq = userSeqLong.intValue();
         
         List<GroupBuyDTO> list = groupBuyService.getGroupBuyListByUser(userSeq, storeSeq);

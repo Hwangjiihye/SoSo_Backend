@@ -32,4 +32,8 @@ public class FinanceDAO {
         params.put("yearMonth", yearMonth);
         return sql.selectList("FinanceMapper.getDailySummary", params);
     }
+
+    public int insertFinance(FinanceDTO dto) {
+        return sql.insert("FinanceMapper.insertFinance", dto);
+    }
 }
