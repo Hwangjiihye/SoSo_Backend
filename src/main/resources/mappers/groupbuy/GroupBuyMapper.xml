@@ -98,6 +98,38 @@
         FROM group_buys g
         JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
         WHERE p.user_seq = #{userSeq}
+          AND g.status != 'COMPLETED'
+        ORDER BY p.created_at DESC
+    </select>
+
+    <!-- 내가 참여한 공동구매 중 완료(COMPLETED)된 목록 조회 -->
+    <select id="selectMyCompletedGroups" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
+        SELECT 
+            g.group_buy_seq AS groupBuySeq,
+            g.user_seq AS userSeq,
+            g.creator_type AS creatorType,
+            g.partner_name AS partnerName,
+            g.item_name AS itemName,
+            g.category,
+            g.group_name AS groupName,
+            g.description,
+            g.target_participants AS targetParticipants,
+            g.current_participants AS currentParticipants,
+            g.quantity,
+            g.unit_price AS unitPrice,
+            g.total_amount AS totalAmount,
+            g.end_date AS endDate,
+            g.pickup_location AS pickupLocation,
+            g.pickup_time AS pickupTime,
+            g.notice,
+            g.status,
+            g.created_at AS createdAt,
+            p.payment_status AS paymentStatus,
+            p.delivery_status AS deliveryStatus
+        FROM group_buys g
+        JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
+        WHERE p.user_seq = #{userSeq}
+          AND g.status = 'COMPLETED'
         ORDER BY p.created_at DESC
     </select>
 
@@ -106,6 +138,15 @@
         SELECT COUNT(*) 
         FROM group_buy_participants 
         WHERE user_seq = #{userSeq}
+    </select>
+
+    <!-- 내가 참여한 공동구매 중 COMPLETED 상태인 개수 조회 -->
+    <select id="countCompletedGroupBuys" resultType="int">
+        SELECT COUNT(*)
+        FROM group_buys g
+        JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
+        WHERE p.user_seq = #{userSeq} 
+          AND g.status = 'COMPLETED'
     </select>
 
     <!-- 공구 단건 상세 조회 -->
@@ -193,19 +234,28 @@
     <select id="getGroupBuyListByUser" parameterType="map" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
         SELECT 
             gb.group_buy_seq AS groupBuySeq,
-            gb.item_seq AS itemSeq,
-            i.item_name AS itemName,
-            gb.target_quantity AS targetQuantity,
-            gb.current_quantity AS currentQuantity,
+            gb.user_seq AS userSeq,
+            gb.creator_type AS creatorType,
+            gb.partner_name AS partnerName,
+            gb.item_name AS itemName,
+            gb.category,
+            gb.group_name AS groupName,
+            gb.description,
+            gb.target_participants AS targetParticipants,
+            gb.current_participants AS currentParticipants,
+            gb.quantity,
+            gb.unit_price AS unitPrice,
+            gb.total_amount AS totalAmount,
             gb.end_date AS endDate,
+            gb.pickup_location AS pickupLocation,
+            gb.pickup_time AS pickupTime,
+            gb.notice,
             gb.status,
-            gb.created_at AS createdAt
+            gbp.created_at AS createdAt
         FROM group_buys gb
-        JOIN items i ON gb.item_seq = i.item_seq
         JOIN group_buy_participants gbp ON gb.group_buy_seq = gbp.group_buy_seq
-        JOIN stores s ON gbp.user_seq = s.user_seq
-        WHERE s.user_seq = #{userSeq}
-        ORDER BY gb.created_at DESC
+        WHERE gbp.user_seq = #{userSeq}
+        ORDER BY gbp.created_at DESC
     </select>
 
 

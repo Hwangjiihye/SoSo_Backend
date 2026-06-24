@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.soso.domain.order.dao.PartnerOrderDAO;
+import com.soso.domain.order.dao.OrderDAO;
 import com.soso.domain.order.dto.PartnerOrderDetailDTO;
 import com.soso.domain.order.dto.PartnerOrderListDTO;
+import com.soso.domain.notification.events.NotificationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * [거래처 전용 발주 관리 서비스]
@@ -20,6 +23,12 @@ public class PartnerOrderService {
 
     @Autowired
     private PartnerOrderDAO partnerOrderDAO; // DAO 심부름꾼 주입
+
+    @Autowired
+    private OrderDAO orderDAO;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate; // 웹소켓 알림을 보내는 도구
@@ -57,6 +66,23 @@ public class PartnerOrderService {
 
         // 4. 사업자가 구독 중인 주소(/sub/order/사업자번호)로 전송
         messagingTemplate.convertAndSend("/sub/order/" + buyerSeq, (Object) message);
+
+        // 5. 알림 이벤트 발행
+        try {
+            Map<String, Object> orderInfo = orderDAO.findOrderInfoBySeq(orderSeq);
+            if (orderInfo != null && buyerSeq != null) {
+                String orderNo = String.valueOf(orderInfo.get("orderNo"));
+                eventPublisher.publishEvent(new NotificationEvent(
+                    this,
+                    buyerSeq.intValue(),
+                    "ORDER_STATUS",
+                    "발주 상태 변경",
+                    String.format("발주번호 [%s]의 %s", orderNo, getStatusMessage(status))
+                ));
+            }
+        } catch (Exception e) {
+            System.err.println("[PartnerOrderService] 알림 이벤트 발행 실패: " + e.getMessage());
+        }
     }
 
     // 상태값에 따른 한글 메시지 변환
