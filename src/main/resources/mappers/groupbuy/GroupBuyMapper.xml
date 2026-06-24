@@ -140,8 +140,10 @@
     <!-- 내가 참여한 공동구매 개수 조회 -->
     <select id="countMyParticipatedGroups" resultType="int">
         SELECT COUNT(*) 
-        FROM group_buy_participants 
-        WHERE user_seq = #{userSeq}
+        FROM group_buy_participants p
+        JOIN group_buys g ON p.group_buy_seq = g.group_buy_seq
+        WHERE p.user_seq = #{userSeq}
+          AND g.user_seq != #{userSeq}
     </select>
 
     <!-- 내가 개설한 공동구매 목록 조회 -->
