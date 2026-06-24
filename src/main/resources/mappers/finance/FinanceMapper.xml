@@ -37,5 +37,13 @@
         GROUP BY target_date
         ORDER BY target_date ASC
     </select>
+    
+    <insert id="insertFinance" parameterType="com.soso.domain.finance.dto.FinanceDTO">
+        INSERT INTO finances (
+            user_seq, type, amount, category, description, target_date, created_at
+        ) VALUES (
+            #{userSeq}, #{type}, #{amount}, #{category}, #{description}, #{targetDate}, CURRENT_TIMESTAMP
+        )
+    </insert>
 
 </mapper>

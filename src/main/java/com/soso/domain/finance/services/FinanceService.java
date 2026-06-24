@@ -21,4 +21,8 @@ public class FinanceService {
     public List<Map<String, Object>> getDailySummary(int userSeq, Integer storeSeq, String yearMonth) {
         return financeDAO.getDailySummary(userSeq, storeSeq, yearMonth);
     }
+
+    public int insertFinance(FinanceDTO dto) {
+        return financeDAO.insertFinance(dto);
+    }
 }
