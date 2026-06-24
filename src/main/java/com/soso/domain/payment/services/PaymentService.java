@@ -396,17 +396,25 @@ public class PaymentService {
 	) {
 	    try {
 	        // 결제한 발주 목록을 챗봇이 읽기 좋은 문장으로 만든다.
-	        StringBuilder orderSummary = new StringBuilder();
+	    	// 발주코드보다 실제 결제한 품목명이 나오도록 itemSummary를 사용한다.
+	    	StringBuilder orderSummary = new StringBuilder();
 
-	        for (Map<String, Object> order : orders) {
-	            orderSummary.append("발주번호: ")
-	                    .append(order.get("orderSeq"))
-	                    .append(", 발주코드: ")
-	                    .append(order.get("orderNo"))
-	                    .append(", 결제금액: ")
-	                    .append(order.get("totalAmount"))
-	                    .append("원. ");
-	        }
+	    	for (Map<String, Object> order : orders) {
+	    	    Object itemSummaryObj = order.get("itemSummary");
+
+	    	    String itemSummary = "품목 정보 없음";
+	    	    if (itemSummaryObj != null) {
+	    	        itemSummary = String.valueOf(itemSummaryObj);
+	    	    }
+
+	    	    orderSummary.append("발주번호: ")
+	    	            .append(order.get("orderSeq"))
+	    	            .append(", 결제 품목: ")
+	    	            .append(itemSummary)
+	    	            .append(", 결제금액: ")
+	    	            .append(order.get("totalAmount"))
+	    	            .append("원. ");
+	    	}
 
 	        // 첫 번째 발주 기준으로 결제한 매장명과 받은 거래처명을 가져온다.
 	        // 같은 결제 건은 같은 storeSeq, partnerSeq 기준이라 첫 번째 값만 써도 된다.
@@ -439,12 +447,13 @@ public class PaymentService {
 	        metadata.put("cardName", card.getCardName());
 	        metadata.put("cardNumberMasked", card.getCardNumberMasked());
 	        metadata.put("totalAmount", totalAmount);
-	        metadata.put("status", "PAID");
+	        metadata.put("status", "결제완료");
 	        metadata.put("orderSeqList", dto.getOrderSeqList().toString());
+	        metadata.put("orderSummary", orderSummary.toString());
 
 	        // 챗봇이 검색해서 읽을 실제 결제 문장
 	        String text = String.format(
-	                "[카드 결제 상세 정보] 결제번호: %s, 포트원 결제ID: %s, 결제상태: PAID, 결제한 매장번호: %s, 결제한 매장명: %s, 받은 거래처번호: %s, 받은 거래처명: %s, 결제 카드번호: %s, 카드사: %s, 카드명: %s, 마스킹 카드번호: %s, 총 결제금액: %s원, 결제한 발주 목록: %s",
+	                "[카드 결제 상세 정보] 결제번호: %s, 포트원 결제ID: %s, 결제상태: 결제완료, 결제한 매장번호: %s, 결제한 매장명: %s, 받은 거래처번호: %s, 받은 거래처명: %s, 결제 카드번호: %s, 카드사: %s, 카드명: %s, 마스킹 카드번호: %s, 총 결제금액: %s원, 결제한 발주 목록: %s",
 	                paymentSeq,
 	                paymentId,
 	                dto.getStoreSeq(),
