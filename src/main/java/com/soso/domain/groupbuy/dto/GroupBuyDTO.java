@@ -26,6 +26,11 @@ public class GroupBuyDTO {
     private String groupName;
     private String description;
 
+    // 참여자 전용 필드 및 권한 필드
+    private String paymentStatus;
+    private String deliveryStatus;
+    private boolean isOwner;
+
     public GroupBuyDTO() {}
 
     public Integer getGroupBuySeq() { return groupBuySeq; }
@@ -85,6 +90,12 @@ public class GroupBuyDTO {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
+    public String getDeliveryStatus() { return deliveryStatus; }
+    public void setDeliveryStatus(String deliveryStatus) { this.deliveryStatus = deliveryStatus; }
 
+    public boolean isOwner() { return isOwner; }
+    public void setOwner(boolean owner) { isOwner = owner; }
 }

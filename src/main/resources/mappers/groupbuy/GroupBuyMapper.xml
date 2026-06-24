@@ -94,11 +94,13 @@
             g.status,
             g.created_at AS createdAt,
             p.payment_status AS paymentStatus,
-            p.delivery_status AS deliveryStatus
+            p.delivery_status AS deliveryStatus,
+            CASE WHEN g.user_seq = #{userSeq} THEN 1 ELSE 0 END AS isOwner
         FROM group_buys g
         JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
         WHERE p.user_seq = #{userSeq}
           AND g.status != 'COMPLETED'
+          AND g.user_seq != #{userSeq}
         ORDER BY p.created_at DESC
     </select>
 
@@ -125,11 +127,13 @@
             g.status,
             g.created_at AS createdAt,
             p.payment_status AS paymentStatus,
-            p.delivery_status AS deliveryStatus
+            p.delivery_status AS deliveryStatus,
+            CASE WHEN g.user_seq = #{userSeq} THEN 1 ELSE 0 END AS isOwner
         FROM group_buys g
         JOIN group_buy_participants p ON g.group_buy_seq = p.group_buy_seq
         WHERE p.user_seq = #{userSeq}
           AND g.status = 'COMPLETED'
+          AND g.user_seq != #{userSeq}
         ORDER BY p.created_at DESC
     </select>
 
@@ -138,6 +142,33 @@
         SELECT COUNT(*) 
         FROM group_buy_participants 
         WHERE user_seq = #{userSeq}
+    </select>
+
+    <!-- 내가 개설한 공동구매 목록 조회 -->
+    <select id="selectMyCreatedGroups" resultType="com.soso.domain.groupbuy.dto.GroupBuyDTO">
+        SELECT 
+            group_buy_seq AS groupBuySeq,
+            user_seq AS userSeq,
+            creator_type AS creatorType,
+            partner_name AS partnerName,
+            item_name AS itemName,
+            category,
+            group_name AS groupName,
+            description,
+            target_participants AS targetParticipants,
+            current_participants AS currentParticipants,
+            quantity,
+            unit_price AS unitPrice,
+            total_amount AS totalAmount,
+            end_date AS endDate,
+            pickup_location AS pickupLocation,
+            pickup_time AS pickupTime,
+            notice,
+            status,
+            created_at AS createdAt
+        FROM group_buys
+        WHERE user_seq = #{userSeq}
+        ORDER BY created_at DESC
     </select>
 
     <!-- 내가 참여한 공동구매 중 COMPLETED 상태인 개수 조회 -->
