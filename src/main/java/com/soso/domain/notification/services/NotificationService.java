@@ -45,7 +45,6 @@ public class NotificationService {
         try {
             notificationDAO.createTableIfNotExists();
         } catch (Exception e) {
-            System.err.println("[NotificationService] 테이블 초기화 실패: " + e.getMessage());
         }
     }
 
@@ -69,7 +68,6 @@ public class NotificationService {
         
         // 수신 비동의(N) 상태라면 알림 저장 및 실시간 전송 건너뜀 (Skip)
         if ("N".equals(isEnabled)) {
-            System.out.println("[NotificationService] 알림 발송 생략 (수신 비동의): " + event.getTitle());
             return;
         }
 

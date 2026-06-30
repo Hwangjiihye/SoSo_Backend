@@ -81,7 +81,6 @@ public class PartnerOrderService {
                 ));
             }
         } catch (Exception e) {
-            System.err.println("[PartnerOrderService] 알림 이벤트 발행 실패: " + e.getMessage());
         }
     }
 

@@ -55,10 +55,6 @@ public class FindService {
 	// 사용자가 인증번호를 입력했을 때 확인하는 메서드
 	public String checkCode(FindDTO dto) {
 		
-		System.out.println("인증 확인 요청 이메일 : " + dto.getEmail());
-		System.out.println("사용자가 입력한 인증번호 : " + dto.getCode());
-		System.out.println("서버에 저장된 인증번호 : " + codeStorage.get(dto.getEmail()));
-		System.out.println("전체 저장소 : " + codeStorage);
 		
 		String savedCode = codeStorage.get(dto.getEmail());
 		
@@ -121,10 +117,6 @@ public class FindService {
 	// 비밀번호 찾기 - 인증번호 확인만 하는 메서드
 	public boolean checkCodeForPassword(FindDTO dto) {
 		
-		System.out.println("비번찾기 인증 요청 이메일 : " + dto.getEmail());
-		System.out.println("사용자가 입력한 인증번호 : " + dto.getCode());
-		System.out.println("서버에 저장된 인증번호 : " + codeStorage.get(dto.getEmail()));
-		System.out.println("전체 저장소 : " + codeStorage);
 		
 		String savedCode = codeStorage.get(dto.getEmail());
 		

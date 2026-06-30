@@ -36,8 +36,6 @@ public class OrderController {
 
 		List<OrderRecommendDTO> recommendList = OrderServ.recommendStock(itemName, storeSeq);
 
-		System.out.println("storeSeq = " + storeSeq);
-		System.out.println("itemName = " + itemName);
 
 		return ResponseEntity.ok(recommendList);
 	}

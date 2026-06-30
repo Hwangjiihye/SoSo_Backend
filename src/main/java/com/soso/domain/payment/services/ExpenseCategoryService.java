@@ -32,7 +32,6 @@ public class ExpenseCategoryService {
     if (result > 0) {
 
         // 3. useGeneratedKeys로 들어온 expenseSeq 확인
-        System.out.println("지출 등록 성공 expenseSeq = " + dto.getExpenseSeq());
 
         // 4. Qdrant에 지출 문서 저장 또는 갱신
         upsertExpenseRag(dto);

@@ -31,11 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 	                    Map.class
 	            );
 
-	            System.out.println("RAG upsert 성공: " + type + ":" + refId);
 
 	        } catch (Exception e) {
-	            System.out.println("RAG upsert 실패: " + type + ":" + refId);
-	            System.out.println(e.getMessage());
 
 	            // 중요:
 	            // RAG 실패해도 DB 등록/수정은 실패시키면 안 되니까 throw 안 함

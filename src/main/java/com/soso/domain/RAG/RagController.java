@@ -27,9 +27,6 @@ public class RagController {
             @RequestParam int userSeq,
             @RequestParam String userType) {
         
-        System.out.println("========== [React -> Spring] 요청 들어옴 ==========");
-        System.out.println("유저 질문: " + message);
-        System.out.println("매장 번호: " + storeSeq);
 
         // 1. 파이썬 AI 서버 주소 설정
 //        String pythonUrl = ragApiUrl + "/ai/query";
@@ -45,7 +42,6 @@ public class RagController {
 
         try {
             // 3. 파이썬 AI 서버로 "질문이랑 매장번호 들고 결과 받아와!" 하고 슥 던지기
-            System.out.println(">>>> 파이썬 AI 서버로 요청 전달 중...");
             Map<String, Object> response = restTemplate.postForObject(pythonUrl, requestBody, Map.class);
             
             // 4. 파이썬이 돌려준 결과를 React(화면)에 그대로 리턴

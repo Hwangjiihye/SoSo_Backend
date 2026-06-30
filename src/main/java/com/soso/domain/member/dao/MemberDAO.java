@@ -90,7 +90,6 @@ public class MemberDAO {
      */
     public int updatePassword(Long userSeq, String encodedPassword) {
         java.util.Map<String, Object> params = new java.util.HashMap<>();
-        System.out.println(encodedPassword);
         params.put("userSeq", userSeq);
         params.put("encodedPassword", encodedPassword);
         return mybatis.update(NAMESPACE + ".updatePassword", params);
