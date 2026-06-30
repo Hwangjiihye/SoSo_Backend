@@ -92,7 +92,6 @@ public class OrderService {
 		     upsertOrderRag(orderSeq);
 		 } catch (Exception e) {
 		     // RAG upsert가 실패해도 발주 등록 자체는 실패하면 안 되기 때문에 try-catch로 감쌈
-		     System.err.println("[OrderService] 발주 RAG upsert 실패: orderSeq=" + orderSeq);
 		     e.printStackTrace();
 		 }
 
@@ -126,7 +125,6 @@ public class OrderService {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("[OrderService] 파트너 알림 발송 중 오류: " + e.getMessage());
 		}
 
 	    return result;
@@ -144,7 +142,6 @@ public class OrderService {
 
 	    // 2. 조회 결과가 없으면 RAG 저장하지 않고 종료
 	    if (order == null) {
-	        System.out.println("[OrderService] 발주 RAG upsert 스킵: 조회 결과 없음 orderSeq=" + orderSeq);
 	        return;
 	    }
 
@@ -182,8 +179,6 @@ public class OrderService {
 	    metadata.put("totalAmount", order.get("totalAmount"));
 	    metadata.put("orderDate", order.get("orderDate"));
 	    
-	    System.out.println("[OrderService] RAG order text = " + text);
-	    System.out.println("[OrderService] RAG order metadata = " + metadata);
 
 	    // 5. FastAPI /rag/upsert 호출
 	    // docType = order
@@ -198,7 +193,6 @@ public class OrderService {
 	    );
 
 	    // 6. 콘솔 확인용 로그
-	    System.out.println("[OrderService] RAG upsert 성공: order:" + orderSeq);
 	}
 	
 
@@ -239,8 +233,6 @@ public class OrderService {
 	// 발주 상태가 바뀌면 RAG 문서도 다시 upsert해서 챗봇이 최신 상태로 답하게 함
 	public void updateOrderStatus(Long orderSeq, String status) {
 		
-		System.out.println("[OrderService] updateOrderStatus 진입");
-		System.out.println("[OrderService] 상태 변경 요청 orderSeq=" + orderSeq + ", status=" + status);
 
 	    // 1. orders 테이블의 발주 상태 변경
 	    // 예: REQUESTED → ACCEPTED → PREPARING → SHIPPING → DELIVERED
@@ -248,7 +240,6 @@ public class OrderService {
 
 	    // 2. 상태 변경된 발주가 없으면 더 이상 진행하지 않음
 	    if (updated <= 0) {
-	        System.out.println("[OrderService] 발주 상태 변경 실패 또는 대상 없음: orderSeq=" + orderSeq);
 	        return;
 	    }
 
@@ -258,10 +249,8 @@ public class OrderService {
 	    // 상태 변경 후 DB에서 다시 조회해서 같은 order 문서를 덮어쓰기 함.
 	    try {
 	        upsertOrderRag(orderSeq);
-	        System.out.println("[OrderService] 발주 상태 변경 후 RAG upsert 성공: order:" + orderSeq);
 	    } catch (Exception e) {
 	        // RAG upsert가 실패해도 상태 변경과 웹소켓 알림은 계속 진행해야 함
-	        System.err.println("[OrderService] 발주 상태 변경 후 RAG upsert 실패: orderSeq=" + orderSeq);
 	        e.printStackTrace();
 	    }
 
@@ -275,8 +264,6 @@ public class OrderService {
 	    message.put("message", getStatusMessage(status));
 
 	    // 6. 사업자 화면이 구독 중인 주소로 웹소켓 전송
-	    System.out.println("웹소켓 전송 주소 = /sub/order/" + buyerSeq);
-	    System.out.println("전송 message = " + message);
 
 	    messagingTemplate.convertAndSend("/sub/order/" + buyerSeq, (Object) message);
 
@@ -294,7 +281,6 @@ public class OrderService {
 	            ));
 	        }
 	    } catch (Exception e) {
-	        System.err.println("[OrderService] 알림 이벤트 발행 실패: " + e.getMessage());
 	    }
 	}
 //	public void updateOrderStatus(Long orderSeq, String status) {
@@ -312,8 +298,6 @@ public class OrderService {
 //	    message.put("message", getStatusMessage(status));
 //
 //	    // 4. 사업자 화면이 구독 중인 주소로 전송
-//	    System.out.println("웹소켓 전송 주소 = /sub/order/" + buyerSeq);
-//	    System.out.println("전송 message = " + message);
 //	    
 //	    messagingTemplate.convertAndSend("/sub/order/" + buyerSeq, (Object) message);
 //	}

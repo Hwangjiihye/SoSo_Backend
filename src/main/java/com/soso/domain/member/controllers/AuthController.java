@@ -29,14 +29,12 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> toLogin(@RequestBody LoginDTO dto) {
 		
-		System.out.println("로그인 아이디 : " + dto.getUser_seq() + "로그인 비밀번호 : " + dto.getPw());
 		
 		// 로그인 시도
 	    // 아이디, 비밀번호가 맞으면 회원 정보(Map)를 반환
 	    // 틀리면 null 반환
 	    Map<String, Object> member = LoginServ.toLogin(dto);
 	    
-	    System.out.println("조회 결과 : " + member);
 		
 		if(member != null) { 
 			// [추가] 탈퇴 회원 응답 처리 (isWithDraw 상태면 바로 반환)

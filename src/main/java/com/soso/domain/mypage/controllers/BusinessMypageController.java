@@ -64,7 +64,6 @@ public class BusinessMypageController {
         Map<String, String> response = new HashMap<>();
         try {
             updateDto.setUserSeq(userSeq);
-            System.out.println("컨트롤러 DTO : " + updateDto.getNickname() + " : " + updateDto.getEmail() + " : " + updateDto.getAddress1());
             String result = businessMypageService.updateBusinessProfile(updateDto);
 
             if ("duplNickname".equals(result)) {
