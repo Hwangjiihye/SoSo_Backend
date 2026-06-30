@@ -88,10 +88,11 @@ public class AuthController {
 			result.put("user_type", member.get("user_type")); // 회원 유형
 			result.put("user_nickname", member.get("nickname"));
 			result.put("company_name", member.get("company_name"));
-//			result.put("member", member); // 회원 및 매장 전체 정보 (password 제외됨)
 			
 			List<Integer> storeList = LoginServ.getStoreListByUserSeq(userSeq);
-			result.put("selectedStoreSeq", storeList.get(0));
+			if (storeList != null && !storeList.isEmpty()) {
+				result.put("selectedStoreSeq", storeList.get(0));
+			}
 			
 			
 			return ResponseEntity.ok(result);
