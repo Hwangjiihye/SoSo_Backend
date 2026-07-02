@@ -15,7 +15,10 @@ public class JWTUtil {
     
     @Value("${jwt.expiration}") 
     private Long expiration;
-    
+
+    @Value("${jwt.refresh-expiration}")
+    private Long refreshExpiration;
+
     private Algorithm alg;
     private JWTVerifier jwt;
     
@@ -35,6 +38,18 @@ public class JWTUtil {
                 .withClaim("user_type", user_type)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
+                .sign(alg);
+    }
+    
+    /**
+     * ⭕ Refresh Token 생성 로직
+     */
+    public String createRefreshToken(Long user_seq, String user_type) {
+        return JWT.create()
+                .withClaim("user_seq", user_seq) 
+                .withClaim("user_type", user_type)
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + refreshExpiration))
                 .sign(alg);
     }
     
