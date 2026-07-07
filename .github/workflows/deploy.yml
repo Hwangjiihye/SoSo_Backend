@@ -1,86 +1,47 @@
-name: Java CI/CD with Maven
+name: Backend Deploy
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    - name: Create Secret properties
-      run: |
-          mkdir -p src/main/resources/secure
-          
-          cat << 'EOF' > src/main/resources/application-secret.properties
-          ${{ secrets.APPLICATION_SECRET }}
-          EOF
-          
-          cat << 'EOF' > src/main/resources/secure/gcs_key.json
-          ${{ secrets.GCS_KEY }}
-          EOF
-    - name: Build with Maven
-      run: mvn clean package -DskipTests
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
 
-    - name: Deliver JAR via SSH
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.GCP_HOST }}
-        username: ${{ secrets.GCP_USERNAME }}
-        key: ${{ secrets.GCP_SSH_KEY }}
-        source: "target/*.jar"
-        target: "~/app"
-        strip_components: 1
+      - name: Build Spring Boot JAR
+        run: mvn clean package -DskipTests
 
-    - name: Execute remote SSH commands
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.GCP_HOST }}
-        username: ${{ secrets.GCP_USERNAME }}
-        key: ${{ secrets.GCP_SSH_KEY }}
-        script: |
-          mkdir -p ~/app
-          cd ~/app
-          
-          CURRENT_PID=$(pgrep -f 'java -jar' | grep -v "$$" || true)
-          
-          if [ -z "$CURRENT_PID" ]; then
-            echo "현재 구동 중인 스프링 부트 애플리케이션이 없습니다."
-          else
-            echo "구동 중인 스프링 부트 프로세스 발견 (PIDs: $CURRENT_PID)"
-            for pid in $CURRENT_PID; do
-              echo "스프링 부트 프로세스 종료 시도 (PID: $pid)"
-              sudo kill -15 $pid 2>/dev/null || true
-            done
-            sleep 3
-          fi
-          
-          JAR_NAME=$(ls -tr *.jar 2>/dev/null | grep -v 'original' | grep -v 'plain' | tail -n 1 || true)
-          
-          if [ -z "$JAR_NAME" ]; then
-            echo "❌ 에러: ~/app 디렉토리에 실행할 JAR 파일이 존재하지 않습니다!"
-            exit 1
-          fi
-          
-          echo "실행할 JAR 파일: $JAR_NAME"
-          
-          sudo bash -c "nohup java -jar $JAR_NAME \
-            --spring.data.redis.password='${{ secrets.APPLICATION_SECRET }}' \
-            > nohup.out 2>&1 < /dev/null &"
-          
-          sleep 1
-          echo "🚀 새 애플리케이션이 관리자(sudo) 권한으로 백그라운드 구동 명령을 받았습니다."
+      - name: Rename JAR
+        run: |
+          JAR_FILE=$(ls target/*.jar | grep -v original | grep -v plain | head -n 1)
+          cp "$JAR_FILE" soso-backend.jar
 
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCE_SSH_KEY }}" > ~/.ssh/gce_key
+          chmod 600 ~/.ssh/gce_key
+          ssh-keyscan -p ${{ secrets.GCE_PORT }} ${{ secrets.GCE_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Upload JAR to GCE
+        run: |
+          scp -P ${{ secrets.GCE_PORT }} -i ~/.ssh/gce_key soso-backend.jar \
+          ${{ secrets.GCE_USER }}@${{ secrets.GCE_HOST }}:/home/${{ secrets.GCE_USER }}/app/soso-backend.jar
+
+      - name: Restart Spring Boot service
+        run: |
+          ssh -p ${{ secrets.GCE_PORT }} -i ~/.ssh/gce_key \
+          ${{ secrets.GCE_USER }}@${{ secrets.GCE_HOST }} \
+          "sudo systemctl restart soso-backend && sudo systemctl status soso-backend --no-pager"
