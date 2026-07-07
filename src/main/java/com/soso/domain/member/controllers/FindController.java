@@ -33,9 +33,6 @@ public class FindController {
 	@PostMapping("/check-code")
 	public ResponseEntity<String> checkCode(@RequestBody FindDTO dto) {
 
-	    System.out.println("===== Controller 인증번호 확인 진입 =====");
-	    System.out.println("email : " + dto.getEmail());
-	    System.out.println("code : " + dto.getCode());
 
 	    String result = FindServ.checkCode(dto);
 	    
@@ -73,9 +70,6 @@ public class FindController {
 	@PostMapping("/password/check-code")
 	public ResponseEntity<String> checkPasswordCode(@RequestBody FindDTO dto) {
 		
-		System.out.println("===== 비밀번호 인증번호 확인 =====");
-		System.out.println("email : " + dto.getEmail());
-		System.out.println("code : " + dto.getCode());
 		
 		boolean result = FindServ.checkCodeForPassword(dto);
 		

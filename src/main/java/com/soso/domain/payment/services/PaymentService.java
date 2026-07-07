@@ -26,18 +26,11 @@ import com.soso.domain.payment.dto.PaymentDTO;
 
 import tools.jackson.databind.ObjectMapper;
 
-import com.soso.domain.RAG.RagClient;
-
-
 @Service
 public class PaymentService {
 	
 	@Autowired
 	private PaymentDAO dao;
-	
-	// FastAPI RAG 서버에 결제 내역을 upsert하기 위한 클라이언트
-	@Autowired
-	private RagClient ragClient;
 	
 	
     // application.properties에 작성한 포트원 상점 ID
@@ -68,7 +61,6 @@ public class PaymentService {
 		String billingKey = "TEST_BILLING_KEY" + UUID.randomUUID();
 		dto.setBillingKey(billingKey);
 		
-		System.out.println("생성된 billingKey = " + dto.getBillingKey());
 		
 		return dao.insertAccount(dto);
 	}
@@ -174,10 +166,6 @@ public class PaymentService {
 	    }
 
 	    // 확인용 로그
-	    System.out.println("Service 발주 결제 요청 storeSeq: " + dto.getStoreSeq());
-	    System.out.println("Service 발주 결제 요청 partnerSeq: " + dto.getPartnerSeq());
-	    System.out.println("Service 발주 결제 요청 cardSeq: " + dto.getCardSeq());
-	    System.out.println("Service 발주 결제 요청 orderSeqList: " + dto.getOrderSeqList());
 	    
 	 // 결제에 사용할 카드 조회
 	 // storeSeq = 현재 결제하는 사업자 매장 번호
@@ -195,8 +183,6 @@ public class PaymentService {
 	 }
 
 	// 카드 조회 성공 확인용 로그
-	 System.out.println("결제 카드 조회 성공 cardSeq: " + card.getCardSeq());
-	 System.out.println("결제 카드 billingKey: " + card.getBillingKey());
 
 
 	 // 결제 대상 발주 목록 조회
@@ -223,8 +209,6 @@ public class PaymentService {
 	         .sum();
 
 	 // 확인용 로그
-	 System.out.println("결제 대상 발주 조회 성공: " + orders);
-	 System.out.println("총 결제 금액: " + totalAmount);
 
 
 	// 포트원 빌링키 결제 요청
@@ -363,8 +347,6 @@ public class PaymentService {
 	                client.send(request, HttpResponse.BodyHandlers.ofString());
 
 	        // 포트원 응답 확인용 로그
-	        System.out.println("포트원 결제 응답 status: " + response.statusCode());
-	        System.out.println("포트원 결제 응답 body: " + response.body());
 
 	        // 응답 코드가 200번대가 아니면 결제 실패로 처리
 	        if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -468,24 +450,8 @@ public class PaymentService {
 	                orderSummary.toString()
 	        );
 
-	        // 확인용 로그
-	        System.out.println("========== 결제 RAG 문서 확인 ==========");
-	        System.out.println(text);
-	        System.out.println("metadata = " + metadata);
-
-	        // FastAPI /rag/upsert 호출
-	        // type = payment
-	        // refId = paymentSeq
-	        ragClient.upsert(
-	                "payment",
-	                paymentSeq,
-	                text,
-	                metadata
-	        );
-
 	    } catch (Exception e) {
 	        // RAG 실패 때문에 결제 성공 흐름이 막히면 안 된다.
-	        System.out.println("결제 RAG upsert 처리 중 오류: " + e.getMessage());
 	    }
 	}
 	

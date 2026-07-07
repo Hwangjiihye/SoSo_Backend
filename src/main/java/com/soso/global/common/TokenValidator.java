@@ -28,6 +28,13 @@ public class TokenValidator implements HandlerInterceptor{
 			return true;
 		}
 		
+		// RAG 테스트 API는 토큰 검사 없이 통과
+	    String path = request.getRequestURI();
+
+	    if(path.startsWith("/ai/")) {
+	        return true;
+	    }
+		
 		// 프론트에서 보낸 헤더를 꺼냄
 		// 예) Authorization: Bearer eyJhbGciOi...
 		String authHeader = request.getHeader("Authorization");
@@ -35,7 +42,7 @@ public class TokenValidator implements HandlerInterceptor{
 		// authHeader.startsWith("Bearer ") 공백까지 확인하는 게 안전
 		if(authHeader != null && authHeader.startsWith("Bearer")) { // 정상적인 토큰이 들어왔다면
 			String token = authHeader.substring(7); // Bearer 7글자를 잘라내고 실제 토큰만 꺼냄
-			System.out.println(token); // 토큰이 잘 넘어오는지 확인
+ // 토큰이 잘 넘어오는지 확인
 			
 			try {
 				Long user_seq = jwt.getUserSeq(token); // 토큰이 정상이라면 seq를 request에 저장하고 컨트롤러로 보냄
@@ -49,7 +56,6 @@ public class TokenValidator implements HandlerInterceptor{
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
-			System.out.println("인터셉터 동작 확인");
 		}
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		return false; // 토큰이 애초에 없거나 Bearer로 시작하지 않는다면 false, 다시 돌려보냄 

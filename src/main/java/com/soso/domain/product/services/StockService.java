@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import com.soso.domain.RAG.RagClient;
-
 @Service
 public class StockService {
 
@@ -32,9 +30,6 @@ public class StockService {
 
     @Autowired
     private com.soso.domain.notification.dao.NotificationDAO notificationDAO;
-    
-    @Autowired
-    private RagClient ragClient;
 
     public List<StockDTO> getStockList(Map<String, Object> filters) {
         return stockDAO.selectStockList(filters);
@@ -280,7 +275,6 @@ public class StockService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("[StockService] 파트너 안전재고 부족 알림 발행 중 오류: " + e.getMessage());
         }
     }
 
@@ -315,7 +309,6 @@ public class StockService {
     private void upsertStockRag(StockDTO stock, int storeSeq) {
         try {
             if (stock == null) {
-                System.out.println("재고 RAG upsert 생략: stock 정보 없음");
                 return;
             }
 
@@ -347,19 +340,7 @@ public class StockService {
                     stock.getDefaultExpiryDays()
             );
 
-            System.out.println("========== 재고 RAG 문서 확인 ==========");
-            System.out.println(text);
-            System.out.println("metadata = " + metadata);
-
-            ragClient.upsert(
-                    "stock",
-                    stock.getStockSeq(),
-                    text,
-                    metadata
-            );
-
         } catch (Exception e) {
-            System.out.println("재고 RAG upsert 처리 중 오류: " + e.getMessage());
         }
     }
     
@@ -390,12 +371,10 @@ public class StockService {
     private void upsertStockHistoryRag(StockHistoryDTO history, StockDTO stock, int storeSeq) {
         try {
             if (history == null) {
-                System.out.println("재고 이력 RAG upsert 생략: history 정보 없음");
                 return;
             }
 
             if (history.getHistorySeq() == 0) {
-                System.out.println("재고 이력 RAG upsert 생략: historySeq 없음");
                 return;
             }
 
@@ -474,19 +453,7 @@ public class StockService {
                     memo
             );
 
-            System.out.println("========== 재고 이력 RAG 문서 확인 ==========");
-            System.out.println(text);
-            System.out.println("metadata = " + metadata);
-
-            ragClient.upsert(
-                    "stock_history",
-                    history.getHistorySeq(),
-                    text,
-                    metadata
-            );
-
         } catch (Exception e) {
-            System.out.println("재고 이력 RAG upsert 처리 중 오류: " + e.getMessage());
         }
     }
     private String convertTransactionType(String transactionType) {

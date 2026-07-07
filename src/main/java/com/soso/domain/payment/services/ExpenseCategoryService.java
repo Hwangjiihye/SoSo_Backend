@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.soso.domain.payment.dao.ExpenseCategoryDAO;
 import com.soso.domain.payment.dto.ExpensesDTO;
 
-import com.soso.domain.RAG.RagClient;
 import java.util.HashMap;
 
 @Service
@@ -17,10 +16,6 @@ public class ExpenseCategoryService {
 	
 	@Autowired
 	private ExpenseCategoryDAO dao;
-	
-	// FastAPI RAG 서버에 upsert 요청을 보내는 클라이언트
-	@Autowired
-	private RagClient ragClient;
 	
 	// 지출 비용 등록
 	public int insertCategory(ExpensesDTO dto) {
@@ -32,7 +27,6 @@ public class ExpenseCategoryService {
     if (result > 0) {
 
         // 3. useGeneratedKeys로 들어온 expenseSeq 확인
-        System.out.println("지출 등록 성공 expenseSeq = " + dto.getExpenseSeq());
 
         // 4. Qdrant에 지출 문서 저장 또는 갱신
         upsertExpenseRag(dto);
@@ -115,16 +109,6 @@ public class ExpenseCategoryService {
 	         dto.getRefType(),
 	         dto.getRefSeq()
 	 );
-
-	    // FastAPI /rag/upsert 호출
-	    // type = expense
-	    // refId = expenseSeq
-	    ragClient.upsert(
-	            "expense",
-	            dto.getExpenseSeq(),
-	            text,
-	            metadata
-	    );
 	}
 	
 	// 지출 내역 메모 수정
